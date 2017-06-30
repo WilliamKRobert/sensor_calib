@@ -1,0 +1,53 @@
+#include <opencv2/opencv.hpp>
+#include <cv_bridge/cv_bridge.h>
+
+#include <ros/ros.h>
+#include <rosbag/rosbag.h>
+#include <rosbag/view.h>
+#include <sensor_msgs/Image.h>
+#include <sensor_msgs/CameraInfo.h>
+
+#include <boost.foreach.hpp>
+#define foreach BOOST_FOREACH
+
+
+class cameraData
+{
+public:
+    sensor_msgs::Image::ConsPtr image;
+    sensor_msgs::CameraInfo::ConstPtr cam_info;
+
+    cameraData(const sensor_msgs::Image::ConstPtr &img,
+               const sensor_msgs::CameraInfo::ConstPtr &info):
+        image(img),
+        cam_info(info)
+    {}
+};
+
+
+template<class M>
+class BagSubscriber: public message_filters::SimpleFilter<M>
+{
+public:
+    void newMessage(const boost::shared_ptr<M const> &msg)
+    {
+        signalMessage(msg);
+    }
+}
+
+void convert_image(const sensor_msgs::Image::ConstPtr &img,
+                   Mat cv_img)
+{
+    cv_bridge::CvImagePtr cv_ptr;
+
+    try{
+        cv_ptr = cv_bridge::toCvCopy(img, sensor_msgs::image_encodings::RGB8);
+        cv_img = cv_ptr->image;
+    }
+    catch(cv_bridge::Exception& e){
+        ROS_ERROR("cv_bridge exception: %s", e.what());
+        cv_img = NULL;
+        return;
+    }
+
+}

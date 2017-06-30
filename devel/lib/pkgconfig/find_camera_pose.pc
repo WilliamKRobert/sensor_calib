@@ -1,0 +1,8 @@
+prefix=/home/audren/lidarCameraCalib/calib_ws/devel
+
+Name: find_camera_pose
+Description: Description of find_camera_pose
+Version: 0.0.0
+Cflags: -I/home/audren/lidarCameraCalib/calib_ws/src/find_camera_pose/include
+Libs: -L/home/audren/lidarCameraCalib/calib_ws/devel/lib -lfind_camera_pose
+Requires: roscpp rospy std_msgs

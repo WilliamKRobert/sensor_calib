@@ -1,0 +1,24 @@
+#include <opencv2/opencv.hpp>
+#include <cv_bridge/cv_bridge.h>
+
+#include <find_camera_pose/loadBagFile.h>
+
+using namespace std;
+using namespace cv;
+
+void convert_image(const sensor_msgs::Image::ConstPtr &img,
+                   Mat cv_img)
+{
+    cv_bridge::CvImagePtr cv_ptr;
+
+    try{
+        cv_ptr = cv_bridge::toCvCopy(img, sensor_msgs::image_encodings::RGB8);
+        cv_img = cv_ptr->image;
+    }
+    catch(cv_bridge::Exception& e){
+        ROS_ERROR("cv_bridge exception: %s", e.what());
+        cv_img = NULL;
+        return;
+    }
+
+}
