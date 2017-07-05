@@ -35,10 +35,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/audren/lidarCameraCalib/calib_ws/src
+CMAKE_SOURCE_DIR = /home/audren/lidar_camera_calib/calib_ws/src
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/audren/lidarCameraCalib/calib_ws/build
+CMAKE_BINARY_DIR = /home/audren/lidar_camera_calib/calib_ws/build
 
 # Utility rule file for clean_test_results.
 
@@ -46,7 +46,7 @@ CMAKE_BINARY_DIR = /home/audren/lidarCameraCalib/calib_ws/build
 include CMakeFiles/clean_test_results.dir/progress.make
 
 CMakeFiles/clean_test_results:
-	/usr/bin/python /opt/ros/indigo/share/catkin/cmake/test/remove_test_results.py /home/audren/lidarCameraCalib/calib_ws/build/test_results
+	/usr/bin/python /opt/ros/indigo/share/catkin/cmake/test/remove_test_results.py /home/audren/lidar_camera_calib/calib_ws/build/test_results
 
 clean_test_results: CMakeFiles/clean_test_results
 clean_test_results: CMakeFiles/clean_test_results.dir/build.make
@@ -61,6 +61,6 @@ CMakeFiles/clean_test_results.dir/clean:
 .PHONY : CMakeFiles/clean_test_results.dir/clean
 
 CMakeFiles/clean_test_results.dir/depend:
-	cd /home/audren/lidarCameraCalib/calib_ws/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/audren/lidarCameraCalib/calib_ws/src /home/audren/lidarCameraCalib/calib_ws/src /home/audren/lidarCameraCalib/calib_ws/build /home/audren/lidarCameraCalib/calib_ws/build /home/audren/lidarCameraCalib/calib_ws/build/CMakeFiles/clean_test_results.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/audren/lidar_camera_calib/calib_ws/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/audren/lidar_camera_calib/calib_ws/src /home/audren/lidar_camera_calib/calib_ws/src /home/audren/lidar_camera_calib/calib_ws/build /home/audren/lidar_camera_calib/calib_ws/build /home/audren/lidar_camera_calib/calib_ws/build/CMakeFiles/clean_test_results.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/clean_test_results.dir/depend
 

@@ -1,23 +1,23 @@
 Determining if the pthread_create exist failed with the following output:
-Change Dir: /home/audren/lidarCameraCalib/calib_ws/build/CMakeFiles/CMakeTmp
+Change Dir: /home/audren/lidar_camera_calib/calib_ws/build/CMakeFiles/CMakeTmp
 
-Run Build Command:/usr/bin/make "cmTryCompileExec3721286719/fast"
-/usr/bin/make -f CMakeFiles/cmTryCompileExec3721286719.dir/build.make CMakeFiles/cmTryCompileExec3721286719.dir/build
-make[1]: Entering directory `/home/audren/lidarCameraCalib/calib_ws/build/CMakeFiles/CMakeTmp'
-/usr/bin/cmake -E cmake_progress_report /home/audren/lidarCameraCalib/calib_ws/build/CMakeFiles/CMakeTmp/CMakeFiles 1
-Building C object CMakeFiles/cmTryCompileExec3721286719.dir/CheckSymbolExists.c.o
-/usr/bin/cc    -o CMakeFiles/cmTryCompileExec3721286719.dir/CheckSymbolExists.c.o   -c /home/audren/lidarCameraCalib/calib_ws/build/CMakeFiles/CMakeTmp/CheckSymbolExists.c
-Linking C executable cmTryCompileExec3721286719
-/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec3721286719.dir/link.txt --verbose=1
-/usr/bin/cc       CMakeFiles/cmTryCompileExec3721286719.dir/CheckSymbolExists.c.o  -o cmTryCompileExec3721286719 -rdynamic 
-CMakeFiles/cmTryCompileExec3721286719.dir/CheckSymbolExists.c.o: In function `main':
+Run Build Command:/usr/bin/make "cmTryCompileExec3138407716/fast"
+/usr/bin/make -f CMakeFiles/cmTryCompileExec3138407716.dir/build.make CMakeFiles/cmTryCompileExec3138407716.dir/build
+make[1]: Entering directory `/home/audren/lidar_camera_calib/calib_ws/build/CMakeFiles/CMakeTmp'
+/usr/bin/cmake -E cmake_progress_report /home/audren/lidar_camera_calib/calib_ws/build/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building C object CMakeFiles/cmTryCompileExec3138407716.dir/CheckSymbolExists.c.o
+/usr/bin/cc    -o CMakeFiles/cmTryCompileExec3138407716.dir/CheckSymbolExists.c.o   -c /home/audren/lidar_camera_calib/calib_ws/build/CMakeFiles/CMakeTmp/CheckSymbolExists.c
+Linking C executable cmTryCompileExec3138407716
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec3138407716.dir/link.txt --verbose=1
+/usr/bin/cc       CMakeFiles/cmTryCompileExec3138407716.dir/CheckSymbolExists.c.o  -o cmTryCompileExec3138407716 -rdynamic 
+CMakeFiles/cmTryCompileExec3138407716.dir/CheckSymbolExists.c.o: In function `main':
 CheckSymbolExists.c:(.text+0x16): undefined reference to `pthread_create'
 collect2: error: ld returned 1 exit status
-make[1]: *** [cmTryCompileExec3721286719] Error 1
-make[1]: Leaving directory `/home/audren/lidarCameraCalib/calib_ws/build/CMakeFiles/CMakeTmp'
-make: *** [cmTryCompileExec3721286719/fast] Error 2
+make[1]: *** [cmTryCompileExec3138407716] Error 1
+make[1]: Leaving directory `/home/audren/lidar_camera_calib/calib_ws/build/CMakeFiles/CMakeTmp'
+make: *** [cmTryCompileExec3138407716/fast] Error 2
 
-File /home/audren/lidarCameraCalib/calib_ws/build/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+File /home/audren/lidar_camera_calib/calib_ws/build/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
 /* */
 #include <pthread.h>
 
@@ -33,21 +33,21 @@ int main(int argc, char** argv)
 }
 
 Determining if the function pthread_create exists in the pthreads failed with the following output:
-Change Dir: /home/audren/lidarCameraCalib/calib_ws/build/CMakeFiles/CMakeTmp
+Change Dir: /home/audren/lidar_camera_calib/calib_ws/build/CMakeFiles/CMakeTmp
 
-Run Build Command:/usr/bin/make "cmTryCompileExec4131761251/fast"
-/usr/bin/make -f CMakeFiles/cmTryCompileExec4131761251.dir/build.make CMakeFiles/cmTryCompileExec4131761251.dir/build
-make[1]: Entering directory `/home/audren/lidarCameraCalib/calib_ws/build/CMakeFiles/CMakeTmp'
-/usr/bin/cmake -E cmake_progress_report /home/audren/lidarCameraCalib/calib_ws/build/CMakeFiles/CMakeTmp/CMakeFiles 1
-Building C object CMakeFiles/cmTryCompileExec4131761251.dir/CheckFunctionExists.c.o
-/usr/bin/cc   -DCHECK_FUNCTION_EXISTS=pthread_create   -o CMakeFiles/cmTryCompileExec4131761251.dir/CheckFunctionExists.c.o   -c /usr/share/cmake-2.8/Modules/CheckFunctionExists.c
-Linking C executable cmTryCompileExec4131761251
-/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec4131761251.dir/link.txt --verbose=1
-/usr/bin/cc   -DCHECK_FUNCTION_EXISTS=pthread_create    CMakeFiles/cmTryCompileExec4131761251.dir/CheckFunctionExists.c.o  -o cmTryCompileExec4131761251 -rdynamic -lpthreads 
+Run Build Command:/usr/bin/make "cmTryCompileExec2976718668/fast"
+/usr/bin/make -f CMakeFiles/cmTryCompileExec2976718668.dir/build.make CMakeFiles/cmTryCompileExec2976718668.dir/build
+make[1]: Entering directory `/home/audren/lidar_camera_calib/calib_ws/build/CMakeFiles/CMakeTmp'
+/usr/bin/cmake -E cmake_progress_report /home/audren/lidar_camera_calib/calib_ws/build/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building C object CMakeFiles/cmTryCompileExec2976718668.dir/CheckFunctionExists.c.o
+/usr/bin/cc   -DCHECK_FUNCTION_EXISTS=pthread_create   -o CMakeFiles/cmTryCompileExec2976718668.dir/CheckFunctionExists.c.o   -c /usr/share/cmake-2.8/Modules/CheckFunctionExists.c
+Linking C executable cmTryCompileExec2976718668
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec2976718668.dir/link.txt --verbose=1
+/usr/bin/cc   -DCHECK_FUNCTION_EXISTS=pthread_create    CMakeFiles/cmTryCompileExec2976718668.dir/CheckFunctionExists.c.o  -o cmTryCompileExec2976718668 -rdynamic -lpthreads 
 /usr/bin/ld: cannot find -lpthreads
 collect2: error: ld returned 1 exit status
-make[1]: *** [cmTryCompileExec4131761251] Error 1
-make[1]: Leaving directory `/home/audren/lidarCameraCalib/calib_ws/build/CMakeFiles/CMakeTmp'
-make: *** [cmTryCompileExec4131761251/fast] Error 2
+make[1]: *** [cmTryCompileExec2976718668] Error 1
+make[1]: Leaving directory `/home/audren/lidar_camera_calib/calib_ws/build/CMakeFiles/CMakeTmp'
+make: *** [cmTryCompileExec2976718668/fast] Error 2
 
 

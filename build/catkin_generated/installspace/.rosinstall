@@ -1,2 +1,2 @@
 - setup-file:
-    local-name: /home/audren/lidarCameraCalib/calib_ws/install/setup.sh
+    local-name: /home/audren/lidar_camera_calib/calib_ws/install/setup.sh
