@@ -6,10 +6,10 @@
 
 #include "ceres/rotation.h"
 
-#include "find_camera_pose/loadBagFile.h"
-#include "find_camera_pose/loadSettings.h"
-#include "find_camera_pose/objectPose.h"
-#include "find_camera_pose/omniModel.h"
+#include "lidar_camera_calib/loadBagFile.h"
+#include "lidar_camera_calib/loadSettings.h"
+#include "lidar_camera_calib/objectPose.h"
+#include "lidar_camera_calib/omniModel.h"
 //#include "find_camera_pose/optimizer.h"
 // Commented out to bypass compilation error stating the header file "map.h" in the header file "optimizer.h" could not be found.
 
@@ -24,7 +24,6 @@ int main(int argc, char **argv)
 {
     /* 
      * Load image, convert from ROS image format to OpenCV Mat
-     * Read setting files
      */
     ros::init(argc, argv, "my_scan_to_cloud");    
     string bagFile("/home/audren/lidar_camera_calib/data/cameraLidarData.bag");
@@ -37,6 +36,9 @@ int main(int argc, char **argv)
     cout << "Number of LIDAR scan: " << lidar_queue.size() << endl;
     cout << "---------------------------------------------" << endl;
 
+    /*
+     * Read setting files
+     */
     Settings s;
     string inputSettingsFile("/home/audren/lidar_camera_calib/calib_ws/src/lidar_camera_calib/include/settings.xml");
     FileStorage fs(inputSettingsFile, FileStorage::READ); // Read the settings
@@ -54,16 +56,18 @@ int main(int argc, char **argv)
         return -1;
     }
 
-    // Camera internals
+    // Camera intrinsics
     Mat camera_matrix = s.intrinsics;
     Mat dist_coeffs = s.distortion;
     double xi =  s.xi;
-    cout << "Camera Matrix " << endl << camera_matrix << endl ;
+    cout << "Camera intrinsic matrix: " << endl << camera_matrix << endl ;
+    cout << "Distortion coefficients: " << endl << dist_coeffs << endl;
+    cout << "Mirror parameter: " << endl << xi << endl;
     cout << "---------------------------------------------" << endl;
 
     Size patternsize(7, 10); // interior number of corners
     float squareSize = 98.00; // unit: mm
-    FisheyeModel model(camera_matrix, dist_coeffs, xi);
+    OmniModel model(camera_matrix, dist_coeffs, xi);
     for (int i=0; i<1; i++){
         /*
          * Step 1: Find out camera extrinsic parameter using PnP
@@ -77,17 +81,7 @@ int main(int argc, char **argv)
             cvtColor(image, image, COLOR_RGB2GRAY);
         
         Mat gray(image);
-        model.undistortImage(image, gray);
-        imshow("Undistorted image", gray);
-        waitKey(0);
-
-        imshow("Original image", image);
-        waitKey(0);
-
-        // Mat Knew = Mat::eye(3, 3, CV_64F);
-        // fisheye::undistortImage(image, gray, camera_matrix, dist_coeffs, Knew);
-        // imshow("Undistorted image", gray);
-        // waitKey(0);
+        
         // corners in world frame (origin is on the upper left chessboard)
         vector<Point3f> worldCorners;
         calcBoardCornerPositions(patternsize, s.squareSize, worldCorners,
@@ -108,9 +102,10 @@ int main(int argc, char **argv)
         //     Output rotation and translation
         Mat rvec; // Rotation in axis-angle form
         Mat tvec;
-        solvePnP(worldCorners, imageCorners, camera_matrix, dist_coeffs, rvec, tvec);
-        cout << "rotation vector" << endl << rvec << endl;
-        cout << "translation vector" << endl << tvec << endl;
+        Eigen::Matrix4d camera_pose;
+        model.estimateTransformation(imageCorners, worldCorners, camera_pose);
+        cout << "Camera pose: " << endl;
+        cout << camera_pose << endl;
         cout << "---------------------------------------------" << endl;
         /*      
          * Step 2: Obtain lidar scan in camera frame

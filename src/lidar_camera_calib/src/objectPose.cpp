@@ -3,7 +3,7 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/calib3d/calib3d.hpp>
 
-#include "find_camera_pose/objectPose.h"
+#include "lidar_camera_calib/objectPose.h"
 
 using namespace std;
 using namespace cv;

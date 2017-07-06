@@ -6,13 +6,7 @@
 
 #IncludeRegexTransform: 
 
-/home/audren/lidar_camera_calib/calib_ws/src/lidar_camera_calib/include/find_camera_pose/fisheyeModel.h
-opencv2/opencv.hpp
--
-Eigen/Dense
--
-
-/home/audren/lidar_camera_calib/calib_ws/src/lidar_camera_calib/include/find_camera_pose/loadBagFile.h
+/home/audren/lidar_camera_calib/calib_ws/src/lidar_camera_calib/include/lidar_camera_calib/loadBagFile.h
 iostream
 -
 opencv2/opencv.hpp
@@ -26,7 +20,7 @@ sensor_msgs/Image.h
 sensor_msgs/CameraInfo.h
 -
 
-/home/audren/lidar_camera_calib/calib_ws/src/lidar_camera_calib/include/find_camera_pose/loadSettings.h
+/home/audren/lidar_camera_calib/calib_ws/src/lidar_camera_calib/include/lidar_camera_calib/loadSettings.h
 iostream
 -
 opencv2/opencv.hpp
@@ -36,7 +30,7 @@ opencv2/core/core.hpp
 opencv2/calib3d/calib3d.hpp
 -
 
-/home/audren/lidar_camera_calib/calib_ws/src/lidar_camera_calib/include/find_camera_pose/objectPose.h
+/home/audren/lidar_camera_calib/calib_ws/src/lidar_camera_calib/include/lidar_camera_calib/objectPose.h
 iostream
 -
 opencv2/opencv.hpp
@@ -46,13 +40,13 @@ opencv2/core/core.hpp
 opencv2/calib3d/calib3d.hpp
 -
 loadSettings.h
-/home/audren/lidar_camera_calib/calib_ws/src/lidar_camera_calib/include/find_camera_pose/loadSettings.h
+/home/audren/lidar_camera_calib/calib_ws/src/lidar_camera_calib/include/lidar_camera_calib/loadSettings.h
 
-/home/audren/lidar_camera_calib/calib_ws/src/lidar_camera_calib/src/fisheyeModel.cpp
-iostream
+/home/audren/lidar_camera_calib/calib_ws/src/lidar_camera_calib/include/lidar_camera_calib/omniModel.h
+opencv2/opencv.hpp
 -
-find_camera_pose/fisheyeModel.h
-/home/audren/lidar_camera_calib/calib_ws/src/lidar_camera_calib/src/find_camera_pose/fisheyeModel.h
+Eigen/Dense
+-
 
 /home/audren/lidar_camera_calib/calib_ws/src/lidar_camera_calib/src/main.cpp
 iostream
@@ -65,14 +59,14 @@ opencv2/highgui/highgui.hpp
 -
 ceres/rotation.h
 /home/audren/lidar_camera_calib/calib_ws/src/lidar_camera_calib/src/ceres/rotation.h
-find_camera_pose/loadBagFile.h
-/home/audren/lidar_camera_calib/calib_ws/src/lidar_camera_calib/src/find_camera_pose/loadBagFile.h
-find_camera_pose/loadSettings.h
-/home/audren/lidar_camera_calib/calib_ws/src/lidar_camera_calib/src/find_camera_pose/loadSettings.h
-find_camera_pose/objectPose.h
-/home/audren/lidar_camera_calib/calib_ws/src/lidar_camera_calib/src/find_camera_pose/objectPose.h
-find_camera_pose/fisheyeModel.h
-/home/audren/lidar_camera_calib/calib_ws/src/lidar_camera_calib/src/find_camera_pose/fisheyeModel.h
+lidar_camera_calib/loadBagFile.h
+/home/audren/lidar_camera_calib/calib_ws/src/lidar_camera_calib/src/lidar_camera_calib/loadBagFile.h
+lidar_camera_calib/loadSettings.h
+/home/audren/lidar_camera_calib/calib_ws/src/lidar_camera_calib/src/lidar_camera_calib/loadSettings.h
+lidar_camera_calib/objectPose.h
+/home/audren/lidar_camera_calib/calib_ws/src/lidar_camera_calib/src/lidar_camera_calib/objectPose.h
+lidar_camera_calib/omniModel.h
+/home/audren/lidar_camera_calib/calib_ws/src/lidar_camera_calib/src/lidar_camera_calib/omniModel.h
 
 /opt/ros/indigo/include/XmlRpcDecl.h
 ros/macros.h

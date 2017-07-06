@@ -583,30 +583,6 @@ topic_tools_generate_messages_py/fast:
 	cd /home/audren/lidar_camera_calib/calib_ws/build && $(MAKE) -f lidar_camera_calib/CMakeFiles/topic_tools_generate_messages_py.dir/build.make lidar_camera_calib/CMakeFiles/topic_tools_generate_messages_py.dir/build
 .PHONY : topic_tools_generate_messages_py/fast
 
-src/fisheyeModel.o: src/fisheyeModel.cpp.o
-.PHONY : src/fisheyeModel.o
-
-# target to build an object file
-src/fisheyeModel.cpp.o:
-	cd /home/audren/lidar_camera_calib/calib_ws/build && $(MAKE) -f lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/build.make lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/fisheyeModel.cpp.o
-.PHONY : src/fisheyeModel.cpp.o
-
-src/fisheyeModel.i: src/fisheyeModel.cpp.i
-.PHONY : src/fisheyeModel.i
-
-# target to preprocess a source file
-src/fisheyeModel.cpp.i:
-	cd /home/audren/lidar_camera_calib/calib_ws/build && $(MAKE) -f lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/build.make lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/fisheyeModel.cpp.i
-.PHONY : src/fisheyeModel.cpp.i
-
-src/fisheyeModel.s: src/fisheyeModel.cpp.s
-.PHONY : src/fisheyeModel.s
-
-# target to generate assembly for a file
-src/fisheyeModel.cpp.s:
-	cd /home/audren/lidar_camera_calib/calib_ws/build && $(MAKE) -f lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/build.make lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/fisheyeModel.cpp.s
-.PHONY : src/fisheyeModel.cpp.s
-
 src/loadBagFile.o: src/loadBagFile.cpp.o
 .PHONY : src/loadBagFile.o
 
@@ -679,6 +655,30 @@ src/objectPose.cpp.s:
 	cd /home/audren/lidar_camera_calib/calib_ws/build && $(MAKE) -f lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/build.make lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/objectPose.cpp.s
 .PHONY : src/objectPose.cpp.s
 
+src/omniModel.o: src/omniModel.cpp.o
+.PHONY : src/omniModel.o
+
+# target to build an object file
+src/omniModel.cpp.o:
+	cd /home/audren/lidar_camera_calib/calib_ws/build && $(MAKE) -f lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/build.make lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/omniModel.cpp.o
+.PHONY : src/omniModel.cpp.o
+
+src/omniModel.i: src/omniModel.cpp.i
+.PHONY : src/omniModel.i
+
+# target to preprocess a source file
+src/omniModel.cpp.i:
+	cd /home/audren/lidar_camera_calib/calib_ws/build && $(MAKE) -f lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/build.make lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/omniModel.cpp.i
+.PHONY : src/omniModel.cpp.i
+
+src/omniModel.s: src/omniModel.cpp.s
+.PHONY : src/omniModel.s
+
+# target to generate assembly for a file
+src/omniModel.cpp.s:
+	cd /home/audren/lidar_camera_calib/calib_ws/build && $(MAKE) -f lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/build.make lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/omniModel.cpp.s
+.PHONY : src/omniModel.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -723,9 +723,6 @@ help:
 	@echo "... topic_tools_generate_messages_cpp"
 	@echo "... topic_tools_generate_messages_lisp"
 	@echo "... topic_tools_generate_messages_py"
-	@echo "... src/fisheyeModel.o"
-	@echo "... src/fisheyeModel.i"
-	@echo "... src/fisheyeModel.s"
 	@echo "... src/loadBagFile.o"
 	@echo "... src/loadBagFile.i"
 	@echo "... src/loadBagFile.s"
@@ -735,6 +732,9 @@ help:
 	@echo "... src/objectPose.o"
 	@echo "... src/objectPose.i"
 	@echo "... src/objectPose.s"
+	@echo "... src/omniModel.o"
+	@echo "... src/omniModel.i"
+	@echo "... src/omniModel.s"
 .PHONY : help
 
 

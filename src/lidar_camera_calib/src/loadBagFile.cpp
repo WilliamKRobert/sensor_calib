@@ -17,7 +17,7 @@
 #include "tf/message_filter.h"
 #include <ros/exceptions.h> 
 
-#include <find_camera_pose/loadBagFile.h>
+#include <lidar_camera_calib/loadBagFile.h>
 
 using namespace std;
 using namespace cv;

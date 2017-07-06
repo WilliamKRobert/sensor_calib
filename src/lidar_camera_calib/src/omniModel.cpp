@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "find_camera_pose/omniModel.h"
+#include "lidar_camera_calib/omniModel.h"
 
 using namespace std;
 
@@ -40,7 +40,6 @@ void OmniModel::distortion(const double mx_u, const double my_u,
   *dydmy = 1 + rad_dist_u + k1 * 2 * my2_u + k2 * rho2_u * 4 * my2_u
       + 6 * p1 * my_u + 2 * p2 * mx_u;
 }
-
 
 // Use Gauss-Newton to undistort.
 void OmniModel::undistortGN(const double u_d, const double v_d, double *u,
@@ -87,24 +86,67 @@ void OmniModel::undistortImage(const cv::Mat distorted, cv::Mat undistorted){
     }
 }
 
+bool OmniModel::isUndistortedKeypointValid(
+    const double rho2_d) const {
+  double one_over_xixi_m_1 = 1.0 / (xi * xi - 1);
+  return xi <= 1.0 || rho2_d <= one_over_xixi_m_1;
+}
 
-/// \brief estimate the transformation of the camera with respect to the calibration target
-///        On success out_T_t_c is filled in with the transformation that takes points from
-///        the camera frame to the target frame
-/// \return true on success
-///
-/// These functions were developed with the help of Lionel Heng and the excellent camodocal
-/// https://github.com/hengli/camodocal
+bool OmniModel::keypointToEuclidean(
+    const Eigen::Vector2d & keypoint,
+    Eigen::Vector3d & outPoint) {
+
+  // EIGEN_STATIC_ASSERT_VECTOR_SPECIFIC_SIZE_OR_DYNAMIC(
+  //     Eigen::MatrixBase<DERIVED_P>, 3);
+  // EIGEN_STATIC_ASSERT_VECTOR_SPECIFIC_SIZE_OR_DYNAMIC(
+  //     Eigen::MatrixBase<DERIVED_K>, 2);
+
+  // Eigen::MatrixBase<DERIVED_P> & outPoint = const_cast<Eigen::MatrixBase<
+  //     DERIVED_P> &>(outPointConst);
+  // outPoint.derived().resize(3);
+
+  // Unproject...
+  double recip_fu = 1.0 / fu;
+  double recip_fv = 1.0 / fv;
+  outPoint[0] = recip_fu * (keypoint[0] - u0);
+  outPoint[1] = recip_fv * (keypoint[1] - v0);
+
+  // Re-distort
+  // _distortion.undistort(outPoint.derived().template head<2>());
+  Eigen::Vector2d rectified_point;
+  undistortGN(outPoint[0], outPoint[1], &rectified_point[0], &rectified_point[1]);
+  //cout << "Undistort Point: " << rectified_point[0] << " " << rectified_point[1] << endl;
+  outPoint[0] = rectified_point[0];
+  outPoint[1] = rectified_point[1];
+
+  double rho2_d = outPoint[0] * outPoint[0] + outPoint[1] * outPoint[1];
+
+  if (!isUndistortedKeypointValid(rho2_d))
+    return false;
+
+  outPoint[2] = 1
+      - xi * (rho2_d + 1) / (xi + sqrt(1 + (1 - xi * xi) * rho2_d));
+
+  return true;
+
+}
+
+/* Estimate the transformation of the camera with respect to the calibration target
+ *        On success out_T_t_c is filled in with the transformation that takes points from
+ *        the camera frame to the target frame
+ * input: Ms: image points
+ *        Ps: object points in world frame
+ * output: out_T_t_c estimated object pose
+           return true on success
+ *
+ * These functions were developed with the help of Lionel Heng and the excellent camodocal
+ * https://github.com/hengli/camodocal
+ */
 bool OmniModel::estimateTransformation(
-    const GridCalibrationTargetObservation & obs,
-    sm::kinematics::Transformation & out_T_t_c) const {
-  using detail::square;
-  std::vector<cv::Point2f> Ms;
-  std::vector<cv::Point3f> Ps;
-
-  // Get the observed corners in the image and target frame
-  obs.getCornersImageFrame(Ms);
-  obs.getCornersTargetFrame(Ps);
+    std::vector<cv::Point2f> Ms,
+    std::vector<cv::Point3f> Ps,
+    Eigen::Matrix4d &  out_T_t_c) {
+  // using detail::square;
 
   // Convert all target corners to a fakey pinhole view.
   size_t count = 0;
@@ -139,14 +181,14 @@ bool OmniModel::estimateTransformation(
   cv::Mat tvec(3, 1, CV_64F);
 
   if (Ps.size() < 4) {
-//    SM_DEBUG_STREAM(
-//        "At least 4 points are needed for calling PnP. Found " << Ps.size());
+  // SM_DEBUG_STREAM(
+  // "At least 4 points are needed for calling PnP. Found " << Ps.size());
     return false;
   }
 
   // Call the OpenCV pnp function.
-//  SM_DEBUG_STREAM("Calling solvePnP with " << Ps.size() << " world points and "
-//                  << Ms.size() << " image points");
+  //  SM_DEBUG_STREAM("Calling solvePnP with " << Ps.size() << " world points and "
+  //                  << Ms.size() << " image points");
   cv::solvePnP(Ps, Ms, cv::Mat::eye(3, 3, CV_64F), distCoeffs, rvec, tvec);
 
   // convert the rvec/tvec to a transformation
@@ -160,7 +202,7 @@ bool OmniModel::estimateTransformation(
     }
   }
 
-  out_T_t_c.set(T_camera_model.inverse());
+  out_T_t_c = T_camera_model.inverse();
   return true;
 }
 
