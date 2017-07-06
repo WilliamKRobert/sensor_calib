@@ -11,42 +11,29 @@
 #include "ceres/rotation.h"
 
 
+/*
+ * optimize transform between LIDAR and camera
+ * input: 
+        object_points:
+        lidar_scan:
+        object_poses: a list of object poses of each frame
+        parameter: 6 elements array which stores the transform between LIDAR and camera
+        
+ */
+void optimizer::bundleAdjustment(const std::vector<cv::Point3f> object_points, 
+                                 const std::vector<std::vector<cv::Point3f> > lidar_scan.
+                                 const std::vector<Eigen::Matrix4d> object_poses,
+                                 double* paramter
+                                 )
+{ 
+    // set inital estimation, checkerboad dimension
 
-void optimizer::localBundleAdjustment(const Map::MapAssociation &local_map, double* paramter,
-                                      const double fx_, const double fy_,
-                                      const double cx_, const double cy_)
-{
-    // camera parameter
-    fx = fx_;
-    fy = fy_;
-    cx = cx_;
-    cy = cy_;
+    // cull out points of lidar scan that are within checkerboard
     
-    // Use ceres to optimize local poses
+    //
     int num_cameras_  = 1;
     int num_observations = local_map.num_observations();
-    int num_points_ = local_map.num_points();
-    
-    double observations[2*local_map.num_observations()];
-    for (int i=0; i<num_observations; i++){
-        observations[2*i]   = local_map.observations_[i].x;
-        observations[2*i+1] = local_map.observations_[i].y;
-    }
-    
-    for (int i=0; i<num_cameras_; i++){
-        paramter[6*i] = local_map.camera_rotation_parameters_[i][0];
-        paramter[6*i+1] = local_map.camera_rotation_parameters_[i][1];
-        paramter[6*i+2] = local_map.camera_rotation_parameters_[i][2];
-        paramter[6*i+3] = local_map.camera_translation_parameters_[i][0];
-        paramter[6*i+4] = local_map.camera_translation_parameters_[i][1];
-        paramter[6*i+5] = local_map.camera_translation_parameters_[i][2];
-    }
-        
-    for (int i=0; i<num_points_; i++){
-        paramter[6*num_cameras_ + 3*i    ] = local_map.point_parameters_[i].x;
-        paramter[6*num_cameras_ + 3*i + 1] = local_map.point_parameters_[i].y;
-        paramter[6*num_cameras_ + 3*i + 2] = local_map.point_parameters_[i].z;
-    }
+    int num_points_ = local_map.num_points();   
     
     // Create residuals for each observation in the bundle adjustment problem. The
     // parameters for cameras and points are added automatically.

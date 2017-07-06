@@ -50,7 +50,7 @@ void OmniModel::undistortGN(const double u_d, const double v_d, double *u,
   double ubar = u_d, vbar = v_d;
   double hat_u_d, hat_v_d;
 
-  double ERROR = 1e-6;
+  double ERROR = 1e-16;
   Eigen::Vector2d e;
   Eigen::Matrix2d F;
   do{
@@ -124,8 +124,7 @@ bool OmniModel::keypointToEuclidean(
   if (!isUndistortedKeypointValid(rho2_d))
     return false;
 
-  outPoint[2] = 1
-      - xi * (rho2_d + 1) / (xi + sqrt(1 + (1 - xi * xi) * rho2_d));
+  outPoint[2] = 1 - xi * (rho2_d + 1) / (xi + sqrt(1 + (1 - xi * xi) * rho2_d));
 
   return true;
 
@@ -187,8 +186,6 @@ bool OmniModel::estimateTransformation(
   }
 
   // Call the OpenCV pnp function.
-  //  SM_DEBUG_STREAM("Calling solvePnP with " << Ps.size() << " world points and "
-  //                  << Ms.size() << " image points");
   cv::solvePnP(Ps, Ms, cv::Mat::eye(3, 3, CV_64F), distCoeffs, rvec, tvec);
 
   // convert the rvec/tvec to a transformation
@@ -202,7 +199,8 @@ bool OmniModel::estimateTransformation(
     }
   }
 
-  out_T_t_c = T_camera_model.inverse();
+  // out_T_t_c = T_camera_model.inverse();
+  out_T_t_c = T_camera_model; // object pose in camera frame
   return true;
 }
 

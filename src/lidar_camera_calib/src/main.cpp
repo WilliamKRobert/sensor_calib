@@ -68,7 +68,7 @@ int main(int argc, char **argv)
     Size patternsize(7, 10); // interior number of corners
     float squareSize = 98.00; // unit: mm
     OmniModel model(camera_matrix, dist_coeffs, xi);
-    for (int i=0; i<1; i++){
+    for (int i=0; i<5; i++){
         /*
          * Step 1: Find out camera extrinsic parameter using PnP
          */
@@ -98,42 +98,40 @@ int main(int argc, char **argv)
         // test: good
 
         // find object pose using PnP
-        //     Input camera matrix and distortion coefficient
+        //     Input iamge points and object points
         //     Output rotation and translation
         Mat rvec; // Rotation in axis-angle form
         Mat tvec;
-        Eigen::Matrix4d camera_pose;
-        model.estimateTransformation(imageCorners, worldCorners, camera_pose);
-        cout << "Camera pose: " << endl;
-        cout << camera_pose << endl;
+        Eigen::Matrix4d object_pose;
+        model.estimateTransformation(imageCorners, worldCorners, object_pose);
+        cout << "Object pose: " << endl;
+        cout << object_pose << endl;
         cout << "---------------------------------------------" << endl;
+        // TODO: test if the pose is correct
+
+
         /*      
          * Step 2: Obtain lidar scan in camera frame
          */
         // initial guess of lidar transform in camera frame
         Mat init_rvec = s.initialRotation; // 4 by 1, quaternion
         Mat init_tvec = s.initialTranslation; // 3 by 1
-
-
-        /*
-         * Step 3: Lidar-camera transform optimization
-         */
-        // cost function: square sum of distance between scan points and chessboard plane
-        // state vector: rotation (4 parameters) and translation (3 parameters)
-        // constraint: scan points should fall   in the range of chessboard (x, y)
-
-
-        /* 
-        // Commented out to bypass compilation error stating the header file "map.h" in the header file "optimizer.h" could not be found.
-        google::InitGoogleLogging("Local bundle Adjustment");
-        optimizer ba;
-        ba.bundleAdjustment(local_map, parameter, P1.at<double>(0,0), P1.at<double>(1,1), P1.at<double>(0,2), P1.at<double>(1,2));
-        */
-
-
-
-        
     }
+
+    /*
+     * Step 3: Lidar-camera transform optimization
+     *  cost function: square sum of distance between scan points and chessboard plane
+     *  state vector: rotation (4 parameters) and translation (3 parameters)
+     *  constraint: scan points should fall   in the range of chessboard (x, y)
+     */
+    /* 
+    // Commented out to bypass compilation error stating the header file "map.h" in the header file "optimizer.h" could not be found.
+    google::InitGoogleLogging("Local bundle Adjustment");
+    optimizer ba;
+    ba.bundleAdjustment(local_map, parameter, P1.at<double>(0,0), P1.at<double>(1,1), P1.at<double>(0,2), P1.at<double>(1,2));
+    */
+
+
     cout << "Calibration Done!" << endl;
     return 0;
 }
