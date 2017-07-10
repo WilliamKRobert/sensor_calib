@@ -30,7 +30,7 @@ void calcBoardCornerPositions(Size boardSize, float squareSize, vector<Point3f>&
 	}
 }
 
-void findBoardCorner(Mat gray, Size patternsize, vector<Point2f>& corners, bool drawcorner=true)
+bool findBoardCorner(Mat gray, Size patternsize, vector<Point2f>& corners, bool drawcorner=true)
 {
 	bool patternfound = findChessboardCorners(gray, patternsize, corners, 
                 CALIB_CB_ADAPTIVE_THRESH + CALIB_CB_NORMALIZE_IMAGE
@@ -41,12 +41,15 @@ void findBoardCorner(Mat gray, Size patternsize, vector<Point2f>& corners, bool 
            TermCriteria(CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, 30, 0.1));
     }
     else{
-    	cout << "Chess board corners are not found!" << endl;
+    	// cout << "Chess board corners are not found!" << endl;
+    	return false;
     }
 
     if (drawcorner){
     	drawChessboardCorners(gray, patternsize, Mat(corners), patternfound);
     	imshow("Chessboard corners", gray);
-        waitKey(0);
+        waitKey(1);
     }
+
+    return true;
 }

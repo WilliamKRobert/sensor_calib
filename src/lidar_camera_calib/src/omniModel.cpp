@@ -198,7 +198,6 @@ bool OmniModel::estimateTransformation(
       T_camera_model(r, c) = C_camera_model.at<double>(r, c);
     }
   }
-
   // out_T_t_c = T_camera_model.inverse();
   out_T_t_c = T_camera_model; // object pose in camera frame
   return true;

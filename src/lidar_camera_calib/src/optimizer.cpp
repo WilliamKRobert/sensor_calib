@@ -5,10 +5,23 @@
  * For more information see <https://github.com/muyuanlin/vo>
  */
 
-#include "optimizer.h"
+#include "lidar_camera_calib/optimizer.h"
 
-#include "ceres/ceres.h"
-#include "ceres/rotation.h"
+double max(double array[], int size){
+    double res = array[0];
+    for (size_t i=1; i<size; i++){
+        if (array[i] > res) res = array[i];
+    }
+    return res;
+}
+
+double min(double array[], int size){
+    double res = array[0];
+    for (size_t i=1; i<size; i++){
+        if (array[i] < res) res = array[i];
+    }
+    return res;
+}
 
 
 /*
@@ -20,72 +33,105 @@
         parameter: 6 elements array which stores the transform between LIDAR and camera
         
  */
-void optimizer::bundleAdjustment(const std::vector<cv::Point3f> object_points, 
-                                 const std::vector<std::vector<cv::Point3f> > lidar_scan.
+void optimizer::bundleAdjustment(const std::vector<std::vector<cv::Point3f> > lidar_scan,
                                  const std::vector<Eigen::Matrix4d> object_poses,
-                                 double* paramter
+                                 const cv::Size patternsize,
+                                 const double square_size,
+                                 const double cube_depth,
+                                 double* parameter
                                  )
-{ 
+{   /* 
+     * debug
+    // std::cout << "Lidar size" << lidar_scan.size() << " "  << lidar_scan[0].size() << std::endl;
+    // std::cout << "Object pose size" << object_poses.size() << std::endl;
+    // std::cout << patternsize.width << " " << patternsize.height << std::endl;
+    // std::cout << square_size << std::endl;
+    // for (size_t i=0; i<6; i++)
+    //     std::cout << parameter[i] << " ";
+    // std::cout << std::endl;
+    */
+
     // set inital estimation, checkerboad dimension
+    initial_transform_guess = new double[6];
+    initial_transform_guess[0] = parameter[0];
+    initial_transform_guess[1] = parameter[1];
+    initial_transform_guess[2] = parameter[2];
+    initial_transform_guess[3] = parameter[3];
+    initial_transform_guess[4] = parameter[4];
+    initial_transform_guess[5] = parameter[5];
 
     // cull out points of lidar scan that are within checkerboard
-    
-    //
-    int num_cameras_  = 1;
-    int num_observations = local_map.num_observations();
-    int num_points_ = local_map.num_points();   
-    
+    std::vector<std::vector<Eigen::Vector3d> > onplane_scan_all;
+
+    double width = square_size * (patternsize.width + 2); // dimension of the checkerboard
+    double height = square_size * (patternsize.height + 2);
+    int n_frame = lidar_scan.size();
+    for (size_t i=0; i < n_frame; i++){
+        Eigen::Vector4d p1(0, 0, cube_depth,1), p2(width, 0, cube_depth, 1), p3(width, height, cube_depth,1), p4(0, height, cube_depth,1);
+        Eigen::Vector4d p5(0, 0, -cube_depth,1), p6(width, 0, -cube_depth, 1), p7(width, height, -cube_depth,1), p8(0, height, -cube_depth,1);
+        
+        p1 = object_poses[i] * p1;
+        p2 = object_poses[i] * p2;
+        p3 = object_poses[i] * p3;
+        p4 = object_poses[i] * p4;
+        p5 = object_poses[i] * p5;
+        p6 = object_poses[i] * p6;
+        p7 = object_poses[i] * p7;
+        p8 = object_poses[i] * p8;
+        
+        double tmp1[] = {p1(0), p2(0), p3(0), p4(0), p5(0), p6(0), p7(0), p8(0)};
+        double max_x = max(tmp1, 8);
+        double tmp2[] = {p1(1), p2(1), p3(1), p4(1), p5(1), p6(1), p7(1), p8(1)};
+        double max_y = max(tmp2, 8);
+        double tmp3[] = {p1(2), p2(2), p3(2), p4(2), p5(2), p6(2), p7(2), p8(2)};
+        double max_z = max(tmp3, 8);
+
+        double tmp4[] = {p1(0), p2(0), p3(0), p4(0), p5(0), p6(0), p7(0), p8(0)};
+        double min_x = min(tmp4, 8);
+        double tmp5[] = {p1(1), p2(1), p3(1), p4(1), p5(1), p6(1), p7(1), p8(1)};
+        double min_y = min(tmp5, 8);
+        double tmp6[] = {p1(2), p2(2), p3(2), p4(2), p5(2), p6(2), p7(2), p8(2)};
+        double min_z = min(tmp6, 8);
+        
+        std::vector<Eigen::Vector3d> onplane_scan;
+        size_t n_scan = lidar_scan[i].size();
+        for (size_t j=0; j < n_scan; j++){
+            double point[3];
+            double p[3];
+            point[0] = lidar_scan[i][j].x;
+            point[1] = lidar_scan[i][j].y;
+            point[2] = lidar_scan[i][j].z;
+            ceres::AngleAxisRotatePoint(initial_transform_guess, point, p);
+            p[0] += initial_transform_guess[3];
+            p[1] += initial_transform_guess[4];
+            p[2] += initial_transform_guess[5];
+            if (p[0] > min_x && p[0] < max_x 
+                && p[1] > min_y && p[1] < max_y 
+                && p[2] > min_z && p[2] < max_z ){
+                Eigen::Vector3d pt(point[0], point[1], point[2]); // in LIDAR frame
+                onplane_scan.push_back(pt);
+            }
+        }
+
+        onplane_scan_all.push_back(onplane_scan);
+    }
+
     // Create residuals for each observation in the bundle adjustment problem. The
     // parameters for cameras and points are added automatically.
-    ceres::Problem problem;
-    
-    int camera_tag = local_map.camera_index_[0];
-    int track_index = 0;
-    for (int i = 0; i < local_map.num_observations(); ++i) {
-        // Each Residual block takes a point and a camera as input and outputs a 2
-        // dimensional residual. Internally, the cost function stores the observed
-        // image location and compares the reprojection against the observation.
-        if (track_index > 100){
-            if (camera_tag == local_map.camera_index_[i]){
-                continue;
-            }
-            else{
-                camera_tag = local_map.camera_index_[i];
-                track_index = 0;
-                continue;
-            }
+    ceres::Problem problem; 
+    for (size_t i = 0; i < n_frame; ++i) {
+        size_t n_scan = onplane_scan_all[i].size();
+        for (size_t j=0; j < n_scan; j++){
+        // Each Residual block takes a point and a camera as input and outputs a 1
+        // dimensional residual. 
+            ceres::CostFunction* cs = SnavelyReprojectionError::Create(onplane_scan_all[i][j], object_poses[i]);
+            problem.AddResidualBlock(cs, NULL /* squared loss */, &parameter[0]);
         }
-        else{
-            double x, y;
-            Reprojection(&paramter[local_map.camera_index_[i]*6], &paramter[num_cameras_*6 + local_map.point_index_[i]*3],
-                         x, y);
-            x = observations[2 * i + 0] - x;
-            y = observations[2 * i + 1] - y;
-//            std::cout <<x <<" " <<y <<" " << observations[2 * i + 0] <<" " <<observations[2 * i + 1] <<std::endl;
-            if ( x*x + y*y < 300){
-                double *point_i = &paramter[6*num_cameras_ + local_map.point_index_[i]*3];
-                ceres::CostFunction* cost_function =
-                SnavelyReprojectionError::Create(observations[2 * i + 0],
-                                                 observations[2 * i + 1],
-                                                 point_i[0],
-                                                 point_i[1],
-                                                 point_i[2]);
-                problem.AddResidualBlock(cost_function,
-                                         NULL /* squared loss */,
-                                         &paramter[local_map.camera_index_[i]*6]//,
-                                         //&paramter[num_cameras_*6 + local_map.point_index_[i]*3]
-                                         );
-                    
-                track_index++;
-            }
-        }
-        
-        
     }
 
     // Make Ceres automatically detect the bundle structure. Note that the
     // standard solver, SPARSE_NORMAL_CHOLESKY, also works fine but it is slower
-    // for standard bundle adjustment problems.
+    // for standard bundle adjustment problems. 
     ceres::Solver::Options options;
     options.linear_solver_type = ceres::DENSE_SCHUR;
     // If solve small to medium sized problems, consider setting
@@ -97,4 +143,4 @@ void optimizer::bundleAdjustment(const std::vector<cv::Point3f> object_points,
     std::cout << summary.FullReport() << "\n";
 }
 
-
+    

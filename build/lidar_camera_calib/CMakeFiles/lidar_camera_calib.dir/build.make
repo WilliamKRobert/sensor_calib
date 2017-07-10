@@ -72,28 +72,28 @@ lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/main.cpp.o.provides: li
 
 lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/main.cpp.o.provides.build: lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/main.cpp.o
 
-lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/loadBagFile.cpp.o: lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/flags.make
-lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/loadBagFile.cpp.o: /home/audren/lidar_camera_calib/calib_ws/src/lidar_camera_calib/src/loadBagFile.cpp
+lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/loadBag.cpp.o: lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/flags.make
+lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/loadBag.cpp.o: /home/audren/lidar_camera_calib/calib_ws/src/lidar_camera_calib/src/loadBag.cpp
 	$(CMAKE_COMMAND) -E cmake_progress_report /home/audren/lidar_camera_calib/calib_ws/build/CMakeFiles $(CMAKE_PROGRESS_2)
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Building CXX object lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/loadBagFile.cpp.o"
-	cd /home/audren/lidar_camera_calib/calib_ws/build/lidar_camera_calib && /usr/bin/c++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/lidar_camera_calib.dir/src/loadBagFile.cpp.o -c /home/audren/lidar_camera_calib/calib_ws/src/lidar_camera_calib/src/loadBagFile.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Building CXX object lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/loadBag.cpp.o"
+	cd /home/audren/lidar_camera_calib/calib_ws/build/lidar_camera_calib && /usr/bin/c++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/lidar_camera_calib.dir/src/loadBag.cpp.o -c /home/audren/lidar_camera_calib/calib_ws/src/lidar_camera_calib/src/loadBag.cpp
 
-lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/loadBagFile.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/lidar_camera_calib.dir/src/loadBagFile.cpp.i"
-	cd /home/audren/lidar_camera_calib/calib_ws/build/lidar_camera_calib && /usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -E /home/audren/lidar_camera_calib/calib_ws/src/lidar_camera_calib/src/loadBagFile.cpp > CMakeFiles/lidar_camera_calib.dir/src/loadBagFile.cpp.i
+lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/loadBag.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/lidar_camera_calib.dir/src/loadBag.cpp.i"
+	cd /home/audren/lidar_camera_calib/calib_ws/build/lidar_camera_calib && /usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -E /home/audren/lidar_camera_calib/calib_ws/src/lidar_camera_calib/src/loadBag.cpp > CMakeFiles/lidar_camera_calib.dir/src/loadBag.cpp.i
 
-lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/loadBagFile.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/lidar_camera_calib.dir/src/loadBagFile.cpp.s"
-	cd /home/audren/lidar_camera_calib/calib_ws/build/lidar_camera_calib && /usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -S /home/audren/lidar_camera_calib/calib_ws/src/lidar_camera_calib/src/loadBagFile.cpp -o CMakeFiles/lidar_camera_calib.dir/src/loadBagFile.cpp.s
+lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/loadBag.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/lidar_camera_calib.dir/src/loadBag.cpp.s"
+	cd /home/audren/lidar_camera_calib/calib_ws/build/lidar_camera_calib && /usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -S /home/audren/lidar_camera_calib/calib_ws/src/lidar_camera_calib/src/loadBag.cpp -o CMakeFiles/lidar_camera_calib.dir/src/loadBag.cpp.s
 
-lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/loadBagFile.cpp.o.requires:
-.PHONY : lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/loadBagFile.cpp.o.requires
+lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/loadBag.cpp.o.requires:
+.PHONY : lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/loadBag.cpp.o.requires
 
-lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/loadBagFile.cpp.o.provides: lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/loadBagFile.cpp.o.requires
-	$(MAKE) -f lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/build.make lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/loadBagFile.cpp.o.provides.build
-.PHONY : lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/loadBagFile.cpp.o.provides
+lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/loadBag.cpp.o.provides: lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/loadBag.cpp.o.requires
+	$(MAKE) -f lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/build.make lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/loadBag.cpp.o.provides.build
+.PHONY : lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/loadBag.cpp.o.provides
 
-lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/loadBagFile.cpp.o.provides.build: lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/loadBagFile.cpp.o
+lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/loadBag.cpp.o.provides.build: lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/loadBag.cpp.o
 
 lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/objectPose.cpp.o: lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/flags.make
 lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/objectPose.cpp.o: /home/audren/lidar_camera_calib/calib_ws/src/lidar_camera_calib/src/objectPose.cpp
@@ -141,20 +141,45 @@ lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/omniModel.cpp.o.provide
 
 lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/omniModel.cpp.o.provides.build: lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/omniModel.cpp.o
 
+lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/optimizer.cpp.o: lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/flags.make
+lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/optimizer.cpp.o: /home/audren/lidar_camera_calib/calib_ws/src/lidar_camera_calib/src/optimizer.cpp
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/audren/lidar_camera_calib/calib_ws/build/CMakeFiles $(CMAKE_PROGRESS_5)
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Building CXX object lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/optimizer.cpp.o"
+	cd /home/audren/lidar_camera_calib/calib_ws/build/lidar_camera_calib && /usr/bin/c++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/lidar_camera_calib.dir/src/optimizer.cpp.o -c /home/audren/lidar_camera_calib/calib_ws/src/lidar_camera_calib/src/optimizer.cpp
+
+lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/optimizer.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/lidar_camera_calib.dir/src/optimizer.cpp.i"
+	cd /home/audren/lidar_camera_calib/calib_ws/build/lidar_camera_calib && /usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -E /home/audren/lidar_camera_calib/calib_ws/src/lidar_camera_calib/src/optimizer.cpp > CMakeFiles/lidar_camera_calib.dir/src/optimizer.cpp.i
+
+lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/optimizer.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/lidar_camera_calib.dir/src/optimizer.cpp.s"
+	cd /home/audren/lidar_camera_calib/calib_ws/build/lidar_camera_calib && /usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -S /home/audren/lidar_camera_calib/calib_ws/src/lidar_camera_calib/src/optimizer.cpp -o CMakeFiles/lidar_camera_calib.dir/src/optimizer.cpp.s
+
+lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/optimizer.cpp.o.requires:
+.PHONY : lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/optimizer.cpp.o.requires
+
+lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/optimizer.cpp.o.provides: lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/optimizer.cpp.o.requires
+	$(MAKE) -f lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/build.make lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/optimizer.cpp.o.provides.build
+.PHONY : lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/optimizer.cpp.o.provides
+
+lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/optimizer.cpp.o.provides.build: lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/optimizer.cpp.o
+
 # Object files for target lidar_camera_calib
 lidar_camera_calib_OBJECTS = \
 "CMakeFiles/lidar_camera_calib.dir/src/main.cpp.o" \
-"CMakeFiles/lidar_camera_calib.dir/src/loadBagFile.cpp.o" \
+"CMakeFiles/lidar_camera_calib.dir/src/loadBag.cpp.o" \
 "CMakeFiles/lidar_camera_calib.dir/src/objectPose.cpp.o" \
-"CMakeFiles/lidar_camera_calib.dir/src/omniModel.cpp.o"
+"CMakeFiles/lidar_camera_calib.dir/src/omniModel.cpp.o" \
+"CMakeFiles/lidar_camera_calib.dir/src/optimizer.cpp.o"
 
 # External object files for target lidar_camera_calib
 lidar_camera_calib_EXTERNAL_OBJECTS =
 
 /home/audren/lidar_camera_calib/calib_ws/devel/lib/lidar_camera_calib/lidar_camera_calib: lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/main.cpp.o
-/home/audren/lidar_camera_calib/calib_ws/devel/lib/lidar_camera_calib/lidar_camera_calib: lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/loadBagFile.cpp.o
+/home/audren/lidar_camera_calib/calib_ws/devel/lib/lidar_camera_calib/lidar_camera_calib: lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/loadBag.cpp.o
 /home/audren/lidar_camera_calib/calib_ws/devel/lib/lidar_camera_calib/lidar_camera_calib: lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/objectPose.cpp.o
 /home/audren/lidar_camera_calib/calib_ws/devel/lib/lidar_camera_calib/lidar_camera_calib: lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/omniModel.cpp.o
+/home/audren/lidar_camera_calib/calib_ws/devel/lib/lidar_camera_calib/lidar_camera_calib: lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/optimizer.cpp.o
 /home/audren/lidar_camera_calib/calib_ws/devel/lib/lidar_camera_calib/lidar_camera_calib: lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/build.make
 /home/audren/lidar_camera_calib/calib_ws/devel/lib/lidar_camera_calib/lidar_camera_calib: /opt/ros/indigo/lib/libtf.so
 /home/audren/lidar_camera_calib/calib_ws/devel/lib/lidar_camera_calib/lidar_camera_calib: /opt/ros/indigo/lib/libtf2_ros.so
@@ -220,6 +245,7 @@ lidar_camera_calib_EXTERNAL_OBJECTS =
 /home/audren/lidar_camera_calib/calib_ws/devel/lib/lidar_camera_calib/lidar_camera_calib: /usr/lib/x86_64-linux-gnu/libopencv_core.so.2.4.8
 /home/audren/lidar_camera_calib/calib_ws/devel/lib/lidar_camera_calib/lidar_camera_calib: /usr/lib/x86_64-linux-gnu/libopencv_contrib.so.2.4.8
 /home/audren/lidar_camera_calib/calib_ws/devel/lib/lidar_camera_calib/lidar_camera_calib: /usr/lib/x86_64-linux-gnu/libopencv_calib3d.so.2.4.8
+/home/audren/lidar_camera_calib/calib_ws/devel/lib/lidar_camera_calib/lidar_camera_calib: /usr/local/lib/libceres.a
 /home/audren/lidar_camera_calib/calib_ws/devel/lib/lidar_camera_calib/lidar_camera_calib: /usr/lib/x86_64-linux-gnu/libopencv_photo.so.2.4.8
 /home/audren/lidar_camera_calib/calib_ws/devel/lib/lidar_camera_calib/lidar_camera_calib: /usr/lib/x86_64-linux-gnu/libopencv_legacy.so.2.4.8
 /home/audren/lidar_camera_calib/calib_ws/devel/lib/lidar_camera_calib/lidar_camera_calib: /usr/lib/x86_64-linux-gnu/libopencv_video.so.2.4.8
@@ -231,6 +257,34 @@ lidar_camera_calib_EXTERNAL_OBJECTS =
 /home/audren/lidar_camera_calib/calib_ws/devel/lib/lidar_camera_calib/lidar_camera_calib: /usr/lib/x86_64-linux-gnu/libopencv_imgproc.so.2.4.8
 /home/audren/lidar_camera_calib/calib_ws/devel/lib/lidar_camera_calib/lidar_camera_calib: /usr/lib/x86_64-linux-gnu/libopencv_flann.so.2.4.8
 /home/audren/lidar_camera_calib/calib_ws/devel/lib/lidar_camera_calib/lidar_camera_calib: /usr/lib/x86_64-linux-gnu/libopencv_core.so.2.4.8
+/home/audren/lidar_camera_calib/calib_ws/devel/lib/lidar_camera_calib/lidar_camera_calib: /usr/lib/x86_64-linux-gnu/libglog.so
+/home/audren/lidar_camera_calib/calib_ws/devel/lib/lidar_camera_calib/lidar_camera_calib: /usr/lib/x86_64-linux-gnu/libgflags.so
+/home/audren/lidar_camera_calib/calib_ws/devel/lib/lidar_camera_calib/lidar_camera_calib: /usr/lib/x86_64-linux-gnu/libspqr.so
+/home/audren/lidar_camera_calib/calib_ws/devel/lib/lidar_camera_calib/lidar_camera_calib: /usr/lib/libtbb.so
+/home/audren/lidar_camera_calib/calib_ws/devel/lib/lidar_camera_calib/lidar_camera_calib: /usr/lib/libtbbmalloc.so
+/home/audren/lidar_camera_calib/calib_ws/devel/lib/lidar_camera_calib/lidar_camera_calib: /usr/lib/x86_64-linux-gnu/libcholmod.so
+/home/audren/lidar_camera_calib/calib_ws/devel/lib/lidar_camera_calib/lidar_camera_calib: /usr/lib/x86_64-linux-gnu/libccolamd.so
+/home/audren/lidar_camera_calib/calib_ws/devel/lib/lidar_camera_calib/lidar_camera_calib: /usr/lib/x86_64-linux-gnu/libcamd.so
+/home/audren/lidar_camera_calib/calib_ws/devel/lib/lidar_camera_calib/lidar_camera_calib: /usr/lib/x86_64-linux-gnu/libcolamd.so
+/home/audren/lidar_camera_calib/calib_ws/devel/lib/lidar_camera_calib/lidar_camera_calib: /usr/lib/x86_64-linux-gnu/libamd.so
+/home/audren/lidar_camera_calib/calib_ws/devel/lib/lidar_camera_calib/lidar_camera_calib: /usr/lib/liblapack.so
+/home/audren/lidar_camera_calib/calib_ws/devel/lib/lidar_camera_calib/lidar_camera_calib: /usr/lib/libf77blas.so
+/home/audren/lidar_camera_calib/calib_ws/devel/lib/lidar_camera_calib/lidar_camera_calib: /usr/lib/libatlas.so
+/home/audren/lidar_camera_calib/calib_ws/devel/lib/lidar_camera_calib/lidar_camera_calib: /usr/lib/x86_64-linux-gnu/libsuitesparseconfig.a
+/home/audren/lidar_camera_calib/calib_ws/devel/lib/lidar_camera_calib/lidar_camera_calib: /usr/lib/x86_64-linux-gnu/librt.so
+/home/audren/lidar_camera_calib/calib_ws/devel/lib/lidar_camera_calib/lidar_camera_calib: /usr/lib/x86_64-linux-gnu/libspqr.so
+/home/audren/lidar_camera_calib/calib_ws/devel/lib/lidar_camera_calib/lidar_camera_calib: /usr/lib/libtbb.so
+/home/audren/lidar_camera_calib/calib_ws/devel/lib/lidar_camera_calib/lidar_camera_calib: /usr/lib/libtbbmalloc.so
+/home/audren/lidar_camera_calib/calib_ws/devel/lib/lidar_camera_calib/lidar_camera_calib: /usr/lib/x86_64-linux-gnu/libcholmod.so
+/home/audren/lidar_camera_calib/calib_ws/devel/lib/lidar_camera_calib/lidar_camera_calib: /usr/lib/x86_64-linux-gnu/libccolamd.so
+/home/audren/lidar_camera_calib/calib_ws/devel/lib/lidar_camera_calib/lidar_camera_calib: /usr/lib/x86_64-linux-gnu/libcamd.so
+/home/audren/lidar_camera_calib/calib_ws/devel/lib/lidar_camera_calib/lidar_camera_calib: /usr/lib/x86_64-linux-gnu/libcolamd.so
+/home/audren/lidar_camera_calib/calib_ws/devel/lib/lidar_camera_calib/lidar_camera_calib: /usr/lib/x86_64-linux-gnu/libamd.so
+/home/audren/lidar_camera_calib/calib_ws/devel/lib/lidar_camera_calib/lidar_camera_calib: /usr/lib/liblapack.so
+/home/audren/lidar_camera_calib/calib_ws/devel/lib/lidar_camera_calib/lidar_camera_calib: /usr/lib/libf77blas.so
+/home/audren/lidar_camera_calib/calib_ws/devel/lib/lidar_camera_calib/lidar_camera_calib: /usr/lib/libatlas.so
+/home/audren/lidar_camera_calib/calib_ws/devel/lib/lidar_camera_calib/lidar_camera_calib: /usr/lib/x86_64-linux-gnu/libsuitesparseconfig.a
+/home/audren/lidar_camera_calib/calib_ws/devel/lib/lidar_camera_calib/lidar_camera_calib: /usr/lib/x86_64-linux-gnu/librt.so
 /home/audren/lidar_camera_calib/calib_ws/devel/lib/lidar_camera_calib/lidar_camera_calib: lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --red --bold "Linking CXX executable /home/audren/lidar_camera_calib/calib_ws/devel/lib/lidar_camera_calib/lidar_camera_calib"
 	cd /home/audren/lidar_camera_calib/calib_ws/build/lidar_camera_calib && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/lidar_camera_calib.dir/link.txt --verbose=$(VERBOSE)
@@ -240,9 +294,10 @@ lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/build: /home/audren/lidar_c
 .PHONY : lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/build
 
 lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/requires: lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/main.cpp.o.requires
-lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/requires: lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/loadBagFile.cpp.o.requires
+lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/requires: lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/loadBag.cpp.o.requires
 lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/requires: lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/objectPose.cpp.o.requires
 lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/requires: lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/omniModel.cpp.o.requires
+lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/requires: lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/optimizer.cpp.o.requires
 .PHONY : lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/requires
 
 lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/clean:

@@ -4,6 +4,7 @@
 /home/audren/lidar_camera_calib/calib_ws/build/lidar_camera_calib/CMakeFiles/actionlib_msgs_generate_messages_cpp.dir
 /home/audren/lidar_camera_calib/calib_ws/build/lidar_camera_calib/CMakeFiles/actionlib_msgs_generate_messages_lisp.dir
 /home/audren/lidar_camera_calib/calib_ws/build/lidar_camera_calib/CMakeFiles/actionlib_msgs_generate_messages_py.dir
+/home/audren/lidar_camera_calib/calib_ws/build/lidar_camera_calib/CMakeFiles/calib_visualization.dir
 /home/audren/lidar_camera_calib/calib_ws/build/CMakeFiles/clean_test_results.dir
 /home/audren/lidar_camera_calib/calib_ws/build/CMakeFiles/download_extra_data.dir
 /home/audren/lidar_camera_calib/calib_ws/build/CMakeFiles/doxygen.dir

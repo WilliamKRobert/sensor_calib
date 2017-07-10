@@ -122,7 +122,7 @@ foreach(library ${libraries})
     set(lib_path "")
     set(lib "${library}-NOTFOUND")
     # since the path where the library is found is returned we have to iterate over the paths manually
-    foreach(path /home/audren/lidar_camera_calib/calib_ws/install/lib;/home/audren/basler_ws/devel/lib;/home/audren/bluefox_ws/devel/lib;/home/audren/ps4eye_ws/devel/lib;/opt/ros/indigo/lib)
+    foreach(path /home/audren/lidar_camera_calib/calib_ws/install/lib;/home/audren/lidar_camera_calib/calib_ws/devel/lib;/home/audren/basler_ws/devel/lib;/home/audren/bluefox_ws/devel/lib;/home/audren/ps4eye_ws/devel/lib;/opt/ros/indigo/lib)
       find_library(lib ${library}
         PATHS ${path}
         NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH)

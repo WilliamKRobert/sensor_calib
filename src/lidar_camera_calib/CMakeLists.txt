@@ -18,8 +18,10 @@ find_package(catkin REQUIRED COMPONENTS
   laser_geometry
 )
 
-find_package( OpenCV REQUIRED)
-find_package( Eigen REQUIRED)
+find_package( OpenCV REQUIRED )
+find_package( Eigen REQUIRED )
+find_package( Ceres REQUIRED )
+
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -128,6 +130,7 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
   ${Eigen_INCLUDE_DIRS}
+  ${CERES_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
@@ -207,7 +210,22 @@ include_directories(
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
-add_executable(lidar_camera_calib src/main.cpp src/loadBagFile.cpp src/objectPose.cpp src/omniModel.cpp)
+add_executable(lidar_camera_calib src/main.cpp 
+                                  src/loadBag.cpp 
+                                  src/objectPose.cpp 
+                                  src/omniModel.cpp
+                                  src/optimizer.cpp)
 target_link_libraries(lidar_camera_calib ${catkin_LIBRARIES})
 target_link_libraries(lidar_camera_calib ${OpenCV_LIBRARIES})
 target_link_libraries(lidar_camera_calib ${Eigen_LIBRARIES})
+target_link_libraries(lidar_camera_calib ${CERES_LIBRARIES})
+
+add_executable(calib_visualization src/visualization.cpp 
+                                  src/loadBag.cpp 
+                                  src/objectPose.cpp 
+                                  src/omniModel.cpp
+                                  src/optimizer.cpp)
+target_link_libraries(calib_visualization ${catkin_LIBRARIES})
+target_link_libraries(calib_visualization ${OpenCV_LIBRARIES})
+target_link_libraries(calib_visualization ${Eigen_LIBRARIES})
+target_link_libraries(calib_visualization ${CERES_LIBRARIES})

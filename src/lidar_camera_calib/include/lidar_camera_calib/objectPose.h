@@ -10,7 +10,7 @@
 
 void calcBoardCornerPositions(cv::Size boardSize, float squareSize, std::vector<cv::Point3f>& corners,
                   Settings::Pattern patternType);
-void findBoardCorner(cv::Mat gray, cv::Size patternsize, std::vector<Point2f>& corners, bool drawcorner);
+bool findBoardCorner(cv::Mat gray, cv::Size patternsize, std::vector<Point2f>& corners, bool drawcorner);
 
 
 #endif

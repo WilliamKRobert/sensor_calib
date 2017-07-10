@@ -1,8 +1,9 @@
 FILE(REMOVE_RECURSE
   "CMakeFiles/lidar_camera_calib.dir/src/main.cpp.o"
-  "CMakeFiles/lidar_camera_calib.dir/src/loadBagFile.cpp.o"
+  "CMakeFiles/lidar_camera_calib.dir/src/loadBag.cpp.o"
   "CMakeFiles/lidar_camera_calib.dir/src/objectPose.cpp.o"
   "CMakeFiles/lidar_camera_calib.dir/src/omniModel.cpp.o"
+  "CMakeFiles/lidar_camera_calib.dir/src/optimizer.cpp.o"
   "/home/audren/lidar_camera_calib/calib_ws/devel/lib/lidar_camera_calib/lidar_camera_calib.pdb"
   "/home/audren/lidar_camera_calib/calib_ws/devel/lib/lidar_camera_calib/lidar_camera_calib"
 )

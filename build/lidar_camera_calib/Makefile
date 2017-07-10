@@ -234,6 +234,20 @@ actionlib_msgs_generate_messages_py/fast:
 .PHONY : actionlib_msgs_generate_messages_py/fast
 
 # Convenience name for target.
+lidar_camera_calib/CMakeFiles/calib_visualization.dir/rule:
+	cd /home/audren/lidar_camera_calib/calib_ws/build && $(MAKE) -f CMakeFiles/Makefile2 lidar_camera_calib/CMakeFiles/calib_visualization.dir/rule
+.PHONY : lidar_camera_calib/CMakeFiles/calib_visualization.dir/rule
+
+# Convenience name for target.
+calib_visualization: lidar_camera_calib/CMakeFiles/calib_visualization.dir/rule
+.PHONY : calib_visualization
+
+# fast build rule for target.
+calib_visualization/fast:
+	cd /home/audren/lidar_camera_calib/calib_ws/build && $(MAKE) -f lidar_camera_calib/CMakeFiles/calib_visualization.dir/build.make lidar_camera_calib/CMakeFiles/calib_visualization.dir/build
+.PHONY : calib_visualization/fast
+
+# Convenience name for target.
 lidar_camera_calib/CMakeFiles/geometry_msgs_generate_messages_cpp.dir/rule:
 	cd /home/audren/lidar_camera_calib/calib_ws/build && $(MAKE) -f CMakeFiles/Makefile2 lidar_camera_calib/CMakeFiles/geometry_msgs_generate_messages_cpp.dir/rule
 .PHONY : lidar_camera_calib/CMakeFiles/geometry_msgs_generate_messages_cpp.dir/rule
@@ -583,29 +597,32 @@ topic_tools_generate_messages_py/fast:
 	cd /home/audren/lidar_camera_calib/calib_ws/build && $(MAKE) -f lidar_camera_calib/CMakeFiles/topic_tools_generate_messages_py.dir/build.make lidar_camera_calib/CMakeFiles/topic_tools_generate_messages_py.dir/build
 .PHONY : topic_tools_generate_messages_py/fast
 
-src/loadBagFile.o: src/loadBagFile.cpp.o
-.PHONY : src/loadBagFile.o
+src/loadBag.o: src/loadBag.cpp.o
+.PHONY : src/loadBag.o
 
 # target to build an object file
-src/loadBagFile.cpp.o:
-	cd /home/audren/lidar_camera_calib/calib_ws/build && $(MAKE) -f lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/build.make lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/loadBagFile.cpp.o
-.PHONY : src/loadBagFile.cpp.o
+src/loadBag.cpp.o:
+	cd /home/audren/lidar_camera_calib/calib_ws/build && $(MAKE) -f lidar_camera_calib/CMakeFiles/calib_visualization.dir/build.make lidar_camera_calib/CMakeFiles/calib_visualization.dir/src/loadBag.cpp.o
+	cd /home/audren/lidar_camera_calib/calib_ws/build && $(MAKE) -f lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/build.make lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/loadBag.cpp.o
+.PHONY : src/loadBag.cpp.o
 
-src/loadBagFile.i: src/loadBagFile.cpp.i
-.PHONY : src/loadBagFile.i
+src/loadBag.i: src/loadBag.cpp.i
+.PHONY : src/loadBag.i
 
 # target to preprocess a source file
-src/loadBagFile.cpp.i:
-	cd /home/audren/lidar_camera_calib/calib_ws/build && $(MAKE) -f lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/build.make lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/loadBagFile.cpp.i
-.PHONY : src/loadBagFile.cpp.i
+src/loadBag.cpp.i:
+	cd /home/audren/lidar_camera_calib/calib_ws/build && $(MAKE) -f lidar_camera_calib/CMakeFiles/calib_visualization.dir/build.make lidar_camera_calib/CMakeFiles/calib_visualization.dir/src/loadBag.cpp.i
+	cd /home/audren/lidar_camera_calib/calib_ws/build && $(MAKE) -f lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/build.make lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/loadBag.cpp.i
+.PHONY : src/loadBag.cpp.i
 
-src/loadBagFile.s: src/loadBagFile.cpp.s
-.PHONY : src/loadBagFile.s
+src/loadBag.s: src/loadBag.cpp.s
+.PHONY : src/loadBag.s
 
 # target to generate assembly for a file
-src/loadBagFile.cpp.s:
-	cd /home/audren/lidar_camera_calib/calib_ws/build && $(MAKE) -f lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/build.make lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/loadBagFile.cpp.s
-.PHONY : src/loadBagFile.cpp.s
+src/loadBag.cpp.s:
+	cd /home/audren/lidar_camera_calib/calib_ws/build && $(MAKE) -f lidar_camera_calib/CMakeFiles/calib_visualization.dir/build.make lidar_camera_calib/CMakeFiles/calib_visualization.dir/src/loadBag.cpp.s
+	cd /home/audren/lidar_camera_calib/calib_ws/build && $(MAKE) -f lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/build.make lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/loadBag.cpp.s
+.PHONY : src/loadBag.cpp.s
 
 src/main.o: src/main.cpp.o
 .PHONY : src/main.o
@@ -636,6 +653,7 @@ src/objectPose.o: src/objectPose.cpp.o
 
 # target to build an object file
 src/objectPose.cpp.o:
+	cd /home/audren/lidar_camera_calib/calib_ws/build && $(MAKE) -f lidar_camera_calib/CMakeFiles/calib_visualization.dir/build.make lidar_camera_calib/CMakeFiles/calib_visualization.dir/src/objectPose.cpp.o
 	cd /home/audren/lidar_camera_calib/calib_ws/build && $(MAKE) -f lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/build.make lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/objectPose.cpp.o
 .PHONY : src/objectPose.cpp.o
 
@@ -644,6 +662,7 @@ src/objectPose.i: src/objectPose.cpp.i
 
 # target to preprocess a source file
 src/objectPose.cpp.i:
+	cd /home/audren/lidar_camera_calib/calib_ws/build && $(MAKE) -f lidar_camera_calib/CMakeFiles/calib_visualization.dir/build.make lidar_camera_calib/CMakeFiles/calib_visualization.dir/src/objectPose.cpp.i
 	cd /home/audren/lidar_camera_calib/calib_ws/build && $(MAKE) -f lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/build.make lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/objectPose.cpp.i
 .PHONY : src/objectPose.cpp.i
 
@@ -652,6 +671,7 @@ src/objectPose.s: src/objectPose.cpp.s
 
 # target to generate assembly for a file
 src/objectPose.cpp.s:
+	cd /home/audren/lidar_camera_calib/calib_ws/build && $(MAKE) -f lidar_camera_calib/CMakeFiles/calib_visualization.dir/build.make lidar_camera_calib/CMakeFiles/calib_visualization.dir/src/objectPose.cpp.s
 	cd /home/audren/lidar_camera_calib/calib_ws/build && $(MAKE) -f lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/build.make lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/objectPose.cpp.s
 .PHONY : src/objectPose.cpp.s
 
@@ -660,6 +680,7 @@ src/omniModel.o: src/omniModel.cpp.o
 
 # target to build an object file
 src/omniModel.cpp.o:
+	cd /home/audren/lidar_camera_calib/calib_ws/build && $(MAKE) -f lidar_camera_calib/CMakeFiles/calib_visualization.dir/build.make lidar_camera_calib/CMakeFiles/calib_visualization.dir/src/omniModel.cpp.o
 	cd /home/audren/lidar_camera_calib/calib_ws/build && $(MAKE) -f lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/build.make lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/omniModel.cpp.o
 .PHONY : src/omniModel.cpp.o
 
@@ -668,6 +689,7 @@ src/omniModel.i: src/omniModel.cpp.i
 
 # target to preprocess a source file
 src/omniModel.cpp.i:
+	cd /home/audren/lidar_camera_calib/calib_ws/build && $(MAKE) -f lidar_camera_calib/CMakeFiles/calib_visualization.dir/build.make lidar_camera_calib/CMakeFiles/calib_visualization.dir/src/omniModel.cpp.i
 	cd /home/audren/lidar_camera_calib/calib_ws/build && $(MAKE) -f lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/build.make lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/omniModel.cpp.i
 .PHONY : src/omniModel.cpp.i
 
@@ -676,8 +698,60 @@ src/omniModel.s: src/omniModel.cpp.s
 
 # target to generate assembly for a file
 src/omniModel.cpp.s:
+	cd /home/audren/lidar_camera_calib/calib_ws/build && $(MAKE) -f lidar_camera_calib/CMakeFiles/calib_visualization.dir/build.make lidar_camera_calib/CMakeFiles/calib_visualization.dir/src/omniModel.cpp.s
 	cd /home/audren/lidar_camera_calib/calib_ws/build && $(MAKE) -f lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/build.make lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/omniModel.cpp.s
 .PHONY : src/omniModel.cpp.s
+
+src/optimizer.o: src/optimizer.cpp.o
+.PHONY : src/optimizer.o
+
+# target to build an object file
+src/optimizer.cpp.o:
+	cd /home/audren/lidar_camera_calib/calib_ws/build && $(MAKE) -f lidar_camera_calib/CMakeFiles/calib_visualization.dir/build.make lidar_camera_calib/CMakeFiles/calib_visualization.dir/src/optimizer.cpp.o
+	cd /home/audren/lidar_camera_calib/calib_ws/build && $(MAKE) -f lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/build.make lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/optimizer.cpp.o
+.PHONY : src/optimizer.cpp.o
+
+src/optimizer.i: src/optimizer.cpp.i
+.PHONY : src/optimizer.i
+
+# target to preprocess a source file
+src/optimizer.cpp.i:
+	cd /home/audren/lidar_camera_calib/calib_ws/build && $(MAKE) -f lidar_camera_calib/CMakeFiles/calib_visualization.dir/build.make lidar_camera_calib/CMakeFiles/calib_visualization.dir/src/optimizer.cpp.i
+	cd /home/audren/lidar_camera_calib/calib_ws/build && $(MAKE) -f lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/build.make lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/optimizer.cpp.i
+.PHONY : src/optimizer.cpp.i
+
+src/optimizer.s: src/optimizer.cpp.s
+.PHONY : src/optimizer.s
+
+# target to generate assembly for a file
+src/optimizer.cpp.s:
+	cd /home/audren/lidar_camera_calib/calib_ws/build && $(MAKE) -f lidar_camera_calib/CMakeFiles/calib_visualization.dir/build.make lidar_camera_calib/CMakeFiles/calib_visualization.dir/src/optimizer.cpp.s
+	cd /home/audren/lidar_camera_calib/calib_ws/build && $(MAKE) -f lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/build.make lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/optimizer.cpp.s
+.PHONY : src/optimizer.cpp.s
+
+src/visualization.o: src/visualization.cpp.o
+.PHONY : src/visualization.o
+
+# target to build an object file
+src/visualization.cpp.o:
+	cd /home/audren/lidar_camera_calib/calib_ws/build && $(MAKE) -f lidar_camera_calib/CMakeFiles/calib_visualization.dir/build.make lidar_camera_calib/CMakeFiles/calib_visualization.dir/src/visualization.cpp.o
+.PHONY : src/visualization.cpp.o
+
+src/visualization.i: src/visualization.cpp.i
+.PHONY : src/visualization.i
+
+# target to preprocess a source file
+src/visualization.cpp.i:
+	cd /home/audren/lidar_camera_calib/calib_ws/build && $(MAKE) -f lidar_camera_calib/CMakeFiles/calib_visualization.dir/build.make lidar_camera_calib/CMakeFiles/calib_visualization.dir/src/visualization.cpp.i
+.PHONY : src/visualization.cpp.i
+
+src/visualization.s: src/visualization.cpp.s
+.PHONY : src/visualization.s
+
+# target to generate assembly for a file
+src/visualization.cpp.s:
+	cd /home/audren/lidar_camera_calib/calib_ws/build && $(MAKE) -f lidar_camera_calib/CMakeFiles/calib_visualization.dir/build.make lidar_camera_calib/CMakeFiles/calib_visualization.dir/src/visualization.cpp.s
+.PHONY : src/visualization.cpp.s
 
 # Help Target
 help:
@@ -691,6 +765,7 @@ help:
 	@echo "... actionlib_msgs_generate_messages_cpp"
 	@echo "... actionlib_msgs_generate_messages_lisp"
 	@echo "... actionlib_msgs_generate_messages_py"
+	@echo "... calib_visualization"
 	@echo "... edit_cache"
 	@echo "... geometry_msgs_generate_messages_cpp"
 	@echo "... geometry_msgs_generate_messages_lisp"
@@ -723,9 +798,9 @@ help:
 	@echo "... topic_tools_generate_messages_cpp"
 	@echo "... topic_tools_generate_messages_lisp"
 	@echo "... topic_tools_generate_messages_py"
-	@echo "... src/loadBagFile.o"
-	@echo "... src/loadBagFile.i"
-	@echo "... src/loadBagFile.s"
+	@echo "... src/loadBag.o"
+	@echo "... src/loadBag.i"
+	@echo "... src/loadBag.s"
 	@echo "... src/main.o"
 	@echo "... src/main.i"
 	@echo "... src/main.s"
@@ -735,6 +810,12 @@ help:
 	@echo "... src/omniModel.o"
 	@echo "... src/omniModel.i"
 	@echo "... src/omniModel.s"
+	@echo "... src/optimizer.o"
+	@echo "... src/optimizer.i"
+	@echo "... src/optimizer.s"
+	@echo "... src/visualization.o"
+	@echo "... src/visualization.i"
+	@echo "... src/visualization.s"
 .PHONY : help
 
 

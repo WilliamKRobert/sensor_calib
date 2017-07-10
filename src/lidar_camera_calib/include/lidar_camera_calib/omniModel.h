@@ -19,6 +19,20 @@ public:
 		p2 = distortionCoeff.at<double>(3, 0);
 	}
 
+	OmniModel(){}
+
+	void setParameter(cv::Mat intrinsics, cv::Mat distortionCoeff, double mirror){ // intrinsics: 3 by 3 distortionCoeff: 4 by 1
+		u0 = intrinsics.at<double>(0, 2);
+		v0 = intrinsics.at<double>(1, 2);
+		fu = intrinsics.at<double>(0, 0);
+		fv = intrinsics.at<double>(1, 1);
+		xi = mirror;
+		k1 = distortionCoeff.at<double>(0, 0);
+		k2 = distortionCoeff.at<double>(1, 0);
+		p1 = distortionCoeff.at<double>(2, 0);
+		p2 = distortionCoeff.at<double>(3, 0);
+	}
+
 	void distortion(const double mx_u, const double my_u, 
                 double *dx_u, double *dy_u, 
                 double *dxdmx, double *dydmx,

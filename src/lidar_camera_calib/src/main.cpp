@@ -6,13 +6,12 @@
 
 #include "ceres/rotation.h"
 
-#include "lidar_camera_calib/loadBagFile.h"
+#include "lidar_camera_calib/loadBag.h"
 #include "lidar_camera_calib/loadSettings.h"
 #include "lidar_camera_calib/objectPose.h"
 #include "lidar_camera_calib/omniModel.h"
-//#include "find_camera_pose/optimizer.h"
-// Commented out to bypass compilation error stating the header file "map.h" in the header file "optimizer.h" could not be found.
-
+#include "lidar_camera_calib/optimizer.h"
+#include "lidar_camera_calib/hash.h"
 
 using namespace std;
 using namespace cv;
@@ -26,10 +25,11 @@ int main(int argc, char **argv)
      * Load image, convert from ROS image format to OpenCV Mat
      */
     ros::init(argc, argv, "my_scan_to_cloud");    
-    string bagFile("/home/audren/lidar_camera_calib/data/cameraLidarData.bag");
+    string bag_file("/home/audren/lidar_camera_calib/data/cameraLidarData.bag");
     vector<Mat> image_queue;
+    HashMap time_queue;
     vector<vector<Point3f> > lidar_queue;
-    loadBag(bagFile, image_queue, lidar_queue);
+    loadBag(bag_file, image_queue, time_queue, lidar_queue);
     // TODO: test if obtained LIDAR scan points are correct
 
     cout << "Number of images: " << image_queue.size() << '\n';
@@ -68,7 +68,9 @@ int main(int argc, char **argv)
     Size patternsize(7, 10); // interior number of corners
     float squareSize = 98.00; // unit: mm
     OmniModel model(camera_matrix, dist_coeffs, xi);
-    for (int i=0; i<5; i++){
+    vector<Eigen::Matrix4d> object_poses;
+    vector<vector<Point3f> > lidar_scan_points;
+    for (size_t i=0; i<lidar_queue.size(); i+=30){
         /*
          * Step 1: Find out camera extrinsic parameter using PnP
          */
@@ -86,6 +88,7 @@ int main(int argc, char **argv)
         vector<Point3f> worldCorners;
         calcBoardCornerPositions(patternsize, s.squareSize, worldCorners,
                   Settings::CHESSBOARD);
+
         // test: good
         // for (int i=0; i<worldCorners.size(); i++){
         //     cout << worldCorners[i].x <<" " << worldCorners[i].y <<" " << worldCorners[i].z <<" ";
@@ -94,29 +97,47 @@ int main(int argc, char **argv)
 
         // corners in image frame
         vector<Point2f> imageCorners;
-        findBoardCorner(gray, patternsize, imageCorners, true);
+        bool find_corners = findBoardCorner(gray, patternsize, imageCorners, true);
         // test: good
 
         // find object pose using PnP
         //     Input iamge points and object points
         //     Output rotation and translation
-        Mat rvec; // Rotation in axis-angle form
-        Mat tvec;
-        Eigen::Matrix4d object_pose;
-        model.estimateTransformation(imageCorners, worldCorners, object_pose);
-        cout << "Object pose: " << endl;
-        cout << object_pose << endl;
-        cout << "---------------------------------------------" << endl;
+        if (find_corners){
+            Mat rvec; // Rotation in axis-angle form
+            Mat tvec;
+            Eigen::Matrix4d pose;
+            model.estimateTransformation(imageCorners, worldCorners, pose);
+            object_poses.push_back(pose);
+            lidar_scan_points.push_back(lidar_queue[i]);
+        }
         // TODO: test if the pose is correct
-
-
-        /*      
-         * Step 2: Obtain lidar scan in camera frame
-         */
-        // initial guess of lidar transform in camera frame
-        Mat init_rvec = s.initialRotation; // 4 by 1, quaternion
-        Mat init_tvec = s.initialTranslation; // 3 by 1
     }
+    /*      
+     * Step 2: Obtain LIDAR-Camera estimated transform 
+     */
+    // initial guess of lidar transform in camera frame
+    Mat init_rvec = s.initialRotation; // 4 by 1, quaternion
+    Mat init_tvec = s.initialTranslation; // 3 by 1
+    double quaternion_R[4];
+    quaternion_R[0] = init_rvec.at<double>(0,0);
+    quaternion_R[1] = init_rvec.at<double>(1,0);
+    quaternion_R[2] = init_rvec.at<double>(2,0);
+    quaternion_R[3] = init_rvec.at<double>(3,0);
+
+    double angle_axis[3];
+    ceres::QuaternionToAngleAxis(quaternion_R, angle_axis);
+
+    double transform[6];
+    transform[0] = angle_axis[0];
+    transform[1] = angle_axis[1];
+    transform[2] = angle_axis[2];
+    transform[3] = init_tvec.at<double>(0,0);
+    transform[4] = init_tvec.at<double>(1,0);
+    transform[5] = init_tvec.at<double>(2,0);
+    for (size_t i=0; i<6; i++)
+        cout << transform[i] << " ";
+    cout << endl;
 
     /*
      * Step 3: Lidar-camera transform optimization
@@ -124,14 +145,16 @@ int main(int argc, char **argv)
      *  state vector: rotation (4 parameters) and translation (3 parameters)
      *  constraint: scan points should fall   in the range of chessboard (x, y)
      */
-    /* 
-    // Commented out to bypass compilation error stating the header file "map.h" in the header file "optimizer.h" could not be found.
-    google::InitGoogleLogging("Local bundle Adjustment");
-    optimizer ba;
-    ba.bundleAdjustment(local_map, parameter, P1.at<double>(0,0), P1.at<double>(1,1), P1.at<double>(0,2), P1.at<double>(1,2));
-    */
-
-
+    google::InitGoogleLogging("Bundle Adjustment");
+    optimizer ba;    
+    ba.bundleAdjustment(lidar_scan_points, object_poses, patternsize, squareSize, 100, transform);
+    
+    cout << "--------------------------------------------" << endl;
     cout << "Calibration Done!" << endl;
+    cout << "The estimated transform between LIDAR and camera: " << endl;
+    for (size_t i=0; i<6; i++)
+        cout << transform[i] << " ";
+    cout << endl;
+
     return 0;
 }

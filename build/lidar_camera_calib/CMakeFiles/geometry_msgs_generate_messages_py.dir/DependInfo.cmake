@@ -20,6 +20,7 @@ SET(CMAKE_C_TARGET_INCLUDE_PATH
   "/home/audren/lidar_camera_calib/calib_ws/src/lidar_camera_calib/include"
   "/opt/ros/indigo/include"
   "/usr/include/eigen3"
+  "/usr/local/include"
   )
 SET(CMAKE_CXX_TARGET_INCLUDE_PATH ${CMAKE_C_TARGET_INCLUDE_PATH})
 SET(CMAKE_Fortran_TARGET_INCLUDE_PATH ${CMAKE_C_TARGET_INCLUDE_PATH})
