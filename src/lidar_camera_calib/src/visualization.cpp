@@ -97,8 +97,6 @@ void displayCallback(const sensor_msgs::Image::ConstPtr img)
 		    Eigen::Translation<float, 3> t_pose(t_vec_pose);
 
             Eigen::Transform<float,3, Eigen::Affine> combined = t_lidar_frame * r_lidar_frame * t_pose * r_pose * center_t;
-
-            float a = combined.translation().x();
             Eigen::Quaternionf r_combined (combined.rotation());
             
             ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -136,6 +134,13 @@ void displayCallback(const sensor_msgs::Image::ConstPtr img)
 				marker.pose.orientation.y = r_combined.y();
 				marker.pose.orientation.z = r_combined.z();
 				marker.pose.orientation.w = r_combined.w();
+				// cout << marker.pose.position.x << " ";
+				// cout << marker.pose.position.y << " ";
+				// cout << marker.pose.position.z << " ";
+				// cout << marker.pose.orientation.x << " ";
+				// cout << marker.pose.orientation.y << " ";
+				// cout << marker.pose.orientation.z << " ";
+				// cout << marker.pose.orientation.w << " " << endl;
 				// marker.pose.position.x = 0.03991;
 				// marker.pose.position.y = 0.03538;
 				// marker.pose.position.z = 0.10219;

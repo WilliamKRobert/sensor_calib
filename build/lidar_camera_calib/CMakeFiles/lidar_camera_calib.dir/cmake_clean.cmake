@@ -1,5 +1,5 @@
 FILE(REMOVE_RECURSE
-  "CMakeFiles/lidar_camera_calib.dir/src/main.cpp.o"
+  "CMakeFiles/lidar_camera_calib.dir/src/findTransform.cpp.o"
   "CMakeFiles/lidar_camera_calib.dir/src/loadBag.cpp.o"
   "CMakeFiles/lidar_camera_calib.dir/src/objectPose.cpp.o"
   "CMakeFiles/lidar_camera_calib.dir/src/omniModel.cpp.o"

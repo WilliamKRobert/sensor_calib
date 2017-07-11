@@ -120,9 +120,11 @@ void optimizer::bundleAdjustment(const std::vector<std::vector<cv::Point3f> > li
             p[0] = lidar_scan[i][j].x;
             p[1] = lidar_scan[i][j].y;
             p[2] = lidar_scan[i][j].z;
-            if (p[0] > min_x && p[0] < max_x 
-                && p[1] > min_y && p[1] < max_y 
-                && p[2] > min_z && p[2] < max_z ){
+            // if (p[0] > min_x && p[0] < max_x 
+            //     && p[1] > min_y && p[1] < max_y 
+            //     && p[2] > min_z && p[2] < max_z ){
+            if (p[1] > -300 && p[1] < 500 ){
+
                 Eigen::Vector3f pt(p[0], p[1], p[2]); // in LIDAR frame
                 onplane_scan.push_back(pt);
             }

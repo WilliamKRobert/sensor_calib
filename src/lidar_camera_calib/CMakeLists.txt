@@ -210,7 +210,7 @@ include_directories(
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
-add_executable(lidar_camera_calib src/main.cpp 
+add_executable(lidar_camera_calib src/findTransform.cpp 
                                   src/loadBag.cpp 
                                   src/objectPose.cpp 
                                   src/omniModel.cpp

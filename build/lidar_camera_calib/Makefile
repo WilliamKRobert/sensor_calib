@@ -597,6 +597,30 @@ topic_tools_generate_messages_py/fast:
 	cd /home/audren/lidar_camera_calib/calib_ws/build && $(MAKE) -f lidar_camera_calib/CMakeFiles/topic_tools_generate_messages_py.dir/build.make lidar_camera_calib/CMakeFiles/topic_tools_generate_messages_py.dir/build
 .PHONY : topic_tools_generate_messages_py/fast
 
+src/findTransform.o: src/findTransform.cpp.o
+.PHONY : src/findTransform.o
+
+# target to build an object file
+src/findTransform.cpp.o:
+	cd /home/audren/lidar_camera_calib/calib_ws/build && $(MAKE) -f lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/build.make lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/findTransform.cpp.o
+.PHONY : src/findTransform.cpp.o
+
+src/findTransform.i: src/findTransform.cpp.i
+.PHONY : src/findTransform.i
+
+# target to preprocess a source file
+src/findTransform.cpp.i:
+	cd /home/audren/lidar_camera_calib/calib_ws/build && $(MAKE) -f lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/build.make lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/findTransform.cpp.i
+.PHONY : src/findTransform.cpp.i
+
+src/findTransform.s: src/findTransform.cpp.s
+.PHONY : src/findTransform.s
+
+# target to generate assembly for a file
+src/findTransform.cpp.s:
+	cd /home/audren/lidar_camera_calib/calib_ws/build && $(MAKE) -f lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/build.make lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/findTransform.cpp.s
+.PHONY : src/findTransform.cpp.s
+
 src/loadBag.o: src/loadBag.cpp.o
 .PHONY : src/loadBag.o
 
@@ -623,30 +647,6 @@ src/loadBag.cpp.s:
 	cd /home/audren/lidar_camera_calib/calib_ws/build && $(MAKE) -f lidar_camera_calib/CMakeFiles/calib_visualization.dir/build.make lidar_camera_calib/CMakeFiles/calib_visualization.dir/src/loadBag.cpp.s
 	cd /home/audren/lidar_camera_calib/calib_ws/build && $(MAKE) -f lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/build.make lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/loadBag.cpp.s
 .PHONY : src/loadBag.cpp.s
-
-src/main.o: src/main.cpp.o
-.PHONY : src/main.o
-
-# target to build an object file
-src/main.cpp.o:
-	cd /home/audren/lidar_camera_calib/calib_ws/build && $(MAKE) -f lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/build.make lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/main.cpp.o
-.PHONY : src/main.cpp.o
-
-src/main.i: src/main.cpp.i
-.PHONY : src/main.i
-
-# target to preprocess a source file
-src/main.cpp.i:
-	cd /home/audren/lidar_camera_calib/calib_ws/build && $(MAKE) -f lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/build.make lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/main.cpp.i
-.PHONY : src/main.cpp.i
-
-src/main.s: src/main.cpp.s
-.PHONY : src/main.s
-
-# target to generate assembly for a file
-src/main.cpp.s:
-	cd /home/audren/lidar_camera_calib/calib_ws/build && $(MAKE) -f lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/build.make lidar_camera_calib/CMakeFiles/lidar_camera_calib.dir/src/main.cpp.s
-.PHONY : src/main.cpp.s
 
 src/objectPose.o: src/objectPose.cpp.o
 .PHONY : src/objectPose.o
@@ -798,12 +798,12 @@ help:
 	@echo "... topic_tools_generate_messages_cpp"
 	@echo "... topic_tools_generate_messages_lisp"
 	@echo "... topic_tools_generate_messages_py"
+	@echo "... src/findTransform.o"
+	@echo "... src/findTransform.i"
+	@echo "... src/findTransform.s"
 	@echo "... src/loadBag.o"
 	@echo "... src/loadBag.i"
 	@echo "... src/loadBag.s"
-	@echo "... src/main.o"
-	@echo "... src/main.i"
-	@echo "... src/main.s"
 	@echo "... src/objectPose.o"
 	@echo "... src/objectPose.i"
 	@echo "... src/objectPose.s"
