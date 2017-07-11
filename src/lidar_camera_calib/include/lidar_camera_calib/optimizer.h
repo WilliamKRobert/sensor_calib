@@ -25,7 +25,9 @@ public:
                           const cv::Size patternsize,
                           const double square_size,
                           const double cube_depth,
-                          double* parameter
+                          double* parameter,
+                          cv::Mat init_rvec,
+                          cv::Mat init_tvec
                                  );
 private:
     double* initial_transform_guess;

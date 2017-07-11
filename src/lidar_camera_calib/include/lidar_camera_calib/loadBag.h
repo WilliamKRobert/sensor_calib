@@ -1,4 +1,5 @@
 #include <iostream>
+#include <boost/unordered_map.hpp>
 
 #include <opencv2/opencv.hpp>
 
@@ -12,12 +13,12 @@
 void convertImage(const sensor_msgs::Image::ConstPtr &img, cv::Mat &cv_img);
 void loadBag(const std::string &filename, 
 			std::vector<cv::Mat>& image_queue, 
-			HashMap& time_stamp, 
+			std::vector<unsigned long>& time_stamp, 
 			std::vector<std::vector<cv::Point3f> >& lidar_queue);
 
 void loadBag(const std::string &filename, 
             std::vector<cv::Mat>& image_queue, 
-            std::vector<unsigned long>& time_stamp, 
+            boost::unordered_map<unsigned long, size_t>& time_stamp, 
             std::vector<std::vector<cv::Point3f> >& lidar_queue);
 
 class cameraData

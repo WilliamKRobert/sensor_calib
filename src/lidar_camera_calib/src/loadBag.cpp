@@ -4,6 +4,7 @@
 #include <cv_bridge/cv_bridge.h>
 
 #include <boost/foreach.hpp>
+#include <boost/unordered_map.hpp>
 
 #include <ros/ros.h>
 #include <rosbag/bag.h>
@@ -88,7 +89,7 @@ void lidarCameraAssociation(const vector<Mat> &image_queue_raw,
                             const vector<vector<Point3f> > &lidar_queue_raw, 
                             const vector<ros::Time> &lidar_time_stamp, 
                             vector<Mat> &image_queue, 
-                            HashMap &stamp_queue,
+                            boost::unordered_map<unsigned long, size_t> &stamp_queue,
                             vector<vector<Point3f> > &lidar_queue){
     size_t n = image_queue_raw.size();
     ros::Time t0 = camera_time_stamp[0];
@@ -112,7 +113,7 @@ void lidarCameraAssociation(const vector<Mat> &image_queue_raw,
             image_queue.push_back(image_queue_raw[i]);
             ros::Duration diff = camera_time_stamp[i] - t0;
             unsigned long time = diff.toNSec();
-            stamp_queue.put(time, i);
+            stamp_queue[time] =  i;
 
             vector<Point3f> interpolation_points;
             for (size_t ii=0; ii<lidar_queue_raw[j].size(); ii++){
@@ -126,7 +127,7 @@ void lidarCameraAssociation(const vector<Mat> &image_queue_raw,
 
 }
 
-void loadBag(const string &filename, vector<Mat>& image_queue, HashMap& stamp_queue, vector<vector<Point3f> >& lidar_queue)
+void loadBag(const string &filename, vector<Mat>& image_queue, boost::unordered_map<unsigned long, size_t>& stamp_queue, vector<vector<Point3f> >& lidar_queue)
 {
     rosbag::Bag bag;
     try{

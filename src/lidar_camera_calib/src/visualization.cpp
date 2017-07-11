@@ -9,6 +9,7 @@
 #include "ceres/rotation.h"
 
 #include <sstream>
+#include <boost/unordered_map.hpp>
 
 #include "lidar_camera_calib/visualization.h"
 #include "lidar_camera_calib/loadBag.h"
@@ -16,20 +17,23 @@
 #include "lidar_camera_calib/objectPose.h"
 #include "lidar_camera_calib/omniModel.h"
 #include "lidar_camera_calib/optimizer.h"
-#include "lidar_camera_calib/hash.h"
-
 
 using namespace std;
 using namespace cv;
 
 vector<Mat> image_queue;
 vector<unsigned long> stamp_set;
+// boost::unordered_map<unsigned long, size_t> stamp_set;
 OmniModel model;
 
 Size patternsize(7, 10); // interior number of corners
 float squareSize = 98.00; // unit: mm
 Eigen::Matrix4d initial_transform;
 unsigned long INIT_TIME = 1498121870886943937;
+
+Mat init_rvec; // 4 by 1, quaternion
+Mat init_tvec; // 3 by 1
+
 
 size_t findIndex(unsigned long stamp){
 	size_t i;
@@ -40,6 +44,16 @@ size_t findIndex(unsigned long stamp){
 
 	if (i >= stamp_set.size())
 		return -1;
+}
+
+Eigen::Quaternionf quatMult(Eigen::Quaternionf q1, Eigen::Quaternionf q2) {
+    Eigen::Quaternionf resultQ;
+    resultQ.setIdentity();
+
+    resultQ.w() = q1.w() * q2.w() - q1.vec().dot(q2.vec());
+    resultQ.vec() = q1.w() * q2.vec() + q2.w() * q1.vec() + q1.vec().cross(q2.vec());
+
+    return resultQ;
 }
 
 void displayCallback(const sensor_msgs::Image::ConstPtr img)
@@ -63,40 +77,30 @@ void displayCallback(const sensor_msgs::Image::ConstPtr img)
             Eigen::Matrix4d pose;
             model.estimateTransformation(imageCorners, worldCorners, pose);
 
-            Eigen::Matrix4d checkerboard_pose = initial_transform*pose;
+            Eigen::Vector3f center_vec_t(squareSize*(patternsize.width-1) / 2.0, 
+            							 squareSize*(patternsize.height-1) / 2.0,
+            												0);
+            Eigen::Translation<float,3> center_t(center_vec_t);
 
-            Eigen::Vector3d translation;
-            Eigen::Vector4d rotation;
-            translation(0) = checkerboard_pose(0,3);
-            translation(1) = checkerboard_pose(1,3);
-            translation(2) = checkerboard_pose(2,3);
+            Eigen::Quaternionf r_lidar_frame( init_rvec.at<double>(3,0),
+		    								  init_rvec.at<double>(0,0),
+		   									  init_rvec.at<double>(1,0),
+		    								  init_rvec.at<double>(2,0));
+		    Eigen::Vector3f trans_vec_E(init_tvec.at<double>(0,0),
+		    							init_tvec.at<double>(1,0),
+		    							init_tvec.at<double>(2,0));
+		    Eigen::Translation<float,3> t_lidar_frame(trans_vec_E);
+		    
+		    Eigen::Matrix3d R = pose.block<3,3>(0,0);
+		    Eigen::Quaternionf r_pose(R.cast<float>());
+		    Eigen::Vector3f t_vec_pose(pose(0,3), pose(1,3), pose(2,3));
+		    Eigen::Translation<float, 3> t_pose(t_vec_pose);
 
-            double R[9];
-            R[0] = checkerboard_pose(0,0);
-            R[1] = checkerboard_pose(0,1);
-            R[2] = checkerboard_pose(0,2);
-            R[3] = checkerboard_pose(1,0);
-            R[4] = checkerboard_pose(1,1);
-            R[5] = checkerboard_pose(1,2);
-            R[6] = checkerboard_pose(2,0);
-            R[7] = checkerboard_pose(2,1);
-            R[8] = checkerboard_pose(2,2);
+            Eigen::Transform<float,3, Eigen::Affine> combined = t_lidar_frame * r_lidar_frame * t_pose * r_pose * center_t;
 
-            double angle_axis[3];
-            ceres::RotationMatrixToAngleAxis(R, angle_axis);
-            double q[4];
-            ceres::AngleAxisToQuaternion(angle_axis, q);
-            rotation(0) = q[0];
-            rotation(1) = q[1];
-            rotation(2) = q[2];
-            rotation(3) = q[3];
-            cout << "checkerboard pose: " << endl;
-            cout << pose << endl;
-            cout << "initial_transform: " << endl;
-            cout << initial_transform << endl;
-            cout << "checkerboard pose in lidar frame: " << endl;
-            cout << checkerboard_pose << endl;
-            // vs.update_checkerboard_pose(translation, rotation);
+            float a = combined.translation().x();
+            Eigen::Quaternionf r_combined (combined.rotation());
+            
             ///////////////////////////////////////////////////////////////////////////////////////////////
             // publish checkerboard pose
             ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -124,17 +128,25 @@ void displayCallback(const sensor_msgs::Image::ConstPtr img)
 				marker.action = visualization_msgs::Marker::ADD;
 
 				// Set the pose of the marker.  This is a full 6DOF pose relative to the frame/time specified in the header
-				marker.pose.position.x = 0; //translation(0)/1000.0;
-				marker.pose.position.y = 0; //translation(1)/1000.0;
-				marker.pose.position.z = 0; //translation(2)/1000.0;
-				marker.pose.orientation.x = 0; //rotation(0);	
-				marker.pose.orientation.y = 0; //rotation(1);
-				marker.pose.orientation.z = 0; //rotation(2);
-				marker.pose.orientation.w = 0; //rotation(3);
+				
+				marker.pose.position.x = combined.translation().x()/1000.0;
+				marker.pose.position.y = combined.translation().y()/1000.0;
+				marker.pose.position.z = combined.translation().z()/1000.0;
+				marker.pose.orientation.x = r_combined.x();	
+				marker.pose.orientation.y = r_combined.y();
+				marker.pose.orientation.z = r_combined.z();
+				marker.pose.orientation.w = r_combined.w();
+				// marker.pose.position.x = 0.03991;
+				// marker.pose.position.y = 0.03538;
+				// marker.pose.position.z = 0.10219;
+				// marker.pose.orientation.x = -0.146437666759;	
+				// marker.pose.orientation.y = 0.492800355296;
+				// marker.pose.orientation.z = 0.0845458701372;
+				// marker.pose.orientation.w = 0.853554811021;
 
 				// Set the scale of the marker -- 1x1x1 here means 1m on a side
-				marker.scale.x = squareSize*(patternsize.width+2) / 1000.0;
-				marker.scale.y = squareSize*(patternsize.height+2) / 1000.0;
+				marker.scale.x = squareSize*(patternsize.width-1) / 1000.0;
+				marker.scale.y = squareSize*(patternsize.height-1) / 1000.0;
 				marker.scale.z = 10.0 / 1000.0;
 
 				// Set the color -- be sure to set alpha to something non-zero!
@@ -156,7 +168,6 @@ void displayCallback(const sensor_msgs::Image::ConstPtr img)
 					sleep(1);
 				}
 				marker_pub.publish(marker);
-				cout << "publis once" << endl;
 				// rate.sleep();
 				// ros::spinOnce();
 				break;
@@ -216,35 +227,9 @@ int main(int argc, char** argv){
     Mat dist_coeffs = s.distortion;
     double xi =  s.xi;
    
-   	Mat init_rvec = s.initialRotation; // 4 by 1, quaternion
-    Mat init_tvec = s.initialTranslation; // 3 by 1
-    double quaternion[4];
-    quaternion[0] = init_rvec.at<double>(0,0);
-    quaternion[1] = init_rvec.at<double>(1,0);
-    quaternion[2] = init_rvec.at<double>(2,0);
-    quaternion[3] = init_rvec.at<double>(3,0);
-    double rarray[3];
-    ceres::QuaternionToAngleAxis(quaternion, rarray);
+   	init_rvec = s.initialRotation; // 4 by 1, quaternion
+    init_tvec = s.initialTranslation; // 3 by 1
 
-    cv::Mat C_camera_model = cv::Mat::eye(3, 3, CV_64F);
-	initial_transform = Eigen::Matrix4d::Identity();
-
-	// cv::Mat rvec(3, 1, CV_64F);
-	// rvec.at<double>(0,0) = rarray[0];
-	// rvec.at<double>(1,0) = rarray[1];
-	// rvec.at<double>(2,0) = rarray[2];
-
-	// cv::Rodrigues(rvec, C_camera_model);
-	// for (int r = 0; r < 3; ++r) {
-	// 	initial_transform(r, 3) = init_tvec.at<double>(r, 0) / 1000.0;
-	// for (int c = 0; c < 3; ++c) {
-	//     initial_transform(r, c) = C_camera_model.at<double>(r, c);
-	// }
-	// }
-
- //    initial_transform = initial_transform.inverse().eval();
-
-    
     model.setParameter(camera_matrix, dist_coeffs, xi);
     ros::Subscriber sub = n.subscribe("/cam1/image_raw", 1000, displayCallback);
     ros::spin();

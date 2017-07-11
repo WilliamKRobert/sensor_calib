@@ -1,4 +1,5 @@
 #include <iostream>
+#include <boost/unordered_map.hpp>
 
 #include <opencv2/opencv.hpp>
 #include <opencv2/calib3d/calib3d.hpp>
@@ -27,7 +28,7 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "my_scan_to_cloud");    
     string bag_file("/home/audren/lidar_camera_calib/data/cameraLidarData.bag");
     vector<Mat> image_queue;
-    HashMap time_queue;
+    vector<unsigned long> time_queue;
     vector<vector<Point3f> > lidar_queue;
     loadBag(bag_file, image_queue, time_queue, lidar_queue);
     // TODO: test if obtained LIDAR scan points are correct
@@ -119,22 +120,14 @@ int main(int argc, char **argv)
     // initial guess of lidar transform in camera frame
     Mat init_rvec = s.initialRotation; // 4 by 1, quaternion
     Mat init_tvec = s.initialTranslation; // 3 by 1
-    double quaternion_R[4];
-    quaternion_R[0] = init_rvec.at<double>(0,0);
-    quaternion_R[1] = init_rvec.at<double>(1,0);
-    quaternion_R[2] = init_rvec.at<double>(2,0);
-    quaternion_R[3] = init_rvec.at<double>(3,0);
-
-    double angle_axis[3];
-    ceres::QuaternionToAngleAxis(quaternion_R, angle_axis);
-
+    
     double transform[6];
-    transform[0] = angle_axis[0];
-    transform[1] = angle_axis[1];
-    transform[2] = angle_axis[2];
-    transform[3] = init_tvec.at<double>(0,0);
-    transform[4] = init_tvec.at<double>(1,0);
-    transform[5] = init_tvec.at<double>(2,0);
+    transform[0] = 0;
+    transform[1] = 1.047198;
+    transform[2] = -0.339816;
+    transform[3] = 39.91;
+    transform[4] = 35.38;
+    transform[5] = 102.19;
     for (size_t i=0; i<6; i++)
         cout << transform[i] << " ";
     cout << endl;
@@ -147,7 +140,7 @@ int main(int argc, char **argv)
      */
     google::InitGoogleLogging("Bundle Adjustment");
     optimizer ba;    
-    ba.bundleAdjustment(lidar_scan_points, object_poses, patternsize, squareSize, 100, transform);
+    ba.bundleAdjustment(lidar_scan_points, object_poses, patternsize, squareSize, 100, transform, init_rvec, init_tvec);
     
     cout << "--------------------------------------------" << endl;
     cout << "Calibration Done!" << endl;

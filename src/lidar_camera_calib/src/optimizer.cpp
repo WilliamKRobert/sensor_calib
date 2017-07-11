@@ -38,7 +38,9 @@ void optimizer::bundleAdjustment(const std::vector<std::vector<cv::Point3f> > li
                                  const cv::Size patternsize,
                                  const double square_size,
                                  const double cube_depth,
-                                 double* parameter
+                                 double* parameter,
+                                 cv::Mat init_rvec,
+                                 cv::Mat init_tvec
                                  )
 {   /* 
      * debug
@@ -50,6 +52,15 @@ void optimizer::bundleAdjustment(const std::vector<std::vector<cv::Point3f> > li
     //     std::cout << parameter[i] << " ";
     // std::cout << std::endl;
     */
+    // initial guess of transform
+    Eigen::Quaternionf r_lidar_frame( init_rvec.at<double>(3,0),
+                                              init_rvec.at<double>(0,0),
+                                              init_rvec.at<double>(1,0),
+                                              init_rvec.at<double>(2,0));
+    Eigen::Vector3f trans_vec_E(init_tvec.at<double>(0,0),
+                                init_tvec.at<double>(1,0),
+                                init_tvec.at<double>(2,0));
+    Eigen::Translation<float,3> t_lidar_frame(trans_vec_E);
 
     // set inital estimation, checkerboad dimension
     initial_transform_guess = new double[6];
@@ -61,23 +72,31 @@ void optimizer::bundleAdjustment(const std::vector<std::vector<cv::Point3f> > li
     initial_transform_guess[5] = parameter[5];
 
     // cull out points of lidar scan that are within checkerboard
-    std::vector<std::vector<Eigen::Vector3d> > onplane_scan_all;
+    std::vector<std::vector<Eigen::Vector3f> > onplane_scan_all;
 
     double width = square_size * (patternsize.width + 2); // dimension of the checkerboard
     double height = square_size * (patternsize.height + 2);
     int n_frame = lidar_scan.size();
     for (size_t i=0; i < n_frame; i++){
-        Eigen::Vector4d p1(0, 0, cube_depth,1), p2(width, 0, cube_depth, 1), p3(width, height, cube_depth,1), p4(0, height, cube_depth,1);
-        Eigen::Vector4d p5(0, 0, -cube_depth,1), p6(width, 0, -cube_depth, 1), p7(width, height, -cube_depth,1), p8(0, height, -cube_depth,1);
+        Eigen::Vector3f p1(0, 0, cube_depth), p2(width, 0, cube_depth), p3(width, height, cube_depth), p4(0, height, cube_depth);
+        Eigen::Vector3f p5(0, 0, -cube_depth), p6(width, 0, -cube_depth), p7(width, height, -cube_depth), p8(0, height, -cube_depth);
+
+        Eigen::Matrix4d pose = object_poses[i];
+        Eigen::Matrix3d R = pose.block<3,3>(0,0);
+        Eigen::Quaternionf r_pose(R.cast<float>());
+        Eigen::Vector3f t_vec_pose(pose(0,3), pose(1,3), pose(2,3));
+        Eigen::Translation<float, 3> t_pose(t_vec_pose);
+
+        Eigen::Transform<float,3, Eigen::Affine> combined = t_lidar_frame * r_lidar_frame * t_pose * r_pose;
         
-        p1 = object_poses[i] * p1;
-        p2 = object_poses[i] * p2;
-        p3 = object_poses[i] * p3;
-        p4 = object_poses[i] * p4;
-        p5 = object_poses[i] * p5;
-        p6 = object_poses[i] * p6;
-        p7 = object_poses[i] * p7;
-        p8 = object_poses[i] * p8;
+        p1 = combined * p1;
+        p2 = combined * p2;
+        p3 = combined * p3;
+        p4 = combined * p4;
+        p5 = combined * p5;
+        p6 = combined * p6;
+        p7 = combined * p7;
+        p8 = combined * p8;
         
         double tmp1[] = {p1(0), p2(0), p3(0), p4(0), p5(0), p6(0), p7(0), p8(0)};
         double max_x = max(tmp1, 8);
@@ -93,22 +112,18 @@ void optimizer::bundleAdjustment(const std::vector<std::vector<cv::Point3f> > li
         double tmp6[] = {p1(2), p2(2), p3(2), p4(2), p5(2), p6(2), p7(2), p8(2)};
         double min_z = min(tmp6, 8);
         
-        std::vector<Eigen::Vector3d> onplane_scan;
+        std::vector<Eigen::Vector3f> onplane_scan;
         size_t n_scan = lidar_scan[i].size();
         for (size_t j=0; j < n_scan; j++){
-            double point[3];
+            
             double p[3];
-            point[0] = lidar_scan[i][j].x;
-            point[1] = lidar_scan[i][j].y;
-            point[2] = lidar_scan[i][j].z;
-            ceres::AngleAxisRotatePoint(initial_transform_guess, point, p);
-            p[0] += initial_transform_guess[3];
-            p[1] += initial_transform_guess[4];
-            p[2] += initial_transform_guess[5];
+            p[0] = lidar_scan[i][j].x;
+            p[1] = lidar_scan[i][j].y;
+            p[2] = lidar_scan[i][j].z;
             if (p[0] > min_x && p[0] < max_x 
                 && p[1] > min_y && p[1] < max_y 
                 && p[2] > min_z && p[2] < max_z ){
-                Eigen::Vector3d pt(point[0], point[1], point[2]); // in LIDAR frame
+                Eigen::Vector3f pt(p[0], p[1], p[2]); // in LIDAR frame
                 onplane_scan.push_back(pt);
             }
         }

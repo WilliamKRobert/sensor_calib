@@ -37,7 +37,7 @@ bool findBoardCorner(Mat gray, Size patternsize, vector<Point2f>& corners, bool 
                 + CALIB_CB_FAST_CHECK);
 
     if (patternfound){
-        cornerSubPix(gray, corners, Size(11, 11), Size(-1, -1),
+        cornerSubPix(gray, corners, Size(5, 5), Size(-1, -1),
            TermCriteria(CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, 30, 0.1));
     }
     else{
