@@ -34,6 +34,9 @@ unsigned long INIT_TIME = 1498121870886943937;
 Mat init_rvec; // 4 by 1, quaternion
 Mat init_tvec; // 3 by 1
 
+Mat optimized_rvec(4, 1, CV_64F);
+Mat optimized_tvec(3, 1, CV_64F);
+
 
 size_t findIndex(unsigned long stamp){
 	size_t i;
@@ -82,6 +85,7 @@ void displayCallback(const sensor_msgs::Image::ConstPtr img)
             												0);
             Eigen::Translation<float,3> center_t(center_vec_t);
 
+            // initial estimation
             Eigen::Quaternionf r_lidar_frame( init_rvec.at<double>(3,0),
 		    								  init_rvec.at<double>(0,0),
 		   									  init_rvec.at<double>(1,0),
@@ -90,14 +94,28 @@ void displayCallback(const sensor_msgs::Image::ConstPtr img)
 		    							init_tvec.at<double>(1,0),
 		    							init_tvec.at<double>(2,0));
 		    Eigen::Translation<float,3> t_lidar_frame(trans_vec_E);
+
+		    // optimized transform
+		    Eigen::Quaternionf r_lidar_frame_optimized( optimized_rvec.at<double>(3,0),
+		    								  optimized_rvec.at<double>(0,0),
+		   									  optimized_rvec.at<double>(1,0),
+		    								  optimized_rvec.at<double>(2,0));
+		    Eigen::Vector3f trans_vec_E_optimized(optimized_tvec.at<double>(0,0),
+		    							optimized_tvec.at<double>(1,0),
+		    							optimized_tvec.at<double>(2,0));
+		    Eigen::Translation<float,3> t_lidar_frame_optimized(trans_vec_E_optimized);
 		    
+		    // pose
 		    Eigen::Matrix3d R = pose.block<3,3>(0,0);
 		    Eigen::Quaternionf r_pose(R.cast<float>());
 		    Eigen::Vector3f t_vec_pose(pose(0,3), pose(1,3), pose(2,3));
 		    Eigen::Translation<float, 3> t_pose(t_vec_pose);
 
             Eigen::Transform<float,3, Eigen::Affine> combined = t_lidar_frame * r_lidar_frame * t_pose * r_pose * center_t;
+            Eigen::Transform<float,3, Eigen::Affine> combined_optimized = t_lidar_frame_optimized * r_lidar_frame_optimized * t_pose * r_pose * center_t;
+
             Eigen::Quaternionf r_combined (combined.rotation());
+            Eigen::Quaternionf r_combined_optimized (combined_optimized.rotation());
             
             ///////////////////////////////////////////////////////////////////////////////////////////////
             // publish checkerboard pose
@@ -110,20 +128,26 @@ void displayCallback(const sensor_msgs::Image::ConstPtr img)
 
             while(ros::ok()){
 	            visualization_msgs::Marker marker;
+	            visualization_msgs::Marker marker_optimized;
 				// Set the frame ID and timestamp.  See the TF tutorials for information on these.
 				marker.header.frame_id = "/lidar";
 				marker.header.stamp = ros::Time::now();
+				marker_optimized.header.frame_id = "/lidar";
+				marker_optimized.header.stamp = ros::Time::now();
 
 				// Set the namespace and id for this marker.  This serves to create a unique ID
 				// Any marker sent with the same namespace and id will overwrite the old one
 				marker.ns = "basic_shapes";
 				marker.id = 0;
+				marker_optimized.ns = "basic_shapes";
+				marker_optimized.id = 1;
 
 				// Set the marker type. 
 				marker.type = shape;
-
+				marker_optimized.type = shape;
 				// Set the marker action.  Options are ADD, DELETE, and new in ROS Indigo: 3 (DELETEALL)
 				marker.action = visualization_msgs::Marker::ADD;
+				marker_optimized.action = visualization_msgs::Marker::ADD;
 
 				// Set the pose of the marker.  This is a full 6DOF pose relative to the frame/time specified in the header
 				
@@ -134,6 +158,14 @@ void displayCallback(const sensor_msgs::Image::ConstPtr img)
 				marker.pose.orientation.y = r_combined.y();
 				marker.pose.orientation.z = r_combined.z();
 				marker.pose.orientation.w = r_combined.w();
+
+				marker_optimized.pose.position.x = combined_optimized.translation().x()/1000.0;
+				marker_optimized.pose.position.y = combined_optimized.translation().y()/1000.0;
+				marker_optimized.pose.position.z = combined_optimized.translation().z()/1000.0;
+				marker_optimized.pose.orientation.x = r_combined_optimized.x();	
+				marker_optimized.pose.orientation.y = r_combined_optimized.y();
+				marker_optimized.pose.orientation.z = r_combined_optimized.z();
+				marker_optimized.pose.orientation.w = r_combined_optimized.w();
 				// cout << marker.pose.position.x << " ";
 				// cout << marker.pose.position.y << " ";
 				// cout << marker.pose.position.z << " ";
@@ -154,13 +186,22 @@ void displayCallback(const sensor_msgs::Image::ConstPtr img)
 				marker.scale.y = squareSize*(patternsize.height-1) / 1000.0;
 				marker.scale.z = 10.0 / 1000.0;
 
+				marker_optimized.scale.x = squareSize*(patternsize.width-1) / 1000.0;
+				marker_optimized.scale.y = squareSize*(patternsize.height-1) / 1000.0;
+				marker_optimized.scale.z = 10.0 / 1000.0;
+
 				// Set the color -- be sure to set alpha to something non-zero!
 				marker.color.r = 0.0f;
 				marker.color.g = 1.0f;
 				marker.color.b = 0.0f;
 				marker.color.a = 1.0;
+				marker_optimized.color.r = 0.0f;
+				marker_optimized.color.g = 0.0f;
+				marker_optimized.color.b = 1.0f;
+				marker_optimized.color.a = 1.0;
 
 				marker.lifetime = ros::Duration();
+				marker_optimized.lifetime = ros::Duration();
 
 				// Publish the marker
 				while (marker_pub.getNumSubscribers() < 1)
@@ -173,6 +214,7 @@ void displayCallback(const sensor_msgs::Image::ConstPtr img)
 					sleep(1);
 				}
 				marker_pub.publish(marker);
+				marker_pub.publish(marker_optimized);
 				// rate.sleep();
 				// ros::spinOnce();
 				break;
@@ -234,6 +276,22 @@ int main(int argc, char** argv){
    
    	init_rvec = s.initialRotation; // 4 by 1, quaternion
     init_tvec = s.initialTranslation; // 3 by 1
+
+    Eigen::Matrix3f m;
+    double PI = 3.1415926;
+	m = Eigen::AngleAxisf(-0.295931*PI, Eigen::Vector3f::UnitX())
+  					* Eigen::AngleAxisf(1.06568*PI,  Eigen::Vector3f::UnitY())
+  					* Eigen::AngleAxisf(0.167964*PI, Eigen::Vector3f::UnitZ());
+
+    Eigen::Quaternionf r_pose(m);
+  	optimized_tvec.at<double>(0,0) = 29.9334;
+  	optimized_tvec.at<double>(1,0) = 34.2440;
+  	optimized_tvec.at<double>(2,0) = 93.6712;
+  	optimized_rvec.at<double>(0,0) = r_pose.x();
+  	optimized_rvec.at<double>(1,0) = r_pose.y();
+  	optimized_rvec.at<double>(2,0) = r_pose.z();
+  	optimized_rvec.at<double>(3,0) = r_pose.w();
+  	
 
     model.setParameter(camera_matrix, dist_coeffs, xi);
     ros::Subscriber sub = n.subscribe("/cam1/image_raw", 1000, displayCallback);

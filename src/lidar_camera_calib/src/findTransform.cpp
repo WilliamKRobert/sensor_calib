@@ -71,7 +71,7 @@ int main(int argc, char **argv)
     OmniModel model(camera_matrix, dist_coeffs, xi);
     vector<Eigen::Matrix4d> object_poses;
     vector<vector<Point3f> > lidar_scan_points;
-    for (size_t i=0; i<lidar_queue.size(); i+=30){
+    for (size_t i=0; i<lidar_queue.size(); i+=10){
         /*
          * Step 1: Find out camera extrinsic parameter using PnP
          */
@@ -111,6 +111,7 @@ int main(int argc, char **argv)
             model.estimateTransformation(imageCorners, worldCorners, pose);
             object_poses.push_back(pose);
             lidar_scan_points.push_back(lidar_queue[i]);
+            // cout << pose(0,3) << " " << pose(1,3) << " " << pose(2,3) << endl;
         }
         // TODO: test if the pose is correct
     }
@@ -131,7 +132,6 @@ int main(int argc, char **argv)
     for (size_t i=0; i<6; i++)
         cout << transform[i] << " ";
     cout << endl;
-
     /*
      * Step 3: Lidar-camera transform optimization
      *  cost function: square sum of distance between scan points and chessboard plane
@@ -140,14 +140,37 @@ int main(int argc, char **argv)
      */
     google::InitGoogleLogging("Bundle Adjustment");
     optimizer ba;    
-    ba.bundleAdjustment(lidar_scan_points, object_poses, patternsize, squareSize, 100, transform, init_rvec, init_tvec);
-    
-    cout << "--------------------------------------------" << endl;
-    cout << "Calibration Done!" << endl;
-    cout << "The estimated transform between LIDAR and camera: " << endl;
+    ba.bundleAdjustment(lidar_scan_points, object_poses, patternsize, squareSize, 100 /*cube depth*/, transform, init_rvec, init_tvec);
+
+    cout << "Transform from camera to optimized LIDAR frame: " << endl;
     for (size_t i=0; i<6; i++)
         cout << transform[i] << " ";
     cout << endl;
 
+    Mat rvec = Mat(3, 1, CV_64F);
+    Mat tvec = Mat(3, 1, CV_64F);
+    Mat rmatrix, new_rmatrix;
+    rvec.at<double>(0,0) = transform[0];
+    rvec.at<double>(1,0) = transform[1];
+    rvec.at<double>(2,0) = transform[2];
+    tvec.at<double>(0,0) = transform[3];
+    tvec.at<double>(1,0) = transform[4];
+    tvec.at<double>(2,0) = transform[5];
+    cv::Rodrigues(rvec, rmatrix);
+    transpose(rmatrix, new_rmatrix);
+    tvec = - new_rmatrix * tvec;
+    cv::Rodrigues(new_rmatrix, rvec);
+    
+    cout << "--------------------------------------------" << endl;
+    cout << "Calibration Done!" << endl;
+    cout << "The estimated transform between LIDAR and camera: " << endl;
+    // for (size_t i=0; i<6; i++)
+    //     cout << transform[i] << " ";
+    for (size_t i=0; i<3; i++)
+        cout << rvec.at<double>(i, 0) << " ";
+    cout << endl;
+    for (size_t i=0; i<3; i++)
+        cout << tvec.at<double>(i, 0) << " ";
+    cout << endl;
     return 0;
 }

@@ -96,10 +96,6 @@ lidar_camera_calib/optimizer.h
 lidar_camera_calib/hash.h
 /home/audren/lidar_camera_calib/calib_ws/src/lidar_camera_calib/src/lidar_camera_calib/hash.h
 
-/home/audren/lidar_camera_calib/calib_ws/src/lidar_camera_calib/src/optimizer.cpp
-lidar_camera_calib/optimizer.h
-/home/audren/lidar_camera_calib/calib_ws/src/lidar_camera_calib/src/lidar_camera_calib/optimizer.h
-
 /opt/ros/indigo/include/XmlRpcDecl.h
 ros/macros.h
 -
