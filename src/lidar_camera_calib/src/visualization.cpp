@@ -37,12 +37,16 @@ Mat init_tvec; // 3 by 1
 Mat optimized_rvec(4, 1, CV_64F);
 Mat optimized_tvec(3, 1, CV_64F);
 
+size_t last_index = 0;
 
 size_t findIndex(unsigned long stamp){
 	size_t i;
-	for (size_t i=0; i<stamp_set.size(); i++){
-		if (stamp_set[i] == stamp)
-			return i;
+	size_t n = stamp_set.size();
+	for (size_t i=0; i<n; i++){
+		if (stamp_set[(last_index + i) % n] == stamp){
+			last_index = (last_index + i) % n;
+			return last_index;
+		}
 	}
 
 	if (i >= stamp_set.size())
@@ -62,6 +66,7 @@ Eigen::Quaternionf quatMult(Eigen::Quaternionf q1, Eigen::Quaternionf q2) {
 void displayCallback(const sensor_msgs::Image::ConstPtr img)
 {
  	// receive msg and retrieve msg from image_queue
+ 	// ros::Time aa = ros::Time::now();
  	unsigned long stamp = img->header.stamp.toNSec() - INIT_TIME;
 	size_t index = findIndex(stamp);
 	if ( index != -1){
@@ -74,6 +79,11 @@ void displayCallback(const sensor_msgs::Image::ConstPtr img)
 		// corners in image frame
 		vector<Point2f> imageCorners;
 		bool find_corners = findBoardCorner(gray, patternsize, imageCorners, true);
+
+		// std::cout << "OK" << endl;
+		ros::Time t0 = ros::Time::now();
+		// ros::Duration cc = a - aa;
+		// cout << "used time: " << cc.toSec() << endl;
 		if (find_corners){
             Mat rvec; // Rotation in axis-angle form
             Mat tvec;
@@ -120,12 +130,14 @@ void displayCallback(const sensor_msgs::Image::ConstPtr img)
             ///////////////////////////////////////////////////////////////////////////////////////////////
             // publish checkerboard pose
             ///////////////////////////////////////////////////////////////////////////////////////////////
-            ros::Rate rate(10);
+            ros::Rate rate(1000);
             ros::NodeHandle n_write;
-            ros::Publisher marker_pub = n_write.advertise<visualization_msgs::Marker>("visualization_marker", 1);
+            ros::Publisher marker_pub = n_write.advertise<visualization_msgs::Marker>("visualization_marker", 0);
 
             uint32_t shape = visualization_msgs::Marker::CUBE;
-
+            ros::Time t1 = ros::Time::now();
+            ros::Duration diff = t1 - t0;
+            cout << "Duration: " << diff.toSec() << endl;
             while(ros::ok()){
 	            visualization_msgs::Marker marker;
 	            visualization_msgs::Marker marker_optimized;
@@ -166,21 +178,7 @@ void displayCallback(const sensor_msgs::Image::ConstPtr img)
 				marker_optimized.pose.orientation.y = r_combined_optimized.y();
 				marker_optimized.pose.orientation.z = r_combined_optimized.z();
 				marker_optimized.pose.orientation.w = r_combined_optimized.w();
-				// cout << marker.pose.position.x << " ";
-				// cout << marker.pose.position.y << " ";
-				// cout << marker.pose.position.z << " ";
-				// cout << marker.pose.orientation.x << " ";
-				// cout << marker.pose.orientation.y << " ";
-				// cout << marker.pose.orientation.z << " ";
-				// cout << marker.pose.orientation.w << " " << endl;
-				// marker.pose.position.x = 0.03991;
-				// marker.pose.position.y = 0.03538;
-				// marker.pose.position.z = 0.10219;
-				// marker.pose.orientation.x = -0.146437666759;	
-				// marker.pose.orientation.y = 0.492800355296;
-				// marker.pose.orientation.z = 0.0845458701372;
-				// marker.pose.orientation.w = 0.853554811021;
-
+				
 				// Set the scale of the marker -- 1x1x1 here means 1m on a side
 				marker.scale.x = squareSize*(patternsize.width-1) / 1000.0;
 				marker.scale.y = squareSize*(patternsize.height-1) / 1000.0;
@@ -202,7 +200,7 @@ void displayCallback(const sensor_msgs::Image::ConstPtr img)
 
 				marker.lifetime = ros::Duration();
 				marker_optimized.lifetime = ros::Duration();
-
+				
 				// Publish the marker
 				while (marker_pub.getNumSubscribers() < 1)
 				{
@@ -211,12 +209,15 @@ void displayCallback(const sensor_msgs::Image::ConstPtr img)
 						return;
 					}
 					ROS_WARN_ONCE("Please create a subscriber to the marker");
-					sleep(1);
+					sleep(0.0001);
 				}
 				marker_pub.publish(marker);
 				marker_pub.publish(marker_optimized);
 				// rate.sleep();
 				// ros::spinOnce();
+				ros::Time t2 = ros::Time::now();
+				diff = t2 - t1;
+				cout << "used time: " << diff.toSec() << endl;	
 				break;
 				
 			}
@@ -278,10 +279,9 @@ int main(int argc, char** argv){
     init_tvec = s.initialTranslation; // 3 by 1
 
     Eigen::Matrix3f m;
-    double PI = 3.1415926;
-	m = Eigen::AngleAxisf(-0.295931*PI, Eigen::Vector3f::UnitX())
-  					* Eigen::AngleAxisf(1.06568*PI,  Eigen::Vector3f::UnitY())
-  					* Eigen::AngleAxisf(0.167964*PI, Eigen::Vector3f::UnitZ());
+	m = Eigen::AngleAxisf(-0.295931, Eigen::Vector3f::UnitX())
+  					* Eigen::AngleAxisf(1.06568,  Eigen::Vector3f::UnitY())
+  					* Eigen::AngleAxisf(0.167964, Eigen::Vector3f::UnitZ());
 
     Eigen::Quaternionf r_pose(m);
   	optimized_tvec.at<double>(0,0) = 29.9334;
