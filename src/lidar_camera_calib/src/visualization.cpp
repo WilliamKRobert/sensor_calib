@@ -130,7 +130,7 @@ void displayCallback(const sensor_msgs::Image::ConstPtr img)
             ///////////////////////////////////////////////////////////////////////////////////////////////
             // publish checkerboard pose
             ///////////////////////////////////////////////////////////////////////////////////////////////
-            ros::Rate rate(1000);
+            ros::Rate rate(5);
             ros::NodeHandle n_write;
             ros::Publisher marker_pub = n_write.advertise<visualization_msgs::Marker>("visualization_marker", 0);
 
@@ -204,20 +204,22 @@ void displayCallback(const sensor_msgs::Image::ConstPtr img)
 				// Publish the marker
 				while (marker_pub.getNumSubscribers() < 1)
 				{
-					if (!ros::ok())
-					{
-						return;
-					}
-					ROS_WARN_ONCE("Please create a subscriber to the marker");
-					sleep(0.0001);
-				}
+					// if (!ros::ok())
+					// {
+					// 	return;
+					// }
+					// ROS_WARN_ONCE("Please create a subscriber to the marker");
+					sleep(0.01);
+				}	
 				marker_pub.publish(marker);
-				marker_pub.publish(marker_optimized);
-				// rate.sleep();
-				// ros::spinOnce();
+				
 				ros::Time t2 = ros::Time::now();
 				diff = t2 - t1;
-				cout << "used time: " << diff.toSec() << endl;	
+				cout << "used time: " << diff.toSec() << endl;
+				marker_pub.publish(marker_optimized);	
+				// rate.sleep();
+				// ros::spinOnce();
+				
 				break;
 				
 			}
@@ -294,7 +296,7 @@ int main(int argc, char** argv){
   	
 
     model.setParameter(camera_matrix, dist_coeffs, xi);
-    ros::Subscriber sub = n.subscribe("/cam1/image_raw", 1000, displayCallback);
+    ros::Subscriber sub = n.subscribe("/cam1/image_raw", 10, displayCallback);
     ros::spin();
     return 0;
 }
