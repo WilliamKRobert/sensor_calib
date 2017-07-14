@@ -25,6 +25,7 @@ public:
                           const cv::Size patternsize,
                           const double square_size,
                           const double cube_depth,
+                          double selection_ratio,
                           double* parameter,
                           cv::Mat init_rvec,
                           cv::Mat init_tvec

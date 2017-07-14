@@ -61,9 +61,9 @@ int main(int argc, char **argv)
     Mat camera_matrix = s.intrinsics;
     Mat dist_coeffs = s.distortion;
     double xi =  s.xi;
-    cout << "Camera intrinsic matrix: " << endl << camera_matrix << endl ;
-    cout << "Distortion coefficients: " << endl << dist_coeffs << endl;
-    cout << "Mirror parameter: " << endl << xi << endl;
+    cout << "Camera intrinsic matrix: " << endl << camera_matrix << endl << endl;
+    cout << "Distortion coefficients: " << endl << dist_coeffs << endl << endl;
+    cout << "Mirror parameter: " << endl << xi << endl  ;
     cout << "---------------------------------------------" << endl;
 
     Size patternsize(7, 10); // interior number of corners
@@ -129,23 +129,23 @@ int main(int argc, char **argv)
     transform[3] = 39.91;
     transform[4] = 35.38;
     transform[5] = 102.19;
-    for (size_t i=0; i<6; i++)
-        cout << transform[i] << " ";
-    cout << endl;
+    
     /*
      * Step 3: Lidar-camera transform optimization
      *  cost function: square sum of distance between scan points and chessboard plane
      *  state vector: rotation (4 parameters) and translation (3 parameters)
      *  constraint: scan points should fall   in the range of chessboard (x, y)
      */
+    double selection_ratio = 0.75;
     google::InitGoogleLogging("Bundle Adjustment");
     optimizer ba;    
-    ba.bundleAdjustment(lidar_scan_points, object_poses, patternsize, squareSize, 100 /*cube depth*/, transform, init_rvec, init_tvec);
+    ba.bundleAdjustment(lidar_scan_points, object_poses, patternsize, squareSize, 50 /*cube depth*/, selection_ratio, transform, init_rvec, init_tvec);
 
-    cout << "Transform from camera to optimized LIDAR frame: " << endl;
-    for (size_t i=0; i<6; i++)
-        cout << transform[i] << " ";
-    cout << endl;
+    // cout << "--------------------------------------------" << endl;
+    // cout << "LIDAR pose in camera frame: " << endl;
+    // for (size_t i=0; i<6; i++)
+    //     cout << transform[i] << " ";
+    // cout << endl;
 
     Mat rvec = Mat(3, 1, CV_64F);
     Mat tvec = Mat(3, 1, CV_64F);
@@ -162,15 +162,21 @@ int main(int argc, char **argv)
     cv::Rodrigues(new_rmatrix, rvec);
     
     cout << "--------------------------------------------" << endl;
-    cout << "Calibration Done!" << endl;
-    cout << "The estimated transform between LIDAR and camera: " << endl;
-    // for (size_t i=0; i<6; i++)
-    //     cout << transform[i] << " ";
+    cout << "Estimated camera pose in LIDAR frame:" << endl;
+    cout << " [rx (rad), ry (rad), rz (rad), tx (mm), ty (mm), tz (mm)]" << endl;
+    cout <<  0 << " " << 1.047198 << " " <<  -0.339816 << " " << 39.91 << " " << 35.38 << " " << 102.19;
+    cout << endl << endl;
+    cout << "Initial value feed into Ceres Optimization program:" << endl;
+    cout << " [rx (rad), ry (rad), rz (rad), tx (mm), ty (mm), tz (mm)]" << endl;
+    cout <<  0 << " " << 0 << " " <<  0 << " " << 10 << " " << 10 << " " << 10;
+    cout << endl << endl; 
+    cout << "Optimized camera pose in LIDAR frame " << endl;
+    cout << " [rx (rad), ry (rad), rz (rad), tx (mm), ty (mm), tz (mm)]:" << endl;
     for (size_t i=0; i<3; i++)
         cout << rvec.at<double>(i, 0) << " ";
-    cout << endl;
     for (size_t i=0; i<3; i++)
         cout << tvec.at<double>(i, 0) << " ";
     cout << endl;
+    cout << "--------------------------------------------" << endl;
     return 0;
 }

@@ -38,6 +38,7 @@ void optimizer::bundleAdjustment(const std::vector<std::vector<cv::Point3f> > li
                                  const cv::Size patternsize,
                                  const double square_size,
                                  const double cube_depth,
+                                 const double selection_ratio,
                                  double* parameter,
                                  cv::Mat init_rvec,
                                  cv::Mat init_tvec
@@ -98,7 +99,6 @@ void optimizer::bundleAdjustment(const std::vector<std::vector<cv::Point3f> > li
         p7 = combined * p7;
         p8 = combined * p8;
         
-        double selection_ratio = 0.7;
         double tmp1[] = {p1(0), p2(0), p3(0), p4(0), p5(0), p6(0), p7(0), p8(0)};
         double max_x = max(tmp1, 8) * selection_ratio;
         double tmp2[] = {p1(1), p2(1), p3(1), p4(1), p5(1), p6(1), p7(1), p8(1)};
