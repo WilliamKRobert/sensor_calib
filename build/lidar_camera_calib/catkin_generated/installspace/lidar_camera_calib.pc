@@ -1,8 +1,0 @@
-prefix=/home/audren/lidar_camera_calib/calib_ws/install
-
-Name: lidar_camera_calib
-Description: Description of lidar_camera_calib
-Version: 0.0.0
-Cflags: -I/home/audren/lidar_camera_calib/calib_ws/install/include
-Libs: -L/home/audren/lidar_camera_calib/calib_ws/install/lib -lfind_camera_pose
-Requires: roscpp rospy std_msgs
