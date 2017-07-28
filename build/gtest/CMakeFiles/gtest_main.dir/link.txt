@@ -1,1 +1,0 @@
-/usr/bin/c++  -fPIC -g   -shared -Wl,-soname,libgtest_main.so -o libgtest_main.so CMakeFiles/gtest_main.dir/src/gtest_main.cc.o  -L/home/audren/lidar_camera_calib/calib_ws/build/gtest/src -lpthread libgtest.so -lpthread -Wl,-rpath,/home/audren/lidar_camera_calib/calib_ws/build/gtest/src:/home/audren/lidar_camera_calib/calib_ws/build/gtest 
