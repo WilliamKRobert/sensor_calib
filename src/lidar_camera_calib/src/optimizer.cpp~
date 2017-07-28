@@ -1,8 +1,8 @@
 /**
- * This file is part of lidar_camera_calib.
+ * This file is part of vo.
  *
- * Muyuan Lin, 2017
- * For more information see <https://github.com/muyuanlin/lidar-camera-calib>
+ * Muyuan Lin, 2016
+ * For more information see <https://github.com/muyuanlin/vo>
  */
 
 #include "lidar_camera_calib/optimizer.h"
