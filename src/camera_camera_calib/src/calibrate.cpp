@@ -12,6 +12,7 @@
 #include "camera_camera_calib/objectPose.h"
 #include "camera_camera_calib/optimizer.h"
 #include "camera_camera_calib/omniModel.h"
+#include "camera_camera_calib/aprilTagsDetector.h"
 
 using namespace std;
 using namespace cv;
@@ -84,6 +85,7 @@ int main(int argc, char **argv)
     cout << "---------------------------------------------" << endl;
     // OmniModel model(camera_matrix, dist_coeffs, xi);
     vector<vector<KeyPoint> > kps_vec_1, kps_vec_2;
+    AprilTagsDetector apriltags();
     for (size_t i=0; i<im0_seq.size(); i++){
         /*
          * Step 1: Find out camera extrinsic parameter using PnP

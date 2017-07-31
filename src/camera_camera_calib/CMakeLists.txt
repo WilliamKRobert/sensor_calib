@@ -21,7 +21,6 @@ find_package( OpenCV REQUIRED )
 find_package( Eigen REQUIRED )
 find_package( Ceres REQUIRED )
 
-
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
 
@@ -112,10 +111,10 @@ find_package( Ceres REQUIRED )
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES camera_camera_calib
-#  CATKIN_DEPENDS other_catkin_pkg
-#  DEPENDS system_lib
+  INCLUDE_DIRS include
+#  LIBRARIES find_camera_pose
+  CATKIN_DEPENDS roscpp rospy std_msgs
+  DEPENDS system_lib
 )
 
 ###########
@@ -125,23 +124,15 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-# include
-# ${catkin_INCLUDE_DIRS}
-)
-
-catkin_package(
-  INCLUDE_DIRS include
-#  LIBRARIES find_camera_pose
-  CATKIN_DEPENDS roscpp rospy std_msgs
-  DEPENDS system_lib
-)
-
-include_directories(
   include
+  ../Thirdparty/apriltags
+  #src/Thirdparty/apriltags/build/include/AprilTags
+  src/Thirdparty/apriltags/build/lib
   ${catkin_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
   ${Eigen_INCLUDE_DIRS}
   ${CERES_INCLUDE_DIRS}
+  ${APRILTAGS_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
@@ -221,14 +212,16 @@ include_directories(
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
-
+link_directories(../Thirdparty/apriltags/build/lib)
 add_executable(camera_camera_calib src/calibrate.cpp 
                                    src/loadBag.cpp 
                                    src/objectPose.cpp
                                    src/omniModel.cpp
                                    src/optimizer.cpp
+                                   src/aprilTagsDetector.cpp
                                    )
 target_link_libraries(camera_camera_calib ${catkin_LIBRARIES})
 target_link_libraries(camera_camera_calib ${OpenCV_LIBRARIES} opencv_nonfree)
 target_link_libraries(camera_camera_calib ${Eigen_LIBRARIES})
 target_link_libraries(camera_camera_calib ${CERES_LIBRARIES})
+target_link_libraries(camera_camera_calib apriltags)
