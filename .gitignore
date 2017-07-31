@@ -2,7 +2,8 @@
 *~
 **/build/*
 **/devel/*
-
+**/src/Thirdparty/apriltags/build/*
+**/src/Thirdparty/apriltags/.svn/*
 
 
 
