@@ -12,6 +12,8 @@
 #include "AprilTags/Tag36h9.h"
 #include "AprilTags/Tag36h11.h"
 
+#include "camera_camera_calib/omniModel.h"
+
 class AprilTagsDetector
 {
 public:
@@ -65,6 +67,8 @@ public:
 		m_p1 = distortionCoeff.at<double>(2, 0);
 		m_p2 = distortionCoeff.at<double>(3, 0);
 		m_fov_parameter = m_xi <= 1 ? xi : 1.0/xi;
+
+		camModel.setParrameter(intrinsics, distortionCoeff, mirror);
  	}
 	bool AprilTagsDetector::findTagPose(cv::Mat& img, Eigen::Vector3d& translation, Eigen::Matrix3d& rotation);
 
@@ -103,6 +107,7 @@ private:
 
 	string m_windowName; // name of image drawing window
 
+	OmniModel camModel;
 
 };
 

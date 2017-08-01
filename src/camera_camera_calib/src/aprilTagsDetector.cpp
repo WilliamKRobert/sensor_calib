@@ -140,20 +140,49 @@ void AprilTagsDetector::processImage(cv::Mat& image, vector<AprilTags::TagDetect
     }
 }
 
-bool AprilTagsDetector::findTagPose(cv::Mat& img, Eigen::Vector3d& translation, Eigen::Matrix3d& rotation){
+std::pair<double, double> getLocation(double squareDist, int id, int size){
+  double x = (id % size) * squareDist;
+  double y = (id / size) * squareDist;
+  return std::pair<double, double>(x, y);
+}
+
+bool AprilTagsDetector::findTagPose(cv::Mat& img, Eigen::Matrix4d& pose){
 	// find tags which are detected both in cam0 and cam1
 	// extract tags: world coordinates and image coordinates
 	// find pose
 	vector<AprilTags::TagDetection> detections;
 	processImage(img, detections);
-	Eigen::Vector3d translation;
-    Eigen::Matrix3d rotation;
-    if (detections.size() <= 0)
-    	return false;
+	
+  if (detections.size() <= 0)
+  	return false;
 
-    std::vector<cv::Point3f> objPts;
-    std::vector<cv::Point2f> imgPts;
-    for (size_t i=0; i<detections.size(); i++){
+  std::vector<cv::Point3f> objPts;
+  std::vector<cv::Point2f> imgPts;
+  // Assume tags start from left up corner and increase along x first
+  double squareDist = 20;
+  int size = 6;
+  
+  for (size_t i=0; i<detections.size(); i++){
+      AprilTags::TagDetection tag = detections[i];
+      int id = tag.id;
+      std::pair<double, double> center = getLocation(squareDist, id, size);
+      double cx = center.first;
+      double cy = center.second;
+      objPts.push_back(cv::Point3f(cx - s, cx - s, 0));
+      objPts.push_back(cv::Point3f(cx + s, cx - s, 0));
+      objPts.push_back(cv::Point3f(cx + s, cx + s, 0));
+      objPts.push_back(cv::Point3f(cx - s, cx + s, 0));
 
-    }
+      std::pair<float, float> p1 = p[0];
+      std::pair<float, float> p2 = p[1];
+      std::pair<float, float> p3 = p[2];
+      std::pair<float, float> p4 = p[3];
+      imgPts.push_back(cv::Point2f(p1.first, p1.second));
+      imgPts.push_back(cv::Point2f(p2.first, p2.second));
+      imgPts.push_back(cv::Point2f(p3.first, p3.second));
+      imgPts.push_back(cv::Point2f(p4.first, p4.second));
+
+      camModel.estimateTransformation(imgPts, objPts, pose);
+
+  }
 }

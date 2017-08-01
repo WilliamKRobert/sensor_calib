@@ -86,6 +86,7 @@ int main(int argc, char **argv)
     // OmniModel model(camera_matrix, dist_coeffs, xi);
     vector<vector<KeyPoint> > kps_vec_1, kps_vec_2;
     AprilTagsDetector apriltags();
+    vector<Eigen::Matrix4d> tagPoses0, tagPoses1;
     for (size_t i=0; i<im0_seq.size(); i++){
         /*
          * Step 1: Find out camera extrinsic parameter using PnP
@@ -100,10 +101,13 @@ int main(int argc, char **argv)
         if (im1.channels() == 3)
             cvtColor(im1, im1, COLOR_RGB2GRAY);
         
-        vector<KeyPoint> kps1, kps2;
-        featureMatching(im0, im1, kps1, kps2);
-        kps_vec_1.push_back(kps1);
-        kps_vec_2.push_back(kps2);
+        Eigen::Matrix4d pose0, pose1;
+        bool bfind0 = findTagPose(im0, pose0);
+        bool bfind1 = findTagPose(im1, pose1);
+        if (bfind0 && bfind1){
+            tagPoses0.push_back(pose0);
+            tagPoses1.push_back(pose1);
+        }
     }
     // /*      
     //  * Step 2: Obtain camera-Camera estimated transform 
@@ -129,7 +133,7 @@ int main(int argc, char **argv)
     double selection_ratio = 0.75;
     google::InitGoogleLogging("Bundle Adjustment");
     optimizer ba;    
-    ba.bundleAdjustment(cam0, cam1, kps_vec_1, kps_vec_2, transform);
+    ba.bundleAdjustment(tagPoses0, tagPoses1, transform);
 
     cout << "--------------------------------------------" << endl;
     cout << "cam1 pose in cam0 frame: " << endl;
