@@ -17,18 +17,19 @@
         parameter: 6 elements array which stores the transform between LIDAR and camera
         
  */
-void optimizer::bundleAdjustment(vector<Eigen::Matrix4d>& tagPoses0,
-                                 vector<Eigen::Matrix4d>& tagPoses1,
+void optimizer::bundleAdjustment(OmniModel& cam0,
+                                 std::vector<cv::Point2f>& cam0_imgPts,
+                                 std::vector<cv::Point3f>& cam1_objPts,
                                  double* parameter
                                  )
 {   
     // Create residuals for each observation in the bundle adjustment problem. The
     // parameters for cameras and points are added automatically.
     ceres::Problem problem; 
-    for (size_t i = 0; i < tagPoses0.size(); ++i) {
+    for (size_t i = 0; i < cam0_imgPts.size(); ++i) {
         // Each Residual block takes a point and a camera as input and outputs a 1
         // dimensional residual. 
-            ceres::CostFunction* cs = SnavelyReprojectionError::Create( tagPoses0[i], tagPoses1[i]);
+            ceres::CostFunction* cs = SnavelyReprojectionError::Create( cam0, cam0_imgPts[i], cam1_objPts[i]);
             problem.AddResidualBlock(cs, NULL /* squared loss */, &parameter[0]);
         
     }

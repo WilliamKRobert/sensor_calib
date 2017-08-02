@@ -42,7 +42,10 @@ public:
     m_windowName(string("apriltags_detection"))
  	{}
 
- 	AprilTagsDetector(cv::Mat intrinsics, cv::Mat distortionCoeff, double mirror, double width, double height, double tagSize) :
+ 	AprilTagsDetector(cv::Mat intrinsics, cv::Mat distortionCoeff, double mirror, 
+ 					  double width, double height, 
+ 					  int tagRows, int tagCols,
+ 					  double tagSize, double tagSpacing) :
     // default settings, most can be modified through command line options (see below)
     m_tagDetector(NULL),
     m_tagCodes(AprilTags::tagCodes36h11),
@@ -51,8 +54,11 @@ public:
     m_timing(false),
 
     m_width(width),
-    m_height(height0),
+    m_height(height),
+    m_tagRows(tagRows),
+    m_tagCols(tagCols),
     m_tagSize(tagSize),
+    m_tagSpacing(tagSpacing),
 
     m_deviceId(0),
     m_windowName(string("apriltags_detection"))
@@ -66,12 +72,23 @@ public:
 		m_k2 = distortionCoeff.at<double>(1, 0);
 		m_p1 = distortionCoeff.at<double>(2, 0);
 		m_p2 = distortionCoeff.at<double>(3, 0);
-		m_fov_parameter = m_xi <= 1 ? xi : 1.0/xi;
+		m_fov_parameter = m_xi <= 1 ? m_xi : 1.0 / 	m_xi;
 
-		camModel.setParrameter(intrinsics, distortionCoeff, mirror);
+		camModel.setParameter(intrinsics, distortionCoeff, mirror);
+
+        setup();
  	}
-	bool AprilTagsDetector::findTagPose(cv::Mat& img, Eigen::Vector3d& translation, Eigen::Matrix3d& rotation);
+	bool getDetections(cv::Mat& img, 
+                       std::vector<AprilTags::TagDetection> &detections, 
+                       std::vector<cv::Point3f> &objPts,
+                       std::vector<cv::Point2f> &imgPts,
+                       std::vector<std::pair<bool, int> >& tagid_found);
+    void findCamPose( const std::vector<cv::Point3f> objPts,
+                      const std::vector<cv::Point2f> imgPts,
+                      Eigen::Matrix4d& pose);
 
+    OmniModel camModel;
+    
 private:
 	inline double standardRad(double t) const;
 	void wRo_to_euler(const Eigen::Matrix3d& wRo, double& yaw, double& pitch, double& roll) const;
@@ -79,7 +96,7 @@ private:
 	void setTagCodes(string s);
 	void setup();
 	void printDetection(AprilTags::TagDetection& detection) const;
-	void processImage(cv::Mat& image, cv::Mat& image_gray);
+	void processImage(cv::Mat& image, std::vector<AprilTags::TagDetection>& detections);
 
 	AprilTags::TagDetector* m_tagDetector;
 	AprilTags::TagCodes m_tagCodes;
@@ -89,7 +106,11 @@ private:
 
 	int m_width; // image size in pixels
 	int m_height;
+
+	int m_tagRows;
+	int m_tagCols;
 	double m_tagSize; // April tag side length in meters of square black frame
+	double m_tagSpacing; // in percentage
 	double m_fx; // camera focal length in pixels
 	double m_fy;
 	double m_px; // camera principal point
@@ -107,7 +128,11 @@ private:
 
 	string m_windowName; // name of image drawing window
 
-	OmniModel camModel;
+
+	#ifndef PI
+	static const double PI = 3.14159265358979323846;
+	#endif
+	static const double TWOPI = 2.0 * 3.14159265358979323846;
 
 };
 

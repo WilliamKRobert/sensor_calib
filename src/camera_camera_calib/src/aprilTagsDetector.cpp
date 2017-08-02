@@ -1,15 +1,10 @@
 #include <iostream>
 #include <sys/time.h>
 
-#include "camera_camera_calib/omniModel.h"
-#include "camera_camera_calib/aprilTagsDetector.h"
-
 using namespace std;
 
-#ifndef PI
-const double PI = 3.14159265358979323846;
-#endif
-const double TWOPI = 2.0*PI;
+#include "camera_camera_calib/omniModel.h"
+#include "camera_camera_calib/aprilTagsDetector.h"
 
 double tic(){
   struct timeval t;
@@ -112,6 +107,7 @@ void AprilTagsDetector::processImage(cv::Mat& image, vector<AprilTags::TagDetect
     //      m_cap.retrieve(image);
 
     // detect April tags (requires a gray scale image)
+
     if (image.channels() == 3)
     	cv::cvtColor(image, image, CV_BGR2GRAY);
     double t0;
@@ -140,32 +136,38 @@ void AprilTagsDetector::processImage(cv::Mat& image, vector<AprilTags::TagDetect
     }
 }
 
-std::pair<double, double> getLocation(double squareDist, int id, int size){
-  double x = (id % size) * squareDist;
-  double y = (id / size) * squareDist;
+std::pair<double, double> getLocation(double squareDist, int id, int m_tagRows, int m_tagCols){
+  double x = ( (id-1) % m_tagCols) * squareDist;
+  double y = ( (id-1) / m_tagRows) * squareDist;
   return std::pair<double, double>(x, y);
 }
 
-bool AprilTagsDetector::findTagPose(cv::Mat& img, Eigen::Matrix4d& pose){
-	// find tags which are detected both in cam0 and cam1
-	// extract tags: world coordinates and image coordinates
-	// find pose
-	vector<AprilTags::TagDetection> detections;
-	processImage(img, detections);
-	
-  if (detections.size() <= 0)
-  	return false;
-
-  std::vector<cv::Point3f> objPts;
-  std::vector<cv::Point2f> imgPts;
-  // Assume tags start from left up corner and increase along x first
-  double squareDist = 20;
-  int size = 6;
+bool AprilTagsDetector::getDetections(cv::Mat& img, 
+                                      std::vector<AprilTags::TagDetection> &detections, 
+                                      std::vector<cv::Point3f> &objPts,
+                                      std::vector<cv::Point2f> &imgPts,
+                                      std::vector<std::pair<bool, int> >& tagid_found){
+  // tagid_found: first: if tag is found, corresponding index in objPts 
+  processImage(img, detections);
   
+  if (detections.size() <= 0)
+    return false;
+
+  size_t num_tags = m_tagRows * m_tagCols * 4;
+  for (size_t i=0; i<num_tags; i++){
+      tagid_found.push_back(std::pair<bool, int>(false, -1));
+  }
+
+
+  double squareDist = m_tagSize + m_tagSize * m_tagSpacing;
+  double s = m_tagSize / 2.0;
   for (size_t i=0; i<detections.size(); i++){
       AprilTags::TagDetection tag = detections[i];
       int id = tag.id;
-      std::pair<double, double> center = getLocation(squareDist, id, size);
+
+      tagid_found[id] = std::pair<bool, int>(true, i*4);
+
+      std::pair<double, double> center = getLocation(squareDist, id, m_tagRows, m_tagCols);
       double cx = center.first;
       double cy = center.second;
       objPts.push_back(cv::Point3f(cx - s, cx - s, 0));
@@ -173,16 +175,25 @@ bool AprilTagsDetector::findTagPose(cv::Mat& img, Eigen::Matrix4d& pose){
       objPts.push_back(cv::Point3f(cx + s, cx + s, 0));
       objPts.push_back(cv::Point3f(cx - s, cx + s, 0));
 
-      std::pair<float, float> p1 = p[0];
-      std::pair<float, float> p2 = p[1];
-      std::pair<float, float> p3 = p[2];
-      std::pair<float, float> p4 = p[3];
+      std::pair<float, float> p1 = tag.p[0];
+      std::pair<float, float> p2 = tag.p[1];
+      std::pair<float, float> p3 = tag.p[2];
+      std::pair<float, float> p4 = tag.p[3];
       imgPts.push_back(cv::Point2f(p1.first, p1.second));
       imgPts.push_back(cv::Point2f(p2.first, p2.second));
       imgPts.push_back(cv::Point2f(p3.first, p3.second));
       imgPts.push_back(cv::Point2f(p4.first, p4.second));
-
-      camModel.estimateTransformation(imgPts, objPts, pose);
-
   }
+
+  return true;
+}
+
+void AprilTagsDetector::findCamPose( const std::vector<cv::Point3f> objPts,
+                                     const std::vector<cv::Point2f> imgPts,
+                                     Eigen::Matrix4d& pose){
+  // find tags which are detected both in cam0 and cam1
+  // extract tags: world coordinates and image coordinates
+  // find pose
+  // Assume tags start from left up corner and increase along x first
+  camModel.estimateTransformation(imgPts, objPts, pose);
 }
