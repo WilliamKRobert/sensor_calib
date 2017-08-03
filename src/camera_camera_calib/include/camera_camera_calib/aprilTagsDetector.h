@@ -45,7 +45,8 @@ public:
  	AprilTagsDetector(cv::Mat intrinsics, cv::Mat distortionCoeff, double mirror, 
  					  double width, double height, 
  					  int tagRows, int tagCols,
- 					  double tagSize, double tagSpacing) :
+ 					  double tagSize, double tagSpacing,
+                      std::string windowName) :
     // default settings, most can be modified through command line options (see below)
     m_tagDetector(NULL),
     m_tagCodes(AprilTags::tagCodes36h11),
@@ -61,7 +62,8 @@ public:
     m_tagSpacing(tagSpacing),
 
     m_deviceId(0),
-    m_windowName(string("apriltags_detection"))
+    m_windowName(windowName),
+    m_verbose(true)
  	{
  		m_px = intrinsics.at<double>(0, 2);
 		m_py = intrinsics.at<double>(1, 2);
@@ -78,6 +80,7 @@ public:
 
         setup();
  	}
+
 	bool getDetections(cv::Mat& img, 
                        std::vector<AprilTags::TagDetection> &detections, 
                        std::vector<cv::Point3f> &objPts,
@@ -88,7 +91,7 @@ public:
                       Eigen::Matrix4d& pose);
 
     OmniModel camModel;
-    
+
 private:
 	inline double standardRad(double t) const;
 	void wRo_to_euler(const Eigen::Matrix3d& wRo, double& yaw, double& pitch, double& roll) const;
@@ -102,6 +105,7 @@ private:
 	AprilTags::TagCodes m_tagCodes;
 
 	bool m_draw; // draw image and April tag detections?
+    bool m_verbose; // print detections
 	bool m_timing; // print timing information for each tag extraction call
 
 	int m_width; // image size in pixels

@@ -155,7 +155,7 @@ void TagDetection::draw(cv::Mat& image) const {
   strSt << "#" << id;
   cv::putText(image, strSt.str(),
               cv::Point2f(cxy.first + 10, cxy.second + 10),
-              cv::FONT_HERSHEY_PLAIN, 1, cv::Scalar(0,0,255));
+              cv::FONT_HERSHEY_PLAIN, 1, cv::Scalar(255,0,0));
 }
 
 } // namespace

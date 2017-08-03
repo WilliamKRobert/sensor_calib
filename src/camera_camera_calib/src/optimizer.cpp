@@ -26,6 +26,8 @@ void optimizer::bundleAdjustment(OmniModel& cam0,
     // Create residuals for each observation in the bundle adjustment problem. The
     // parameters for cameras and points are added automatically.
     ceres::Problem problem; 
+    std::cout << cam0_imgPts.size() << std::endl;
+    std::cout << cam1_objPts.size() << std::endl;
     for (size_t i = 0; i < cam0_imgPts.size(); ++i) {
         // Each Residual block takes a point and a camera as input and outputs a 1
         // dimensional residual. 

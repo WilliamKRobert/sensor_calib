@@ -26,7 +26,7 @@
     <cols>3</cols>
     <dt>d</dt>
     <data>
-      535.6423612064987 0 274.0531628852047 0 535.9184071706452 275.63834710965074 0 0 1</data></Cam0Intrinsics>
+      654.25682308 0 525 0 653.56044285 525 0 0 1</data></Cam0Intrinsics>
   <Cam0Distortion type_id="opencv-matrix">
     <rows>4</rows>
     <cols>1</cols>
@@ -41,7 +41,7 @@
     <cols>3</cols>
     <dt>d</dt>
     <data>
-      535.6423612064987 0 274.0531628852047 0 535.9184071706452 275.63834710965074 0 0 1</data></Cam1Intrinsics>
+      605.24912619 0 525.34637842 0 604.48074707 525.01226532 0 0 1</data></Cam1Intrinsics>
   <Cam1Distortion type_id="opencv-matrix">
     <rows>4</rows>
     <cols>1</cols>

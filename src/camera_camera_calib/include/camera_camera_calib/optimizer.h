@@ -44,6 +44,14 @@ struct SnavelyReprojectionError {
         // transform[3,4,5] are the translation.
         
         // step 1: transform the object points in cam1 frame to that in cam0 frame
+        // std::cout << "Debug info:" << std::endl;
+        // std::cout <<"cam1 obj pts:" << std::endl;
+        // std::cout << _cam1_objPts.x << " "  << _cam1_objPts.y << " " << _cam1_objPts.z << std::endl;
+        if (isnan(_cam1_objPts.x) || isnan(_cam1_objPts.y) || isnan(_cam1_objPts.z) 
+                  || isnan(_cam0_imgPts.x) || isnan(_cam0_imgPts.y)){
+            std::cout << "invalid value!" << std::endl;
+            return false;
+        }
         T p[3], q[3];
         p[0] = T(_cam1_objPts.x);
         p[1] = T(_cam1_objPts.y);
@@ -52,15 +60,23 @@ struct SnavelyReprojectionError {
         q[0] += T(transform[3]);
         q[1] += T(transform[4]);
         q[2] += T(transform[5]);
-
+        // std::cout <<"q:" << std::endl;
+        // std::cout << q[0] << " "  << q[1] << " " << q[2] << std::endl;
         // reproject object points to image points in cam0 frame
         Eigen::Matrix<T, 3, 1> eigen_objPt;
         Eigen::Matrix<T, 2, 1> outKeypoint;
         eigen_objPt << q[0], q[1], q[2];
-        _cam0.euclideanToKeypoint(eigen_objPt, outKeypoint);
+
+        // std::cout<< eigen_objPt(0) << " " << eigen_objPt(1) << " " << eigen_objPt(2) << std::endl;
+        bool isValid = _cam0.euclideanToKeypoint(eigen_objPt, outKeypoint);
+        
         // // the residuals is the distance between scan point and the checkerboard plane
         residuals[0] = T(_cam0_imgPts.x) - outKeypoint(0);
+        
+        // std::cout << _cam0_imgPts.x << " " << outKeypoint(0) << std::endl;
         residuals[1] = T(_cam0_imgPts.y) - outKeypoint(1);
+        // std::cout << _cam0_imgPts.y << " " << outKeypoint(1) << std::endl;
+
 
         return true;
     }

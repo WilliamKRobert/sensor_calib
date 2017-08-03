@@ -121,9 +121,11 @@ void AprilTagsDetector::processImage(cv::Mat& image, vector<AprilTags::TagDetect
     }
 
     // print out each detection
-    cout << detections.size() << " tags detected:" << endl;
-    for (int i=0; i<detections.size(); i++) {
-      printDetection(detections[i]);
+    if (m_verbose){
+      cout << detections.size() << " tags detected:" << endl;
+      for (int i=0; i<detections.size(); i++) {
+        printDetection(detections[i]);
+      }
     }
 
     // show the current image including any detections
@@ -136,9 +138,13 @@ void AprilTagsDetector::processImage(cv::Mat& image, vector<AprilTags::TagDetect
     }
 }
 
+
+// right now the ID of tags on the board starts from 0 to 6 in the first row
+// and begin with 8, end with 14 in the second row 
 std::pair<double, double> getLocation(double squareDist, int id, int m_tagRows, int m_tagCols){
-  double x = ( (id-1) % m_tagCols) * squareDist;
-  double y = ( (id-1) / m_tagRows) * squareDist;
+  double x = ( id % (m_tagCols+1) ) * squareDist;
+  double y = ( id / (m_tagCols+1) ) * squareDist;
+  
   return std::pair<double, double>(x, y);
 }
 
@@ -153,7 +159,7 @@ bool AprilTagsDetector::getDetections(cv::Mat& img,
   if (detections.size() <= 0)
     return false;
 
-  size_t num_tags = m_tagRows * m_tagCols * 4;
+  size_t num_tags = m_tagRows * (m_tagCols+1);
   for (size_t i=0; i<num_tags; i++){
       tagid_found.push_back(std::pair<bool, int>(false, -1));
   }
@@ -170,10 +176,15 @@ bool AprilTagsDetector::getDetections(cv::Mat& img,
       std::pair<double, double> center = getLocation(squareDist, id, m_tagRows, m_tagCols);
       double cx = center.first;
       double cy = center.second;
-      objPts.push_back(cv::Point3f(cx - s, cx - s, 0));
-      objPts.push_back(cv::Point3f(cx + s, cx - s, 0));
-      objPts.push_back(cv::Point3f(cx + s, cx + s, 0));
-      objPts.push_back(cv::Point3f(cx - s, cx + s, 0));
+      // objPts.push_back(cv::Point3f(cx - s, cx - s, 0));
+      // objPts.push_back(cv::Point3f(cx + s, cx - s, 0));
+      // objPts.push_back(cv::Point3f(cx + s, cx + s, 0));
+      // objPts.push_back(cv::Point3f(cx - s, cx + s, 0));
+
+      objPts.push_back(cv::Point3f(cx - s, cy + s, 0));
+      objPts.push_back(cv::Point3f(cx + s, cy + s, 0));
+      objPts.push_back(cv::Point3f(cx + s, cy - s, 0));
+      objPts.push_back(cv::Point3f(cx - s, cy - s, 0));
 
       std::pair<float, float> p1 = tag.p[0];
       std::pair<float, float> p2 = tag.p[1];
