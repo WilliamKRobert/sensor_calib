@@ -176,15 +176,17 @@ bool AprilTagsDetector::getDetections(cv::Mat& img,
       std::pair<double, double> center = getLocation(squareDist, id, m_tagRows, m_tagCols);
       double cx = center.first;
       double cy = center.second;
-      // objPts.push_back(cv::Point3f(cx - s, cx - s, 0));
-      // objPts.push_back(cv::Point3f(cx + s, cx - s, 0));
-      // objPts.push_back(cv::Point3f(cx + s, cx + s, 0));
-      // objPts.push_back(cv::Point3f(cx - s, cx + s, 0));
-
-      objPts.push_back(cv::Point3f(cx - s, cy + s, 0));
-      objPts.push_back(cv::Point3f(cx + s, cy + s, 0));
-      objPts.push_back(cv::Point3f(cx + s, cy - s, 0));
+      cx = 0;
+      cy = 0;
       objPts.push_back(cv::Point3f(cx - s, cy - s, 0));
+      objPts.push_back(cv::Point3f(cx + s, cy - s, 0));
+      objPts.push_back(cv::Point3f(cx + s, cy + s, 0));
+      objPts.push_back(cv::Point3f(cx - s, cy + s, 0));
+
+      // objPts.push_back(cv::Point3f(cx - s, cy + s, 0));
+      // objPts.push_back(cv::Point3f(cx + s, cy + s, 0));
+      // objPts.push_back(cv::Point3f(cx + s, cy - s, 0));
+      // objPts.push_back(cv::Point3f(cx - s, cy - s, 0));
 
       std::pair<float, float> p1 = tag.p[0];
       std::pair<float, float> p2 = tag.p[1];
@@ -199,12 +201,12 @@ bool AprilTagsDetector::getDetections(cv::Mat& img,
   return true;
 }
 
-void AprilTagsDetector::findCamPose( const std::vector<cv::Point3f> objPts,
+bool AprilTagsDetector::findCamPose( const std::vector<cv::Point3f> objPts,
                                      const std::vector<cv::Point2f> imgPts,
                                      Eigen::Matrix4d& pose){
   // find tags which are detected both in cam0 and cam1
   // extract tags: world coordinates and image coordinates
   // find pose
   // Assume tags start from left up corner and increase along x first
-  camModel.estimateTransformation(imgPts, objPts, pose);
+  return camModel.estimateTransformation(imgPts, objPts, pose);
 }

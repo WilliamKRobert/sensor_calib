@@ -8,30 +8,53 @@ class OmniModel
 {
 public:
 	OmniModel(cv::Mat intrinsics, cv::Mat distortionCoeff, double mirror){ // intrinsics: 3 by 3 distortionCoeff: 4 by 1
-		u0 = intrinsics.at<double>(0, 2);
-		v0 = intrinsics.at<double>(1, 2);
-		fu = intrinsics.at<double>(0, 0);
-		fv = intrinsics.at<double>(1, 1);
-		xi = mirror;
-		k1 = distortionCoeff.at<double>(0, 0);
-		k2 = distortionCoeff.at<double>(1, 0);
-		p1 = distortionCoeff.at<double>(2, 0);
-		p2 = distortionCoeff.at<double>(3, 0);
-		_fov_parameter = xi <= 1 ? xi : 1.0/xi;
+		m_u0 = intrinsics.at<double>(0, 2);
+		m_v0 = intrinsics.at<double>(1, 2);
+		m_fu = intrinsics.at<double>(0, 0);
+		m_fv = intrinsics.at<double>(1, 1);
+		m_xi = mirror;
+		m_k1 = distortionCoeff.at<double>(0, 0);
+		m_k2 = distortionCoeff.at<double>(1, 0);
+		m_p1 = distortionCoeff.at<double>(2, 0);
+		m_p2 = distortionCoeff.at<double>(3, 0);
+		m_fov_parameter = m_xi <= 1 ? m_xi : 1.0/m_xi;
+	}
+
+	OmniModel(cv::Mat intrinsics, cv::Mat distortionCoeff, double mirror, 
+			double u0, double v0, 
+			std::vector<double> ss,
+			double c, double d, double e){ 
+		m_u0 = u0;
+		m_v0 = v0;
+		m_fu = intrinsics.at<double>(0, 0);
+		m_fv = intrinsics.at<double>(1, 1);
+		m_xi = mirror;
+		m_k1 = distortionCoeff.at<double>(0, 0);
+		m_k2 = distortionCoeff.at<double>(1, 0);
+		m_p1 = distortionCoeff.at<double>(2, 0);
+		m_p2 = distortionCoeff.at<double>(3, 0);
+		m_fov_parameter = m_xi <= 1 ? m_xi : 1.0/m_xi;
+
+		for (size_t i=0; i<ss.size(); i++)
+			m_ss.push_back(ss[i]);
+
+		m_c = c;
+		m_d = d;
+		m_e = e;
 	}
 
 	OmniModel(){}
 
 	void setParameter(cv::Mat intrinsics, cv::Mat distortionCoeff, double mirror){ // intrinsics: 3 by 3 distortionCoeff: 4 by 1
-		u0 = intrinsics.at<double>(0, 2);
-		v0 = intrinsics.at<double>(1, 2);
-		fu = intrinsics.at<double>(0, 0);
-		fv = intrinsics.at<double>(1, 1);
-		xi = mirror;
-		k1 = distortionCoeff.at<double>(0, 0);
-		k2 = distortionCoeff.at<double>(1, 0);
-		p1 = distortionCoeff.at<double>(2, 0);
-		p2 = distortionCoeff.at<double>(3, 0);
+		m_u0 = intrinsics.at<double>(0, 2);
+		m_v0 = intrinsics.at<double>(1, 2);
+		m_fu = intrinsics.at<double>(0, 0);
+		m_fv = intrinsics.at<double>(1, 1);
+		m_xi = mirror;
+		m_k1 = distortionCoeff.at<double>(0, 0);
+		m_k2 = distortionCoeff.at<double>(1, 0);
+		m_p1 = distortionCoeff.at<double>(2, 0);
+		m_p2 = distortionCoeff.at<double>(3, 0);
 	}
 
 	void distortion(const double mx_u, const double my_u, 
@@ -55,17 +78,17 @@ public:
 	  my2_u = my_u * my_u;
 	  mxy_u = mx_u * my_u;
 	  rho2_u = mx2_u + my2_u;
-	  rad_dist_u = T(k1) * rho2_u + T(k2) * rho2_u * rho2_u;
-	  *dx_u = mx_u * rad_dist_u + T(2) * T(p1) * mxy_u + T(p2) * (rho2_u + T(2) * mx2_u);
-	  *dy_u = my_u * rad_dist_u + T(2) * T(p2) * mxy_u + T(p1) * (rho2_u + T(2) * my2_u);
+	  rad_dist_u = T(m_k1) * rho2_u + T(m_k2) * rho2_u * rho2_u;
+	  *dx_u = mx_u * rad_dist_u + T(2) * T(m_p1) * mxy_u + T(m_p2) * (rho2_u + T(2) * mx2_u);
+	  *dy_u = my_u * rad_dist_u + T(2) * T(m_p2) * mxy_u + T(m_p1) * (rho2_u + T(2) * my2_u);
 
-	  *dxdmx = T(1) + rad_dist_u + T(k1) * T(2) * mx2_u + T(k2) * rho2_u * T(4) * mx2_u
-	      + T(2) * p1 * my_u + T(6) * T(p2) * mx_u;
-	  *dydmx = T(k1) * T(2) * mx_u * my_u + T(k2) * T(4) * rho2_u * mx_u * my_u
-	      + p1 * T(2) * mx_u + T(2) * T(p2) * my_u;
+	  *dxdmx = T(1) + rad_dist_u + T(m_k1) * T(2) * mx2_u + T(m_k2) * rho2_u * T(4) * mx2_u
+	      + T(2) * T(m_p1) * my_u + T(6) * T(m_p2) * mx_u;
+	  *dydmx = T(m_k1) * T(2) * mx_u * my_u + T(m_k2) * T(4) * rho2_u * mx_u * my_u
+	      + T(m_p1) * T(2) * mx_u + T(2) * T(m_p2) * my_u;
 	  *dxdmy = *dydmx;
-	  *dydmy = T(1) + rad_dist_u + T(k1) * T(2) * my2_u + T(k2) * rho2_u * T(4) * my2_u
-	      + T(6) * T(p1) * my_u + T(2) * T(p2) * mx_u;
+	  *dydmy = T(1) + rad_dist_u + T(m_k1) * T(2) * my2_u + T(m_k2) * rho2_u * T(4) * my2_u
+	      + T(6) * T(m_p1) * my_u + T(2) * T(m_p2) * mx_u;
 	}
 
 	void undistortGN(const double u_d, const double v_d, double *u,
@@ -81,16 +104,19 @@ public:
 	// bool euclideanToKeypoint(const Eigen::Matrix<T, 3, 1> & p,
  //    							   Eigen::Matrix<T, 2, 1> & outKeypoint) const;
 
+	bool cam2world(const cv::Point2f &Ms,
+                          cv::Point3f &Ps)const;
+
 	template<typename T>
 	bool euclideanToKeypoint(const Eigen::Matrix<T, 3, 1> & p,
                      Eigen::Matrix<T, 2, 1> & outKeypoint) const{
 	  T d = p.norm();
 
 	  // Check if point will lead to a valid projection
-	  if (p[2] <= -(T(_fov_parameter) * d))
+	  if (p[2] <= -(T(m_fov_parameter) * d))
 	    return false;
 
-	  T rz = 1.0 / (p[2] + T(xi) * d);
+	  T rz = 1.0 / (p[2] + T(m_xi) * d);
 	  outKeypoint[0] = p[0] * rz;
 	  outKeypoint[1] = p[1] * rz;
 	  //std::cout << "normalize\n";
@@ -112,8 +138,8 @@ public:
 	  //SM_OUT(outKeypoint[0]);
 	  //SM_OUT(outKeypoint[1]);
 
-	  outKeypoint[0] = T(fu) * outKeypoint[0] + T(u0);
-	  outKeypoint[1] = T(fv) * outKeypoint[1] + T(v0);
+	  outKeypoint[0] = T(m_fu) * outKeypoint[0] + T(m_u0);
+	  outKeypoint[1] = T(m_fv) * outKeypoint[1] + T(m_v0);
 	  //std::cout << "project\n";
 	  //SM_OUT(outKeypoint[0]);
 	  //SM_OUT(outKeypoint[1]);
@@ -124,10 +150,13 @@ public:
 	bool estimateTransformation(std::vector<cv::Point2f> Ms,
 								std::vector<cv::Point3f> Ps,
     							Eigen::Matrix4d &  out_T_t_c);
-private:
-	double u0, v0, fu, fv, xi; //camera paramter
-	double k1, k2, p1, p2; // distortion parameter
-	double _fov_parameter; //PM: is = xi for xi=<1, = 1/xi for x>1. Used for determining valid projections. Better name?
+// private:
+	double m_u0, m_v0, m_fu, m_fv, m_xi; //camera paramter
+	double m_k1, m_k2, m_p1, m_p2; // distortion parameter
+	double m_fov_parameter; //PM: is = xi for xi=<1, = 1/xi for x>1. Used for determining valid projections. Better name?
 
+	std::vector<double> m_ss; // polynomial coefficients of function F, from low degree to high degree
+							  // F(r) = a0 + a1*r + a2*r^2 + a3*r^3 + a4*r^4	
+	double m_c, m_d, m_e;
 };
 #endif

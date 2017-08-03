@@ -1,4 +1,5 @@
 #include <iostream>
+#include <math.h> 
 
 #include "camera_camera_calib/omniModel.h"
 
@@ -27,17 +28,17 @@ void OmniModel::distortion(const double mx_u, const double my_u,
   my2_u = my_u * my_u;
   mxy_u = mx_u * my_u;
   rho2_u = mx2_u + my2_u;
-  rad_dist_u = k1 * rho2_u + k2 * rho2_u * rho2_u;
-  *dx_u = mx_u * rad_dist_u + 2 * p1 * mxy_u + p2 * (rho2_u + 2 * mx2_u);
-  *dy_u = my_u * rad_dist_u + 2 * p2 * mxy_u + p1 * (rho2_u + 2 * my2_u);
+  rad_dist_u = m_k1 * rho2_u + m_k2 * rho2_u * rho2_u;
+  *dx_u = mx_u * rad_dist_u + 2 * m_p1 * mxy_u + m_p2 * (rho2_u + 2 * mx2_u);
+  *dy_u = my_u * rad_dist_u + 2 * m_p2 * mxy_u + m_p1 * (rho2_u + 2 * my2_u);
 
-  *dxdmx = 1 + rad_dist_u + k1 * 2 * mx2_u + k2 * rho2_u * 4 * mx2_u
-      + 2 * p1 * my_u + 6 * p2 * mx_u;
-  *dydmx = k1 * 2 * mx_u * my_u + k2 * 4 * rho2_u * mx_u * my_u
-      + p1 * 2 * mx_u + 2 * p2 * my_u;
+  *dxdmx = 1 + rad_dist_u + m_k1 * 2 * mx2_u + m_k2 * rho2_u * 4 * mx2_u
+      + 2 * m_p1 * my_u + 6 * m_p2 * mx_u;
+  *dydmx = m_k1 * 2 * mx_u * my_u + m_k2 * 4 * rho2_u * mx_u * my_u
+      + m_p1 * 2 * mx_u + 2 * m_p2 * my_u;
   *dxdmy = *dydmx;
-  *dydmy = 1 + rad_dist_u + k1 * 2 * my2_u + k2 * rho2_u * 4 * my2_u
-      + 6 * p1 * my_u + 2 * p2 * mx_u;
+  *dydmy = 1 + rad_dist_u + m_k1 * 2 * my2_u + m_k2 * rho2_u * 4 * my2_u
+      + 6 * m_p1 * my_u + 2 * m_p2 * mx_u;
 }
 
 
@@ -88,8 +89,8 @@ void OmniModel::undistortImage(const cv::Mat distorted, cv::Mat undistorted){
 
 bool OmniModel::isUndistortedKeypointValid(
     const double rho2_d) const {
-  double one_over_xixi_m_1 = 1.0 / (xi * xi - 1);
-  return xi <= 1.0 || rho2_d <= one_over_xixi_m_1;
+  double one_over_xixi_m_1 = 1.0 / (m_xi * m_xi - 1);
+  return m_xi <= 1.0 || rho2_d <= one_over_xixi_m_1;
 }
 
 bool OmniModel::keypointToEuclidean(
@@ -106,10 +107,10 @@ bool OmniModel::keypointToEuclidean(
   // outPoint.derived().resize(3);
 
   // Unproject...
-  double recip_fu = 1.0 / fu;
-  double recip_fv = 1.0 / fv;
-  outPoint[0] = recip_fu * (keypoint[0] - u0);
-  outPoint[1] = recip_fv * (keypoint[1] - v0);
+  double recip_fu = 1.0 / m_fu;
+  double recip_fv = 1.0 / m_fv;
+  outPoint[0] = recip_fu * (keypoint[0] - m_u0);
+  outPoint[1] = recip_fv * (keypoint[1] - m_v0);
 
   // Re-distort
   // _distortion.undistort(outPoint.derived().template head<2>());
@@ -124,12 +125,51 @@ bool OmniModel::keypointToEuclidean(
   if (!isUndistortedKeypointValid(rho2_d))
     return false;
 
-  outPoint[2] = 1 - xi * (rho2_d + 1) / (xi + sqrt(1 + (1 - xi * xi) * rho2_d));
+  outPoint[2] = 1 - m_xi * (rho2_d + 1) / (m_xi + sqrt(1 + (1 - m_xi * m_xi) * rho2_d));
 
   return true;
 
 }
 
+
+inline double pow(double rho, size_t n){
+      double res = 1;
+      for (size_t i=0; i<n; i++){
+          res *= rho;
+      }
+      return res;
+}
+
+/*
+ * Project a image point onto the unit sphere
+ * input:   Ms: image points
+ * output:  Ps: object points in camera frame 
+ * Adapted from camera model of OCamCalib
+ */
+bool OmniModel::cam2world(const cv::Point2f &Ms,
+                          cv::Point3f &Ps)const{
+    
+
+    Eigen::Matrix2d A;
+    A << m_c, m_d, m_e, 1;
+    Eigen::Matrix2d A_inv = A.inverse();
+    Eigen::Vector2d C;
+    C << Ms.x - m_u0, Ms.y - m_v0;
+
+    Eigen::Vector2d m = A_inv * C;
+    double rho = sqrt( m(0)*m(0) + m(1)*m(1) );
+
+    double f = 0;
+   
+    for (size_t i=0; i<m_ss.size(); i++){
+        f += m_ss[i] * pow(rho, i); 
+    }
+   
+    Ps.x = m(0) / f;
+    Ps.y = m(1) / f;
+    Ps.z = 1;
+    
+}
 
 /* Estimate the transformation of the camera with respect to the calibration target
  *        On success out_T_t_c is filled in with the transformation that takes points from
@@ -141,7 +181,7 @@ bool OmniModel::keypointToEuclidean(
  *
  * These functions were developed with the help of Lionel Heng and the excellent camodocal
  * https://github.com/hengli/camodocal
- */
+ */   
 bool OmniModel::estimateTransformation(
     std::vector<cv::Point2f> Ms,
     std::vector<cv::Point3f> Ps,
@@ -151,29 +191,35 @@ bool OmniModel::estimateTransformation(
   // Convert all target corners to a fakey pinhole view.
   size_t count = 0;
   for (size_t i = 0; i < Ms.size(); ++i) {
-    Eigen::Vector3d targetPoint(Ps[i].x, Ps[i].y, Ps[i].z);
-    Eigen::Vector2d imagePoint(Ms[i].x, Ms[i].y);
-    Eigen::Vector3d backProjection;
+    cv::Point3f undistortPt;
+    cam2world(Ms[i], undistortPt);
+    Ms[i].x = undistortPt.x;
+    Ms[i].y = undistortPt.y;
+    // Eigen::Vector3d targetPoint(Ps[i].x, Ps[i].y, Ps[i].z);
+    // Eigen::Vector2d imagePoint(Ms[i].x, Ms[i].y);
+    // Eigen::Vector3d backProjection;
 
-    if (keypointToEuclidean(imagePoint, backProjection)
-        && backProjection[2] > 0.0) {
-      double x = backProjection[0];
-      double y = backProjection[1];
-      double z = backProjection[2];
-      Ps.at(count).x = targetPoint[0];
-      Ps.at(count).y = targetPoint[1];
-      Ps.at(count).z = targetPoint[2];
+    // // if (!keypointToEuclidean(imagePoint, backProjection)) std::cout << "outside view!" << std::endl;
+    // // if (backProjection[2] <= 0.0) std::cout << "back projection invalid!" << std::endl;
+    // if (keypointToEuclidean(imagePoint, backProjection)
+    //     && backProjection[2] > 0.0) {
+    //   double x = backProjection[0];
+    //   double y = backProjection[1];
+    //   double z = backProjection[2];
+    //   Ps.at(count).x = targetPoint[0];
+    //   Ps.at(count).y = targetPoint[1];
+    //   Ps.at(count).z = targetPoint[2];
 
-      Ms.at(count).x = x / z;
-      Ms.at(count).y = y / z;
-      ++count;
-    } else {
-    // Debug
-    }
+    //   Ms.at(count).x = x / z;
+    //   Ms.at(count).y = y / z;
+    //   ++count;
+    // } else {
+    // // Debug
+    // }
   }
 
-  Ps.resize(count);
-  Ms.resize(count);
+  // Ps.resize(count);
+  // Ms.resize(count);
 
   std::vector<double> distCoeffs(4, 0.0);
 
@@ -183,6 +229,7 @@ bool OmniModel::estimateTransformation(
   if (Ps.size() < 4) {
   // SM_DEBUG_STREAM(
   // "At least 4 points are needed for calling PnP. Found " << Ps.size());
+    std::cout << "At least 4 points are needed for calling PnP. Found" << std::endl;
     return false;
   }
 

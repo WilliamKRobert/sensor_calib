@@ -42,8 +42,9 @@ public:
     m_windowName(string("apriltags_detection"))
  	{}
 
- 	AprilTagsDetector(cv::Mat intrinsics, cv::Mat distortionCoeff, double mirror, 
- 					  double width, double height, 
+    AprilTagsDetector(OmniModel &cam,
+                    //cv::Mat intrinsics, cv::Mat distortionCoeff, double mirror, 
+ 	 				  double width, double height, 
  					  int tagRows, int tagCols,
  					  double tagSize, double tagSpacing,
                       std::string windowName) :
@@ -65,18 +66,18 @@ public:
     m_windowName(windowName),
     m_verbose(true)
  	{
- 		m_px = intrinsics.at<double>(0, 2);
-		m_py = intrinsics.at<double>(1, 2);
-		m_fx = intrinsics.at<double>(0, 0);
-		m_fy = intrinsics.at<double>(1, 1);
-		m_xi = mirror;
-		m_k1 = distortionCoeff.at<double>(0, 0);
-		m_k2 = distortionCoeff.at<double>(1, 0);
-		m_p1 = distortionCoeff.at<double>(2, 0);
-		m_p2 = distortionCoeff.at<double>(3, 0);
-		m_fov_parameter = m_xi <= 1 ? m_xi : 1.0 / 	m_xi;
+ 		m_px = cam.m_u0;
+		m_py = cam.m_v0;
+		m_fx = cam.m_fu;
+		m_fy = cam.m_fv;
+		m_xi = cam.m_xi;
+		m_k1 = cam.m_k1;
+		m_k2 = cam.m_k2;
+		m_p1 = cam.m_p1;
+		m_p2 = cam.m_p2;
+		m_fov_parameter = cam.m_fov_parameter;
 
-		camModel.setParameter(intrinsics, distortionCoeff, mirror);
+		camModel = cam;
 
         setup();
  	}
@@ -86,7 +87,7 @@ public:
                        std::vector<cv::Point3f> &objPts,
                        std::vector<cv::Point2f> &imgPts,
                        std::vector<std::pair<bool, int> >& tagid_found);
-    void findCamPose( const std::vector<cv::Point3f> objPts,
+    bool findCamPose( const std::vector<cv::Point3f> objPts,
                       const std::vector<cv::Point2f> imgPts,
                       Eigen::Matrix4d& pose);
 
