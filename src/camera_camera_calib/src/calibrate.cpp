@@ -26,7 +26,7 @@ int main(int argc, char **argv)
      * Load image, convert from ROS image format to OpenCV Mat
      */
     ros::init(argc, argv, "camera_camera_calib");    
-    string bag_file("/home/audren/Documents/data/small_drone_v2/ufo_2016-02-12-00-32-35.bag");
+    string bag_file("/home/audren/Documents/data/small_drone_v2/ufo_2017-08-01-19-58-02.bag");
 
     vector<Mat> im0_seq, im1_seq;
     string topic0 = string("/synthetic_gimbal/cam0") + "/image_raw";
@@ -43,12 +43,11 @@ int main(int argc, char **argv)
     cout << "Number of left images:   " << im0_seq.size() << endl;
     cout << "Number of right images:  " << im1_seq.size() << endl;
     cout << "---------------------------------------------" << endl;
-
     /*
      * Read setting files
      */
     Settings s;
-    string inputSettingsFile("/home/audren/lidar_camera_calib/calib_ws/src/camera_camera_calib/settings/settings.xml");
+    string inputSettingsFile("/home/audren/Documents/lidar-camera-calib/src/camera_camera_calib/settings/settings.xml");
     FileStorage fs(inputSettingsFile, FileStorage::READ); // Read the settings
     if (!fs.isOpened())
     {
@@ -68,23 +67,23 @@ int main(int argc, char **argv)
     double height = 1050; //526;
     int tagRows = 10, tagCols = 7;
     double tagSize = 0.088; // unit: m
-    double tagSpacing = 0.3; // unit: %
+    double tagSpacing = 0.25; // unit: %
 
     // Camera intrinsics
     std::vector<double> cam0_ss;
-    double temp[] = {6, -2.575876e+02, 0.000000e+00, 2.283578e-04, 8.908668e-06};
-    for (size_t i=0; i<5; i++)
+    double temp[] = {-2.575876e+02, 0.000000e+00, 2.283578e-04, 8.908668e-06, -2.621133e-08, 3.037693e-11 };
+    for (size_t i=0; i<6; i++)
         cam0_ss.push_back(temp[i]);
 
     double cam0_u0 = 532.425687;
     double cam0_v0 = 517.382409;
     double cam0_c = 1.000805;
     double cam0_d = 0.000125;
-    double cam0_e = 0.000252;
+    double cam0_e = 2.5200e-04;
 
     std::vector<double> cam1_ss;
-    double temp1[] = {6, -2.593081e+02, 0.000000e+00, 4.238530e-04, 7.434385e-06};
-    for (size_t i=0; i<5; i++)
+    double temp1[] = {-2.593081e+02, 0.000000e+00, 4.238530e-04, 7.434385e-06, -2.212919e-08, 2.642407e-11};
+    for (size_t i=0; i<6; i++)
         cam1_ss.push_back(temp1[i]);
 
     double cam1_u0 = 512.560101;
@@ -137,12 +136,15 @@ int main(int argc, char **argv)
         // image pre-processing: 
         //      convert to gray scale
         //      undistort fisheye camera image
+        cout << endl << endl;
+        cout << "-----------------------------New image received-----------------------------" << endl;
+        cout << endl;
         Mat im0 = im0_seq[i], im1 = im1_seq[i];
         
-        // if (im0.channels() == 3)
-        //     cvtColor(im0, im0, COLOR_RGB2GRAY);
-        // if (im1.channels() == 3)
-        //     cvtColor(im1, im1, COLOR_RGB2GRAY);
+        if (im0.channels() == 3)
+            cvtColor(im0, im0, COLOR_RGB2GRAY);
+        if (im1.channels() == 3)
+            cvtColor(im1, im1, COLOR_RGB2GRAY);
 
         Eigen::Matrix4d cam0_pose, cam1_pose;
         vector<AprilTags::TagDetection> detections0, detections1;
@@ -151,8 +153,6 @@ int main(int argc, char **argv)
         vector<std::pair<bool, int> >tagid_found0, tagid_found1;
         
         bool bfind0 = apriltags0.getDetections(im0, detections0, objPts0, imgPts0, tagid_found0);
-        
-        
         waitKey(10);
         bool bfind1 = apriltags1.getDetections(im1, detections1, objPts1, imgPts1, tagid_found1);
         waitKey(10);
@@ -160,9 +160,20 @@ int main(int argc, char **argv)
         bool good_estimation0 = apriltags0.findCamPose(objPts0, imgPts0, cam0_pose);
         bool good_estimation1 = apriltags1.findCamPose(objPts1, imgPts1, cam1_pose);
 
-        if (!good_estimation0) cout << "bad estimation of pose 0!" << endl;
-        if (!good_estimation1) cout << "bad estimation of pose 1!" << endl;
-
+        if (!good_estimation0) {
+            cout << "bad estimation of pose 0!" << " " << imgPts0.size() << " cornes detected in cam0." << endl << endl;
+            continue;
+        }
+        if (!good_estimation1) {
+            cout << "bad estimation of pose 1!" << " " << imgPts1.size() << " cornes detected in cam1."<< endl << endl;
+            continue;
+        }
+      
+        cout << "---------------cam0 Pose-------------------" << endl;
+        cout << cam0_pose << endl;
+        cout << "---------------cam1 Pose--------------------" << endl;
+        cout << cam1_pose << endl;
+        
         // cout << "object points of cam0:" << endl;
         // for (size_t i=0; i<objPts0.size(); i++){
         //     cout << objPts0[i].x << " " << objPts0[i].y << " " << objPts0[i].z << " " << endl;
@@ -178,11 +189,6 @@ int main(int argc, char **argv)
 
         Eigen::Matrix4d debug_inverse_pose_cam0 = cam0_pose.inverse();
         Eigen::Matrix4d debug_inverse_pose_cam1 = cam1_pose.inverse();
-        std::cout << "cam0 pose 0:" << endl;
-        std::cout << cam0_pose << endl;
-
-        std::cout << "cam1 pose 0:" << endl;
-        std::cout << cam1_pose << endl;
         if ( isnan(debug_inverse_pose_cam0(0,0)) || isnan(debug_inverse_pose_cam1(0,0)) )
         {
             cout << "invalid pose!" << endl;
@@ -192,18 +198,15 @@ int main(int argc, char **argv)
             cout << endl;
             cout << "--------------------------transform:------------------------------------- " << endl;
             Eigen::Matrix4d cam_transform = cam0_pose.inverse() * cam1_pose;
-            cout << cam_transform << endl<< endl;
-            cout << imgPts0.size()/4 << " points used." << endl;
-            cout << cam0_pose << endl << endl;
-            cout << imgPts1.size()/4 << " points used." << endl;
-            cout << cam1_pose << endl << endl;
-            // cout << " Debug info: " << endl;
-            // cout << "obj pt num: "  << objPts1.size() << endl;
-            // cout << "img pt num: " << imgPts1.size() << endl;
-            // cout << cam1_pose << endl;
+            cout << cam_transform << endl;
+            // cout << cam_transform << endl<< endl;
+            // cout << imgPts0.size()/4 << " points used." << endl;
+            // cout << cam0_pose << endl << endl;
+            // cout << imgPts1.size()/4 << " points used." << endl;
+            // cout << cam1_pose << endl << endl;
+           
             Eigen::Matrix4d target_pose_in_cam1 = cam1_pose.inverse();
-            // cout << "target pose in cam1: " << endl;
-            // cout << target_pose_in_cam1 << endl;
+          
             num_viewused++;
             for (size_t j=0; j<tagid_found0.size(); j++){
                 if (tagid_found0[j].first && tagid_found1[j].first){

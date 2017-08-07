@@ -176,8 +176,7 @@ bool AprilTagsDetector::getDetections(cv::Mat& img,
       std::pair<double, double> center = getLocation(squareDist, id, m_tagRows, m_tagCols);
       double cx = center.first;
       double cy = center.second;
-      cx = 0;
-      cy = 0;
+    
       objPts.push_back(cv::Point3f(cx - s, cy - s, 0));
       objPts.push_back(cv::Point3f(cx + s, cy - s, 0));
       objPts.push_back(cv::Point3f(cx + s, cy + s, 0));

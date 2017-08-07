@@ -149,7 +149,6 @@ inline double pow(double rho, size_t n){
 bool OmniModel::cam2world(const cv::Point2f &Ms,
                           cv::Point3f &Ps)const{
     
-
     Eigen::Matrix2d A;
     A << m_c, m_d, m_e, 1;
     Eigen::Matrix2d A_inv = A.inverse();
@@ -168,8 +167,25 @@ bool OmniModel::cam2world(const cv::Point2f &Ms,
     Ps.x = m(0) / f;
     Ps.y = m(1) / f;
     Ps.z = 1;
+
+    return true;
     
 }
+
+// bool OmniModel::world2cam(const cv::Point3f &Ps,
+//                           cv::Point2f &Ms)const{
+//     cv::Point2f Ms_ideal;
+//     omni3d2pixel(Ps, Ms_ideal);
+
+//     Ms.x = Ms_ideal.x * m_c + Ms_ideal.y * m_d + m_u0;
+//     Ms.y = Ms_ideal.x * m_e + Ms_ideal.y       + m_v0;
+// }
+
+// bool OmniModel::omni3d2pixel(const cv::Point3f &Ps,
+//                           cv::Point2f &Ms){
+
+// }
+
 
 /* Estimate the transformation of the camera with respect to the calibration target
  *        On success out_T_t_c is filled in with the transformation that takes points from
@@ -194,15 +210,15 @@ bool OmniModel::estimateTransformation(
     cv::Point3f undistortPt;
     cam2world(Ms[i], undistortPt);
     Ms[i].x = undistortPt.x;
-    Ms[i].y = undistortPt.y;
+    Ms[i].y = undistortPt.y;  // output is consistent with OCamCalib 
     // Eigen::Vector3d targetPoint(Ps[i].x, Ps[i].y, Ps[i].z);
     // Eigen::Vector2d imagePoint(Ms[i].x, Ms[i].y);
     // Eigen::Vector3d backProjection;
 
     // // if (!keypointToEuclidean(imagePoint, backProjection)) std::cout << "outside view!" << std::endl;
     // // if (backProjection[2] <= 0.0) std::cout << "back projection invalid!" << std::endl;
-    // if (keypointToEuclidean(imagePoint, backProjection)
-    //     && backProjection[2] > 0.0) {
+    // // if (keypointToEuclidean(imagePoint, backProjection)
+    // //     ) {
     //   double x = backProjection[0];
     //   double y = backProjection[1];
     //   double z = backProjection[2];
@@ -214,7 +230,7 @@ bool OmniModel::estimateTransformation(
     //   Ms.at(count).y = y / z;
     //   ++count;
     // } else {
-    // // Debug
+    // Debug
     // }
   }
 
@@ -229,11 +245,17 @@ bool OmniModel::estimateTransformation(
   if (Ps.size() < 4) {
   // SM_DEBUG_STREAM(
   // "At least 4 points are needed for calling PnP. Found " << Ps.size());
-    std::cout << "At least 4 points are needed for calling PnP. Found" << std::endl;
+    // std::cout << Ps.size() << " points found!" << endl;
+    // std::cout << "At least 4 points are needed for calling PnP. Found" << std::endl;
     return false;
   }
 
   // Call the OpenCV pnp function.
+  std::cout << std::endl <<"--------------------- PnP input check -----------------------" << std::endl;
+  for (size_t i=0; i<Ps.size(); i++){
+    std::cout << Ps[i].x << " " << Ps[i].y << " " << Ps[i].z << std::endl;
+    std::cout << Ms[i].x << " " << Ms[i].y << std::endl;
+  }
   cv::solvePnP(Ps, Ms, cv::Mat::eye(3, 3, CV_64F), distCoeffs, rvec, tvec);
 
   // convert the rvec/tvec to a transformation

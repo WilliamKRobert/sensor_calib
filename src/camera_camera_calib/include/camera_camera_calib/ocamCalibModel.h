@@ -1,0 +1,91 @@
+#ifndef OCAMCALIBMODEL_H
+#define OCAMCALIBMODEL_H
+
+#include <opencv2/opencv.hpp>
+#include <Eigen/Dense>
+
+#define CMV_MAX_BUF 1024
+#define MAX_POL_LENGTH 64
+
+class OCamCalibModel
+{
+public:
+    OCamCalibModel(){}
+
+    OCamCalibModel( int width, int height,
+              double xc, double yc, 
+              std::vector<double> pol,
+              std::vector<double> pol_inv,
+              double c, double d, double e){ 
+        m_width = width;
+        m_height = height;
+
+        m_xc = xc;
+        m_yc = yc;
+
+        for (size_t i=0; i<pol.size(); i++)
+            m_pol.push_back(pol[i]);
+
+        for (size_t i=0; i<pol_inv.size(); i++)
+            m_pol_inv.push_back(pol_inv[i]);
+
+        m_c = c;
+        m_d = d;
+        m_e = e;
+    }
+
+    void setParameter(int width, int height,
+              double xc, double yc, 
+              std::vector<double> pol,
+              std::vector<double> pol_inv,
+              double c, double d, double e);
+
+
+    bool cam2world(const cv::Point2f &Ms,
+                          cv::Point3f &Ps)const;
+
+    bool world2cam(const cv::Point3f &Ps,
+                          cv::Point2f &Ms)const;
+
+    bool omni3d2pixel(const cv::Point3f &Ps,
+                          cv::Point2f &Ms);
+
+    bool estimateTransformation(std::vector<cv::Point2f> Ms,
+                                std::vector<cv::Point3f> Ps,
+                                Eigen::Matrix4d &  out_T_t_c);
+
+    // obtained directly from OCamCalib
+    int get_ocam_model(char *filename);
+    void cam2world(double point3D[3], double point2D[2]);
+    void world2cam(double point2D[2], double point3D[3]);
+
+private:
+    double m_xc, m_yc; //camera paramter
+
+    std::vector<double> m_pol; // polynomial coefficients of function F, from low degree to high degree
+                              // F(r) = a0 + a1*r + a2*r^2 + a3*r^3 + a4*r^4    
+    int m_len_pol;
+    std::vector<double> m_pol_inv;
+    int m_len_pol_inv;
+    
+    double m_c, m_d, m_e;
+    int m_width, m_height;
+
+
+public:
+    double get_u0(){ return m_xc; }
+    double get_v0(){ return m_yc; }
+    double get_c(){ return m_c; }
+    double get_d(){ return m_d; }
+    double get_e(){ return m_e; }
+
+    void get_coeff(std::vector<double>& coeff){
+        coeff = m_pol;
+    }
+    void get_coeff_inv(std::vector<double>& coeff_inv){
+        coeff_inv = m_pol_inv;
+    }
+
+
+};
+#endif
