@@ -13,6 +13,8 @@
 #include "camera_camera_calib/optimizer.h"
 #include "camera_camera_calib/omniModel.h"
 #include "camera_camera_calib/aprilTagsDetector.h"
+#include "camera_camera_calib/ocamCalibModel.h"
+
 
 using namespace std;
 using namespace cv;
@@ -129,13 +131,17 @@ int main(int argc, char **argv)
     vector<cv::Point3f> cam1_objPts;
 
     size_t num_viewused = 0;
+    OCamCalibModel ocamcalib_cam0;
+    char ocamfile0[] = "/home/audren/Documents/data/small_drone_v2/Dart_21905596_high_res/calib_results_dart_21905596_high_res.txt";
+    bool bopen0 = ocamcalib_cam0.get_ocam_model(ocamfile0);
+
+    OCamCalibModel ocamcalib_cam1;
+    char ocamfile1[] = "/home/audren/Documents/data/small_drone_v2/Dart_21905597_high_res/calib_results_dart_21905597_high_res.txt";
+    bool bopen1 = ocamcalib_cam1.get_ocam_model(ocamfile1);
     for (size_t i=0; i<im0_seq.size(); i++){
         /*
          * Step 1: Find out camera extrinsic parameter using PnP
          */
-        // image pre-processing: 
-        //      convert to gray scale
-        //      undistort fisheye camera image
         cout << endl << endl;
         cout << "-----------------------------New image received-----------------------------" << endl;
         cout << endl;
@@ -146,7 +152,12 @@ int main(int argc, char **argv)
         if (im1.channels() == 3)
             cvtColor(im1, im1, COLOR_RGB2GRAY);
 
-        Eigen::Matrix4d cam0_pose, cam1_pose;
+        Mat reproj_im0 = im0.clone();
+        cv::cvtColor(im0, reproj_im0, cv::COLOR_GRAY2BGR);
+        Mat reproj_im1 = im1.clone();
+        cv::cvtColor(im1, reproj_im1, cv::COLOR_GRAY2BGR);
+
+        Eigen::Matrix4d object_pose0, object_pose1;
         vector<AprilTags::TagDetection> detections0, detections1;
         vector<cv::Point3f> objPts0, objPts1;
         vector<cv::Point2f> imgPts0, imgPts1;
@@ -157,8 +168,8 @@ int main(int argc, char **argv)
         bool bfind1 = apriltags1.getDetections(im1, detections1, objPts1, imgPts1, tagid_found1);
         waitKey(10);
         
-        bool good_estimation0 = apriltags0.findCamPose(objPts0, imgPts0, cam0_pose);
-        bool good_estimation1 = apriltags1.findCamPose(objPts1, imgPts1, cam1_pose);
+        bool good_estimation0 = apriltags0.findCamPose(objPts0, imgPts0, object_pose0);
+        bool good_estimation1 = apriltags1.findCamPose(objPts1, imgPts1, object_pose1);
 
         if (!good_estimation0) {
             cout << "bad estimation of pose 0!" << " " << imgPts0.size() << " cornes detected in cam0." << endl << endl;
@@ -168,44 +179,46 @@ int main(int argc, char **argv)
             cout << "bad estimation of pose 1!" << " " << imgPts1.size() << " cornes detected in cam1."<< endl << endl;
             continue;
         }
-      
-        cout << "---------------cam0 Pose-------------------" << endl;
-        cout << cam0_pose << endl;
-        cout << "---------------cam1 Pose--------------------" << endl;
-        cout << cam1_pose << endl;
-        
-        // cout << "object points of cam0:" << endl;
-        // for (size_t i=0; i<objPts0.size(); i++){
-        //     cout << objPts0[i].x << " " << objPts0[i].y << " " << objPts0[i].z << " " << endl;
-        //     cout << imgPts0[i].x << " " << imgPts0[i].y << endl;
-        // }
-        // cout << endl;
-        // for (size_t i=0; i<objPts1.size(); i++){
-        //     cout << objPts1[i].x << " " << objPts1[i].y << " " << objPts1[i].z << " " << endl;
-        //     cout << imgPts1[i].x << " " << imgPts1[i].y << endl;
-        // }
-        // cout << endl << endl << endl;
-        // continue;
 
-        Eigen::Matrix4d debug_inverse_pose_cam0 = cam0_pose.inverse();
-        Eigen::Matrix4d debug_inverse_pose_cam1 = cam1_pose.inverse();
-        if ( isnan(debug_inverse_pose_cam0(0,0)) || isnan(debug_inverse_pose_cam1(0,0)) )
-        {
-            cout << "invalid pose!" << endl;
-            continue;
+        // check pose estimation
+        
+
+        for (size_t j=0; j<objPts0.size(); j++){
+            double Ms[2];
+
+            Eigen::Vector4d old_pt;  
+            old_pt << objPts0[j].x, objPts0[j].y, objPts0[j].z, 1;
+            Eigen::Vector4d new_pt = object_pose0 * old_pt;
+
+            double Ps[3] = {new_pt(1), new_pt(0),  -new_pt(2)};
+            ocamcalib_cam0.world2cam(Ms, Ps);
+            cv::circle(reproj_im0, cv::Point2f(imgPts0[j].x, imgPts0[j].y), 1, cv::Scalar(0,255,14,0), 1);
+            cv::circle(reproj_im0, cv::Point2f(Ms[1], Ms[0]), 8, cv::Scalar(255,0,0,0), 2);
         }
-        if (bfind0 && bfind1){
+        imshow("Reprojection of cam0", reproj_im0);
+        //int key0 = waitKey(0);
+        
+        for (size_t j=0; j<objPts1.size(); j++){
+            double Ms[2];
+
+            Eigen::Vector4d old_pt;
+            old_pt << objPts1[j].x, objPts1[j].y, objPts1[j].z, 1;
+            Eigen::Vector4d new_pt = object_pose1 * old_pt;
+
+            double Ps[3] = {new_pt(0), new_pt(1),  new_pt(2)};
+            ocamcalib_cam1.world2cam(Ms, Ps);
+            cv::circle(reproj_im1, cv::Point2f(imgPts1[j].x, imgPts1[j].y), 1, cv::Scalar(0,255,14,0), 1);
+            cv::circle(reproj_im1, cv::Point2f(Ms[1], Ms[0]), 8, cv::Scalar(255,0,0,0), 2);
+        }
+       
+        imshow("Reprojection of cam1", reproj_im1);
+        //int key1 = waitKey(0);
+        
+        //if (bfind0 && bfind1 && (key0 == 121 || key0 == 89) && (key1 == 121 || key1 == 89)){
             cout << endl;
             cout << "--------------------------transform:------------------------------------- " << endl;
-            Eigen::Matrix4d cam_transform = cam0_pose.inverse() * cam1_pose;
+            Eigen::Matrix4d cam_transform = object_pose0.inverse() * object_pose1;
             cout << cam_transform << endl;
-            // cout << cam_transform << endl<< endl;
-            // cout << imgPts0.size()/4 << " points used." << endl;
-            // cout << cam0_pose << endl << endl;
-            // cout << imgPts1.size()/4 << " points used." << endl;
-            // cout << cam1_pose << endl << endl;
-           
-            Eigen::Matrix4d target_pose_in_cam1 = cam1_pose.inverse();
           
             num_viewused++;
             for (size_t j=0; j<tagid_found0.size(); j++){
@@ -220,57 +233,47 @@ int main(int argc, char **argv)
                     // transform cam1 obj points (in target frame) to cam1 frame
                     int index_pt_cam1 = tagid_found1[j].second;
                     
-                    // cout << "Cam pose: " << endl;
-                    // cout << cam1_pose << endl;
-                    // cout << target_pose_in_cam1 << endl;
-                    // cout << "          " << endl << endl;
                     for (size_t k=index_pt_cam1; k<index_pt_cam1+4; k++){
                         cv::Point3f cv_pt = objPts1[k];
-                        // cout << "ma: " << cv_pt.x << " " << cv_pt.y << " " << cv_pt.z << endl;
                         Eigen::Vector4d pt(cv_pt.x, cv_pt.y, cv_pt.z, 1);
-
-                        // cout << "ha:" << endl;
-                        // cout << pt(0) << " " << pt(1) << " " << pt(2) << endl;
-                        // cout << target_pose_in_cam1 << endl;
-                        Eigen::Vector4d new_pt = target_pose_in_cam1 * pt;
+                        Eigen::Vector4d new_pt = object_pose1 * pt;
                         cam1_objPts.push_back(cv::Point3f(new_pt(0), new_pt(1), new_pt(2)));
-                        // cout << new_pt(0) << " " << new_pt(1) << " " << new_pt(2) << endl;
-                        // cout << cv::Point3f(new_pt(0), new_pt(1), new_pt(2)) << endl;
+                       
                     }
                 }
             }
-        }
+        //}
     }
-    // return 0;
-    cout << "Totally " << num_viewused << " views used." << endl << endl; 
-    // /*      
-    //  * Step 2: Obtain camera-Camera estimated transform 
-    //  */
-    // initial guess of transform between cam0 and cam1
-    double transform_array[6] = { 3, -0.00000048, 0.0000035, 0.002, 0.001, 0.049};
-    cout << "--------------------------------------------" << endl;
-    cout << "Initial value feed into Ceres Optimization program:" << endl;
-    cout << " [rx (rad), ry (rad), rz (rad), tx (m), ty (m), tz (m)]" << endl;
-    for (size_t i=0; i<6; i++)
-        cout << transform_array[i] << " ";
-    cout << endl << endl; 
-    // /*
-    //  * Step 3: Lidar-camera transform optimization
-    //  *  cost function: square sum of distance between scan points and chessboard plane
-    //  *  state vector: rotation (4 parameters) and translation (3 parameters)
-    //  *  constraint: scan points should fall in the range of chessboard (x, y)
-    //  */
-    google::InitGoogleLogging("Bundle Adjustment");
-    optimizer ba;    
-    ba.bundleAdjustment(apriltags0.camModel, cam0_imgPts, cam1_objPts, transform_array);
+    // // return 0;
+    // cout << "Totally " << num_viewused << " views used." << endl << endl; 
+    // // /*      
+    // //  * Step 2: Obtain camera-Camera estimated transform 
+    // //  */
+    // // initial guess of transform between cam0 and cam1
+    // double transform_array[6] = { 3, -0.00000048, 0.0000035, 0.002, 0.001, 0.049};
+    // cout << "--------------------------------------------" << endl;
+    // cout << "Initial value feed into Ceres Optimization program:" << endl;
+    // cout << " [rx (rad), ry (rad), rz (rad), tx (m), ty (m), tz (m)]" << endl;
+    // for (size_t i=0; i<6; i++)
+    //     cout << transform_array[i] << " ";
+    // cout << endl << endl; 
+    // // /*
+    // //  * Step 3: Lidar-camera transform optimization
+    // //  *  cost function: square sum of distance between scan points and chessboard plane
+    // //  *  state vector: rotation (4 parameters) and translation (3 parameters)
+    // //  *  constraint: scan points should fall in the range of chessboard (x, y)
+    // //  */
+    // google::InitGoogleLogging("Bundle Adjustment");
+    // optimizer ba;    
+    // ba.bundleAdjustment(ocamcalib_cam0, cam0_imgPts, cam1_objPts, transform_array);
     
-    cout << "Optimized cam1 pose in cam0 frame " << endl;
-    cout << " [rx (rad), ry (rad), rz (rad), tx (m), ty (m), tz (m)]:" << endl;
-    for (size_t i=0; i<3; i++)
-        cout << transform_array[i] << " ";
-    for (size_t i=3; i<6; i++)
-        cout << transform_array[i] << " ";
-    cout << endl;
-    cout << "--------------------------------------------" << endl;
+    // cout << "Optimized cam1 pose in cam0 frame " << endl;
+    // cout << " [rx (rad), ry (rad), rz (rad), tx (m), ty (m), tz (m)]:" << endl;
+    // for (size_t i=0; i<3; i++)
+    //     cout << transform_array[i] << " ";
+    // for (size_t i=3; i<6; i++)
+    //     cout << transform_array[i] << " ";
+    // cout << endl;
+    // cout << "--------------------------------------------" << endl;
     return 0;
 }

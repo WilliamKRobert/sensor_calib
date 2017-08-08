@@ -172,6 +172,9 @@ bool OmniModel::cam2world(const cv::Point2f &Ms,
     
 }
 
+
+
+
 // bool OmniModel::world2cam(const cv::Point3f &Ps,
 //                           cv::Point2f &Ms)const{
 //     cv::Point2f Ms_ideal;
@@ -218,7 +221,6 @@ bool OmniModel::estimateTransformation(
     cam2world(Ms[i], undistortPt);
     Ms[i].x = -undistortPt.y;
     Ms[i].y = -undistortPt.x;  // output is consistent with OCamCalib 
-
 
     // Eigen::Vector3d targetPoint(Ps[i].x, Ps[i].y, Ps[i].z);
     // Eigen::Vector2d imagePoint(Ms[i].x, Ms[i].y);

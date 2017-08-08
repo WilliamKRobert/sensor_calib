@@ -225,38 +225,4 @@ void OCamCalibModel::cam2world(double point3D[3], double point2D[2])
  point3D[2] = invnorm*zp;
 }
 
-//------------------------------------------------------------------------------
-void OCamCalibModel::world2cam(double point2D[2], double point3D[3])
-{
- double norm        = sqrt(point3D[0]*point3D[0] + point3D[1]*point3D[1]);
- double theta       = atan(point3D[2]/norm);
- double t, t_i;
- double rho, x, y;
- double invnorm;
-  
-  if (norm != 0) 
-  {
-    invnorm = 1/norm;
-    t  = theta;
-    rho = m_pol_inv[0];
-    t_i = 1;
-
-    for (size_t i = 1; i < m_len_pol_inv; i++)
-    {
-      t_i *= t;
-      rho += t_i*m_pol_inv[i];
-    }
-
-    x = point3D[0]*invnorm*rho;
-    y = point3D[1]*invnorm*rho;
-  
-    point2D[0] = x*m_c + y*m_d + m_xc;
-    point2D[1] = x*m_e + y   + m_yc;
-  }
-  else
-  {
-    point2D[0] = m_xc;
-    point2D[1] = m_yc;
-  }
-}
 

@@ -219,6 +219,7 @@ add_executable(camera_camera_calib src/calibrate.cpp
                                    src/omniModel.cpp
                                    src/optimizer.cpp
                                    src/aprilTagsDetector.cpp
+                                   src/ocamCalibModel.cpp
                                    )
 target_link_libraries(camera_camera_calib ${catkin_LIBRARIES})
 target_link_libraries(camera_camera_calib ${OpenCV_LIBRARIES} opencv_nonfree)
