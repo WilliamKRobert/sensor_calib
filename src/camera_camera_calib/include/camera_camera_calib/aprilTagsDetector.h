@@ -64,7 +64,7 @@ public:
 
     m_deviceId(0),
     m_windowName(windowName),
-    m_verbose(true)
+    m_verbose(false)
  	{
  		m_px = cam.m_u0;
 		m_py = cam.m_v0;

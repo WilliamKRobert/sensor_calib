@@ -208,9 +208,18 @@ bool OmniModel::estimateTransformation(
   size_t count = 0;
   for (size_t i = 0; i < Ms.size(); ++i) {
     cv::Point3f undistortPt;
+
+    double a = Ms[i].x; 
+    double b = Ms[i].y;
+
+    Ms[i].x = b;
+    Ms[i].y = a;
+
     cam2world(Ms[i], undistortPt);
-    Ms[i].x = undistortPt.x;
-    Ms[i].y = undistortPt.y;  // output is consistent with OCamCalib 
+    Ms[i].x = -undistortPt.y;
+    Ms[i].y = -undistortPt.x;  // output is consistent with OCamCalib 
+
+
     // Eigen::Vector3d targetPoint(Ps[i].x, Ps[i].y, Ps[i].z);
     // Eigen::Vector2d imagePoint(Ms[i].x, Ms[i].y);
     // Eigen::Vector3d backProjection;
@@ -251,12 +260,13 @@ bool OmniModel::estimateTransformation(
   }
 
   // Call the OpenCV pnp function.
-  std::cout << std::endl <<"--------------------- PnP input check -----------------------" << std::endl;
-  for (size_t i=0; i<Ps.size(); i++){
-    std::cout << Ps[i].x << " " << Ps[i].y << " " << Ps[i].z << std::endl;
-    std::cout << Ms[i].x << " " << Ms[i].y << std::endl;
-  }
-  cv::solvePnP(Ps, Ms, cv::Mat::eye(3, 3, CV_64F), distCoeffs, rvec, tvec);
+  // std::cout << std::endl <<"--------------------- PnP input check -----------------------" << std::endl;
+  // for (size_t i=0; i<Ps.size(); i++){
+  //   std::cout << Ps[i].x << " " << Ps[i].y << " " << Ps[i].z << std::endl;
+  //   std::cout << Ms[i].x << " " << Ms[i].y << std::endl;
+  // }
+  // cv::solvePnP(Ps, Ms, cv::Mat::eye(3, 3, CV_64F), distCoeffs, rvec, tvec);
+  cv::solvePnPRansac(Ps, Ms, cv::Mat::eye(3, 3, CV_64F), distCoeffs, rvec, tvec);
 
   // convert the rvec/tvec to a transformation
   cv::Mat C_camera_model = cv::Mat::eye(3, 3, CV_64F);
@@ -268,7 +278,6 @@ bool OmniModel::estimateTransformation(
       T_camera_model(r, c) = C_camera_model.at<double>(r, c);
     }
   }
-  // out_T_t_c = T_camera_model.inverse();
   out_T_t_c = T_camera_model; // object pose in camera frame
   return true;
 }

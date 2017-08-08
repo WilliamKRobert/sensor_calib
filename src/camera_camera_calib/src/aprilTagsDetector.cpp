@@ -176,16 +176,11 @@ bool AprilTagsDetector::getDetections(cv::Mat& img,
       std::pair<double, double> center = getLocation(squareDist, id, m_tagRows, m_tagCols);
       double cx = center.first;
       double cy = center.second;
-    
-      objPts.push_back(cv::Point3f(cx - s, cy - s, 0));
-      objPts.push_back(cv::Point3f(cx + s, cy - s, 0));
-      objPts.push_back(cv::Point3f(cx + s, cy + s, 0));
-      objPts.push_back(cv::Point3f(cx - s, cy + s, 0));
 
-      // objPts.push_back(cv::Point3f(cx - s, cy + s, 0));
-      // objPts.push_back(cv::Point3f(cx + s, cy + s, 0));
-      // objPts.push_back(cv::Point3f(cx + s, cy - s, 0));
-      // objPts.push_back(cv::Point3f(cx - s, cy - s, 0));
+      objPts.push_back(cv::Point3f(cx - s, cy + s, 0));
+      objPts.push_back(cv::Point3f(cx + s, cy + s, 0));
+      objPts.push_back(cv::Point3f(cx + s, cy - s, 0));
+      objPts.push_back(cv::Point3f(cx - s, cy - s, 0));
 
       std::pair<float, float> p1 = tag.p[0];
       std::pair<float, float> p2 = tag.p[1];
@@ -195,6 +190,12 @@ bool AprilTagsDetector::getDetections(cv::Mat& img,
       imgPts.push_back(cv::Point2f(p2.first, p2.second));
       imgPts.push_back(cv::Point2f(p3.first, p3.second));
       imgPts.push_back(cv::Point2f(p4.first, p4.second));
+
+      std::cout << std::endl;
+      std::cout <<"p1: " << p1.first << " " << p1.second << std::endl;
+      std::cout <<"p2: " << p2.first << " " << p2.second << std::endl;
+      std::cout <<"p3: " << p3.first << " " << p3.second << std::endl;
+      std::cout <<"p4: " << p4.first << " " << p4.second << std::endl;
   }
 
   return true;
