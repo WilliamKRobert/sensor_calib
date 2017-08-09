@@ -146,7 +146,7 @@ inline double pow(double rho, size_t n){
  * output:  Ps: object points in camera frame 
  * Adapted from camera model of OCamCalib
  */
-bool OmniModel::cam2world(const cv::Point2f &Ms,
+bool OmniModel::cam2world(cv::Point2f &Ms,
                           cv::Point3f &Ps)const{
     
     Eigen::Matrix2d A;

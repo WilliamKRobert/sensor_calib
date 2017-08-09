@@ -104,7 +104,7 @@ public:
 	// bool euclideanToKeypoint(const Eigen::Matrix<T, 3, 1> & p,
  //    							   Eigen::Matrix<T, 2, 1> & outKeypoint) const;
 
-	bool cam2world(const cv::Point2f &Ms,
+	bool cam2world(cv::Point2f &Ms,
                           cv::Point3f &Ps)const;
 
 	template<typename T>
