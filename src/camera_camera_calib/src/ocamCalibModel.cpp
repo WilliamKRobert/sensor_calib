@@ -310,34 +310,29 @@ bool OCamCalibModel::cam2world_unitfocal(cv::Point2f &Ms,
     return pt_behind_cam;
 }
 
-bool OCamCalibModel::findCamPose(
-    std::vector<cv::Point2f> Ms,
-    std::vector<cv::Point3f> Ps,
-    Eigen::Matrix4d &  out_T_t_c) const{
-  // using detail::square;
+bool OCamCalibModel::findCamPose( std::vector<cv::Point2f> Ms, 
+                                  std::vector<cv::Point3f> Ps,
+                                  Eigen::Matrix4d &  out_T_t_c) const{
+    std::vector<cv::Point2f> Ms_behind, Ms_front;
+    std::vector<cv::Point3f> Ps_behind, Ps_front;
+    for (size_t i = 0; i < Ms.size(); ++i) {
+        cv::Point3f undistortPt;
 
-  // Convert all target corners to a fakey pinhole view.
-  
-  std::vector<cv::Point2f> Ms_behind, Ms_front;
-  std::vector<cv::Point3f> Ps_behind, Ps_front;
-  for (size_t i = 0; i < Ms.size(); ++i) {
-    cv::Point3f undistortPt;
+        std::cout << "-----" << std::endl;
+        std::cout << Ms[i].x - m_xc << " " << Ms[i].y - m_yc << std::endl;
+        bool pt_behind_cam = cam2world_unitfocal(Ms[i], undistortPt);
+        Ms[i].x = undistortPt.x;
+        Ms[i].y = undistortPt.y;
 
-    std::cout << "-----" << std::endl;
-    std::cout << Ms[i].x - m_xc << " " << Ms[i].y - m_yc << std::endl;
-    bool pt_behind_cam = cam2world_unitfocal(Ms[i], undistortPt);
-    Ms[i].x = undistortPt.x;
-    Ms[i].y = undistortPt.y;
-
-    if (pt_behind_cam){
-        Ms_behind.push_back(Ms[i]);
-        Ps_behind.push_back(Ps[i]);
+        if (pt_behind_cam){
+            Ms_behind.push_back(Ms[i]);
+            Ps_behind.push_back(Ps[i]);
+        }
+        else{
+            Ms_front.push_back(Ms[i]);
+            Ps_front.push_back(Ps[i]);
+        }
     }
-    else{
-        Ms_front.push_back(Ms[i]);
-        Ps_front.push_back(Ps[i]);
-    }
-  }
 
   std::vector<double> distCoeffs(4, 0.0);
 
@@ -357,13 +352,13 @@ bool OCamCalibModel::findCamPose(
   std::cout << Ms_behind.size() << " points behind camera." << std::endl;
   std::cout << Ms_front.size() << " points in front of camera." << std::endl;
 
-  // if (Ms_behind.size() > Ms_front.size()){
-      // cv::solvePnPRansac(Ps_behind, Ms_behind, cv::Mat::eye(3, 3, CV_64F), distCoeffs, rvec, tvec);
+  if (Ms_behind.size() > Ms_front.size()){
+      cv::solvePnPRansac(Ps_behind, Ms_behind, cv::Mat::eye(3, 3, CV_64F), distCoeffs, rvec, tvec);
       // tvec.at<double>(2, 0) = -tvec.at<double>(2, 0);
-  // }
-  // else{
+  }
+  else{
       cv::solvePnPRansac(Ps_front, Ms_front, cv::Mat::eye(3, 3, CV_64F), distCoeffs, rvec, tvec);
-  // }
+  }
 
   // convert the rvec/tvec to a transformation
   cv::Mat C_camera_model = cv::Mat::eye(3, 3, CV_64F);
@@ -374,6 +369,15 @@ bool OCamCalibModel::findCamPose(
     for (int c = 0; c < 3; ++c) {
       T_camera_model(r, c) = C_camera_model.at<double>(r, c);
     }
+  }
+
+  if (Ms_behind.size() > Ms_front.size()){
+      Eigen::Matrix4d reflection;
+      reflection << 1, 0, 0, 0,
+                    0, 1, 0, 0,
+                    0, 0, -1, 0,
+                    0, 0, 0, 1;
+      T_camera_model = reflection * T_camera_model;
   }
   out_T_t_c = T_camera_model; // object pose in camera frame
   return true;
