@@ -318,8 +318,6 @@ bool OCamCalibModel::findCamPose( std::vector<cv::Point2f> Ms,
     for (size_t i = 0; i < Ms.size(); ++i) {
         cv::Point3f undistortPt;
 
-        std::cout << "-----" << std::endl;
-        std::cout << Ms[i].x - m_xc << " " << Ms[i].y - m_yc << std::endl;
         bool pt_behind_cam = cam2world_unitfocal(Ms[i], undistortPt);
         Ms[i].x = undistortPt.x;
         Ms[i].y = undistortPt.y;
@@ -349,8 +347,6 @@ bool OCamCalibModel::findCamPose( std::vector<cv::Point2f> Ms,
 
   // cv::solvePnP(Ps, Ms, cv::Mat::eye(3, 3, CV_64F), distCoeffs, rvec, tvec);
   // cv::solvePnPRansac(Ps, Ms, cv::Mat::eye(3, 3, CV_64F), distCoeffs, rvec, tvec);
-  std::cout << Ms_behind.size() << " points behind camera." << std::endl;
-  std::cout << Ms_front.size() << " points in front of camera." << std::endl;
 
   if (Ms_behind.size() > Ms_front.size()){
       cv::solvePnPRansac(Ps_behind, Ms_behind, cv::Mat::eye(3, 3, CV_64F), distCoeffs, rvec, tvec);
@@ -381,4 +377,23 @@ bool OCamCalibModel::findCamPose( std::vector<cv::Point2f> Ms,
   }
   out_T_t_c = T_camera_model; // object pose in camera frame
   return true;
+}
+
+
+// -----------------------------------------------------------------------------
+cv::Point3f OCamCalibModel::pointTransform(const cv::Point3f& p0, const Eigen::Matrix4d& transform){
+    Eigen::Vector4d eigen_p0;
+    eigen_p0 << p0.x, p0.y, p0.z, 1;
+    Eigen::Vector4d eigen_p1 = transform * eigen_p0;
+    return cv::Point3f(eigen_p1(0), eigen_p1(1), eigen_p1(2));
+}
+
+cv::Point2f OCamCalibModel::targetPoint2ImagePixel(const cv::Point3f& p0, const Eigen::Matrix4d& target_pose){
+    cv::Point3f p1 = pointTransform(p0, target_pose);
+
+    double Ps[3] = {p1.x, p1.y, p1.z};
+    double Ms[2];
+    world2cam(Ms, Ps);
+
+    return cv::Point2f(Ms[0], Ms[1]);
 }

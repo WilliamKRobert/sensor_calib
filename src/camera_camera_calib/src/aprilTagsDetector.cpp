@@ -196,12 +196,3 @@ bool AprilTagsDetector::getDetections(cv::Mat& img,
   return true;
 }
 
-bool AprilTagsDetector::findCamPose( const std::vector<cv::Point3f> objPts,
-                                     const std::vector<cv::Point2f> imgPts,
-                                     Eigen::Matrix4d& pose){
-  // find tags which are detected both in cam0 and cam1
-  // extract tags: world coordinates and image coordinates
-  // find pose
-  // Assume tags start from left up corner and increase along x first
-  return camModel.estimateTransformation(imgPts, objPts, pose);
-}

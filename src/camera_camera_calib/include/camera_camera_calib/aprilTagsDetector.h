@@ -77,8 +77,6 @@ public:
 		m_p2 = cam.m_p2;
 		m_fov_parameter = cam.m_fov_parameter;
 
-		camModel = cam;
-
         setup();
  	}
 
@@ -87,11 +85,7 @@ public:
                        std::vector<cv::Point3f> &objPts,
                        std::vector<cv::Point2f> &imgPts,
                        std::vector<std::pair<bool, int> >& tagid_found);
-    bool findCamPose( const std::vector<cv::Point3f> objPts,
-                      const std::vector<cv::Point2f> imgPts,
-                      Eigen::Matrix4d& pose);
 
-    OmniModel camModel;
 
 private:
 	inline double standardRad(double t) const;

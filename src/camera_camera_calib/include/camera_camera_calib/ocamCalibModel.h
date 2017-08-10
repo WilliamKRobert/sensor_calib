@@ -104,6 +104,9 @@ public:
         excoordinate2D(point2D);
     }
 
+    cv::Point3f pointTransform(const cv::Point3f& p0, const Eigen::Matrix4d& transform);
+    cv::Point2f targetPoint2ImagePixel(const cv::Point3f& p0, const Eigen::Matrix4d& target_pose);
+
 private:
 
       void excoordinate2D(cv::Point2f& pt)const{

@@ -118,13 +118,13 @@ struct SnavelyReprojectionError {
         q[1] += T(transform[4]);
         q[2] += T(transform[5]);
 
-        T obj_pt_in_ocamcalib[3] = {q[1], q[0], -q[2]};
+        T obj_pt_in_ocamcalib[3] = {q[0], q[1], q[2]};
         T img_pt_projected[2];
         _ocamcalib_cam0.world2cam(img_pt_projected, obj_pt_in_ocamcalib);
         
         // // the residuals is the distance between scan point and the checkerboard plane
-        residuals[0] = T(_cam0_imgPts.x) - img_pt_projected[1];
-        residuals[1] = T(_cam0_imgPts.y) - img_pt_projected[0];
+        residuals[0] = T(_cam0_imgPts.x) - img_pt_projected[0];
+        residuals[1] = T(_cam0_imgPts.y) - img_pt_projected[1];
         return true;
     }
     
