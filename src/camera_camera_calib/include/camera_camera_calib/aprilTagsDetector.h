@@ -42,7 +42,8 @@ public:
     m_windowName(string("apriltags_detection"))
  	{}
 
-    AprilTagsDetector(OmniModel &cam,
+    AprilTagsDetector(double px, double py,
+                      double fx, double fy, 
                     //cv::Mat intrinsics, cv::Mat distortionCoeff, double mirror, 
  	 				  double width, double height, 
  					  int tagRows, int tagCols,
@@ -66,16 +67,16 @@ public:
     m_windowName(windowName),
     m_verbose(false)
  	{
- 		m_px = cam.m_u0;
-		m_py = cam.m_v0;
-		m_fx = cam.m_fu;
-		m_fy = cam.m_fv;
-		m_xi = cam.m_xi;
-		m_k1 = cam.m_k1;
-		m_k2 = cam.m_k2;
-		m_p1 = cam.m_p1;
-		m_p2 = cam.m_p2;
-		m_fov_parameter = cam.m_fov_parameter;
+ 		m_px = px;
+		m_py = py;
+		// m_fx = fx;
+		// m_fy = fy;
+		// m_xi = cam.m_xi;
+		// m_k1 = cam.m_k1;
+		// m_k2 = cam.m_k2;
+		// m_p1 = cam.m_p1;
+		// m_p2 = cam.m_p2;
+		// m_fov_parameter = cam.m_fov_parameter;
 
         setup();
  	}
@@ -114,10 +115,10 @@ private:
 	double m_fy;
 	double m_px; // camera principal point
 	double m_py;
-	double m_xi;
+	// double m_xi;
 
-	double m_k1, m_k2, m_p1, m_p2; // camera distortion parameters
-	double m_fov_parameter;
+	// double m_k1, m_k2, m_p1, m_p2; // camera distortion parameters
+	// double m_fov_parameter;
 
 	int m_deviceId; // camera id (in case of multiple cameras)
 
@@ -125,7 +126,7 @@ private:
 	int m_gain;
 	int m_brightness;
 
-	string m_windowName; // name of image drawing window
+	string m_windowName; // name of image drawing windowName
 
 
 	#ifndef PI

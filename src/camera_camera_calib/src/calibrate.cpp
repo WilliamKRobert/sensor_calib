@@ -112,12 +112,14 @@ int main(int argc, char **argv)
     cout << "Mirror parameter: " << endl << cam1_xi << endl ;
     cout << "---------------------------------------------" << endl;
 
-    AprilTagsDetector apriltags0(cam0, 
+    AprilTagsDetector apriltags0(cam0_u0, cam0_v0, 
+                                 cam0_proj.at<double>(0,0), cam0_proj.at<double>(1,1), 
                                  width, height, 
                                  tagRows, tagCols,
                                  tagSize, tagSpacing,
                                  string("cam0_apriltags_detection"));
-    AprilTagsDetector apriltags1(cam1, 
+    AprilTagsDetector apriltags1(cam1_u0, cam1_v0, 
+                                 cam1_proj.at<double>(0,0), cam1_proj.at<double>(1,1), 
                                  width, height, 
                                  tagRows, tagCols,
                                  tagSize, tagSpacing,
@@ -187,7 +189,7 @@ int main(int argc, char **argv)
             cv::Point2f cvMs = ocamcalib_cam0.targetPoint2ImagePixel(objPts0[j], object_pose0);
 
             cv::circle(reproj_im0, cv::Point2f(imgPts0[j].x, imgPts0[j].y), 1, cv::Scalar(0,255,14,0), 1);
-            cv::circle(reproj_im0, cv::Point2f(cvMs.x, cvMs.y), 8, cv::Scalar(255,0,0,0), 2);
+            cv::circle(reproj_im0, cv::Point2f(cvMs.x, cvMs.y), 1, cv::Scalar(255,0,0,0), 2);
             reproj_error0 += (imgPts0[j].x - cvMs.x) * (imgPts0[j].x - cvMs.x) + 
                             (imgPts0[j].y - cvMs.y) * (imgPts0[j].y - cvMs.y);
         }
@@ -198,7 +200,7 @@ int main(int argc, char **argv)
             cv::Point2f cvMs = ocamcalib_cam1.targetPoint2ImagePixel(objPts1[j], object_pose1);
 
             cv::circle(reproj_im1, cv::Point2f(imgPts1[j].x, imgPts1[j].y), 1, cv::Scalar(0,255,14,0), 1);
-            cv::circle(reproj_im1, cv::Point2f(cvMs.x, cvMs.y), 8, cv::Scalar(255,0,0,0), 2);
+            cv::circle(reproj_im1, cv::Point2f(cvMs.x, cvMs.y), 1, cv::Scalar(255,0,0,0), 2);
             reproj_error1 += (imgPts1[j].x - cvMs.x) * (imgPts1[j].x - cvMs.x) + 
                             (imgPts1[j].y - cvMs.y) * (imgPts1[j].y - cvMs.y);
         }
@@ -229,10 +231,11 @@ int main(int argc, char **argv)
                     int index_pt_cam1 = tagid_found1[j].second;
                     
                     for (size_t k=index_pt_cam1; k<index_pt_cam1+4; k++){
-                        cv::Point3f cv_pt = objPts1[k];
-                        Eigen::Vector4d pt(cv_pt.x, cv_pt.y, cv_pt.z, 1);
-                        Eigen::Vector4d new_pt = object_pose1 * pt;
-                        cam1_objPts.push_back(cv::Point3f(new_pt(0), new_pt(1), new_pt(2)));
+                        // cv::Point3f cv_pt = objPts1[k];
+                        // Eigen::Vector4d pt(cv_pt.x, cv_pt.y, cv_pt.z, 1);
+                        // Eigen::Vector4d new_pt = object_pose1 * pt;
+                        cv::Point3f pt =  ocamcalib_cam1.pointTransform(objPts1[k], object_pose1);
+                        cam1_objPts.push_back(pt);
                        
                     }
                 }

@@ -134,13 +134,15 @@ int main(int argc, char **argv)
     OmniModel cam1(cam1_proj, cam1_dist, cam1_xi, cam1_u0, cam1_v0, cam1_ss, cam1_c, cam1_d, cam1_e);
    
     
-    AprilTagsDetector apriltags0(cam0, 
+    AprilTagsDetector apriltags0(cam0_u0, cam0_v0, 
+                                 cam0_proj.at<double>(0,0), cam0_proj.at<double>(1,1),  
                                  width, height, 
                                  tagRows, tagCols,
                                  tagSize, tagSpacing,
                                  string("cam0_apriltags_detection"));
 
-    AprilTagsDetector apriltags1(cam1, 
+    AprilTagsDetector apriltags1(cam1_u0, cam1_v0, 
+                                 cam1_proj.at<double>(0,0), cam1_proj.at<double>(1,1),  
                                  width, height, 
                                  tagRows, tagCols,
                                  tagSize, tagSpacing,
