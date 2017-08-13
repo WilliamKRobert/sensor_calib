@@ -21,9 +21,7 @@ public:
 	}
 
 	OmniModel(cv::Mat intrinsics, cv::Mat distortionCoeff, double mirror, 
-			double u0, double v0, 
-			std::vector<double> ss,
-			double c, double d, double e){ 
+			double u0, double v0){ 
 		m_u0 = u0;
 		m_v0 = v0;
 		m_fu = intrinsics.at<double>(0, 0);
@@ -34,13 +32,6 @@ public:
 		m_p1 = distortionCoeff.at<double>(2, 0);
 		m_p2 = distortionCoeff.at<double>(3, 0);
 		m_fov_parameter = m_xi <= 1 ? m_xi : 1.0/m_xi;
-
-		for (size_t i=0; i<ss.size(); i++)
-			m_ss.push_back(ss[i]);
-
-		m_c = c;
-		m_d = d;
-		m_e = e;
 	}
 
 	OmniModel(){}
@@ -100,13 +91,7 @@ public:
 
 	bool keypointToEuclidean(const Eigen::Vector2d & keypoint,
     							   Eigen::Vector3d & outPoint) const;
-	// template<typename T>
-	// bool euclideanToKeypoint(const Eigen::Matrix<T, 3, 1> & p,
- //    							   Eigen::Matrix<T, 2, 1> & outKeypoint) const;
-
-	bool cam2world(cv::Point2f &Ms,
-                          cv::Point3f &Ps)const;
-
+	
 	template<typename T>
 	bool euclideanToKeypoint(const Eigen::Matrix<T, 3, 1> & p,
                      Eigen::Matrix<T, 2, 1> & outKeypoint) const{
@@ -119,11 +104,6 @@ public:
 	  T rz = 1.0 / (p[2] + T(m_xi) * d);
 	  outKeypoint[0] = p[0] * rz;
 	  outKeypoint[1] = p[1] * rz;
-	  //std::cout << "normalize\n";
-	  //SM_OUT(d);
-	  //SM_OUT(rz);
-	  //SM_OUT(outKeypoint[0]);
-	  //SM_OUT(outKeypoint[1]);
 
 	  //////////////////////////////
 	  // need to be checked again
@@ -155,8 +135,5 @@ public:
 	double m_k1, m_k2, m_p1, m_p2; // distortion parameter
 	double m_fov_parameter; //PM: is = xi for xi=<1, = 1/xi for x>1. Used for determining valid projections. Better name?
 
-	std::vector<double> m_ss; // polynomial coefficients of function F, from low degree to high degree
-							  // F(r) = a0 + a1*r + a2*r^2 + a3*r^3 + a4*r^4	
-	double m_c, m_d, m_e;
 };
 #endif

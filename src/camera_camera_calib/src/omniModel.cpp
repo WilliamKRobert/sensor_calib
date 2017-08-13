@@ -132,64 +132,6 @@ bool OmniModel::keypointToEuclidean(
 }
 
 
-inline double pow(double rho, size_t n){
-      double res = 1;
-      for (size_t i=0; i<n; i++){
-          res *= rho;
-      }
-      return res;
-}
-
-/*
- * Project a image point onto the unit sphere
- * input:   Ms: image points
- * output:  Ps: object points in camera frame 
- * Adapted from camera model of OCamCalib
- */
-bool OmniModel::cam2world(cv::Point2f &Ms,
-                          cv::Point3f &Ps)const{
-    
-    Eigen::Matrix2d A;
-    A << m_c, m_d, m_e, 1;
-    Eigen::Matrix2d A_inv = A.inverse();
-    Eigen::Vector2d C;
-    C << Ms.x - m_u0, Ms.y - m_v0;
-
-    Eigen::Vector2d m = A_inv * C;
-    double rho = sqrt( m(0)*m(0) + m(1)*m(1) );
-
-    double f = 0;
-   
-    for (size_t i=0; i<m_ss.size(); i++){
-        f += m_ss[i] * pow(rho, i); 
-    }
-   
-    Ps.x = m(0) / f;
-    Ps.y = m(1) / f;
-    Ps.z = 1;
-
-    return true;
-    
-}
-
-
-
-
-// bool OmniModel::world2cam(const cv::Point3f &Ps,
-//                           cv::Point2f &Ms)const{
-//     cv::Point2f Ms_ideal;
-//     omni3d2pixel(Ps, Ms_ideal);
-
-//     Ms.x = Ms_ideal.x * m_c + Ms_ideal.y * m_d + m_u0;
-//     Ms.y = Ms_ideal.x * m_e + Ms_ideal.y       + m_v0;
-// }
-
-// bool OmniModel::omni3d2pixel(const cv::Point3f &Ps,
-//                           cv::Point2f &Ms){
-
-// }
-
-
 /* Estimate the transformation of the camera with respect to the calibration target
  *        On success out_T_t_c is filled in with the transformation that takes points from
  *        the camera frame to the target frame
@@ -209,66 +151,51 @@ bool OmniModel::estimateTransformation(
 
   // Convert all target corners to a fakey pinhole view.
   size_t count = 0;
+  std::vector<cv::Point2f> Ms_front, Ms_back;
+  std::vector<cv::Point3f> Ps_front, Ps_back;
   for (size_t i = 0; i < Ms.size(); ++i) {
     cv::Point3f undistortPt;
+    Eigen::Vector3d targetPoint(Ps[i].x, Ps[i].y, Ps[i].z);
+    Eigen::Vector2d imagePoint(Ms[i].x, Ms[i].y);
+    Eigen::Vector3d backProjection;
 
-    double a = Ms[i].x; 
-    double b = Ms[i].y;
-
-    Ms[i].x = b;
-    Ms[i].y = a;
-
-    cam2world(Ms[i], undistortPt);
-    Ms[i].x = -undistortPt.y;
-    Ms[i].y = -undistortPt.x;  // output is consistent with OCamCalib 
-
-    // Eigen::Vector3d targetPoint(Ps[i].x, Ps[i].y, Ps[i].z);
-    // Eigen::Vector2d imagePoint(Ms[i].x, Ms[i].y);
-    // Eigen::Vector3d backProjection;
-
-    // // if (!keypointToEuclidean(imagePoint, backProjection)) std::cout << "outside view!" << std::endl;
-    // // if (backProjection[2] <= 0.0) std::cout << "back projection invalid!" << std::endl;
-    // // if (keypointToEuclidean(imagePoint, backProjection)
-    // //     ) {
-    //   double x = backProjection[0];
-    //   double y = backProjection[1];
-    //   double z = backProjection[2];
-    //   Ps.at(count).x = targetPoint[0];
-    //   Ps.at(count).y = targetPoint[1];
-    //   Ps.at(count).z = targetPoint[2];
-
-    //   Ms.at(count).x = x / z;
-    //   Ms.at(count).y = y / z;
-    //   ++count;
-    // } else {
-    // Debug
-    // }
+    if (keypointToEuclidean(imagePoint, backProjection)) {
+        double x = backProjection[0];
+        double y = backProjection[1];
+        double z = backProjection[2];
+        
+        if (backProjection[2] > 0.0){
+            Ps_front.push_back( cv::Point3f(targetPoint[0], targetPoint[1], targetPoint[2]) );
+            Ms_front.push_back( cv::Point2f(x/z, y/z) );
+            
+        }
+        else{
+            Ps_back.push_back( cv::Point3f(targetPoint[0], targetPoint[1], targetPoint[2]) );
+            Ms_back.push_back( cv::Point2f(-x/z, -y/z) );
+        }
+        ++count;
+    } 
   }
-
-  // Ps.resize(count);
-  // Ms.resize(count);
 
   std::vector<double> distCoeffs(4, 0.0);
 
   cv::Mat rvec(3, 1, CV_64F);
   cv::Mat tvec(3, 1, CV_64F);
 
-  if (Ps.size() < 4) {
+  if (Ps_front.size() < 4 && Ps_back.size() < 4) {
   // SM_DEBUG_STREAM(
   // "At least 4 points are needed for calling PnP. Found " << Ps.size());
-    // std::cout << Ps.size() << " points found!" << endl;
-    // std::cout << "At least 4 points are needed for calling PnP. Found" << std::endl;
     return false;
   }
 
-  // Call the OpenCV pnp function.
-  // std::cout << std::endl <<"--------------------- PnP input check -----------------------" << std::endl;
-  // for (size_t i=0; i<Ps.size(); i++){
-  //   std::cout << Ps[i].x << " " << Ps[i].y << " " << Ps[i].z << std::endl;
-  //   std::cout << Ms[i].x << " " << Ms[i].y << std::endl;
-  // }
   // cv::solvePnP(Ps, Ms, cv::Mat::eye(3, 3, CV_64F), distCoeffs, rvec, tvec);
-  cv::solvePnPRansac(Ps, Ms, cv::Mat::eye(3, 3, CV_64F), distCoeffs, rvec, tvec);
+  if (Ps_front.size() > Ps_back.size()){
+      cv::solvePnPRansac(Ps_front, Ms_front, cv::Mat::eye(3, 3, CV_64F), distCoeffs, rvec, tvec);
+  }
+  else{
+      cv::solvePnPRansac(Ps_back, Ms_back, cv::Mat::eye(3, 3, CV_64F), distCoeffs, rvec, tvec);
+  }
+
 
   // convert the rvec/tvec to a transformation
   cv::Mat C_camera_model = cv::Mat::eye(3, 3, CV_64F);
@@ -279,6 +206,15 @@ bool OmniModel::estimateTransformation(
     for (int c = 0; c < 3; ++c) {
       T_camera_model(r, c) = C_camera_model.at<double>(r, c);
     }
+  }
+
+  if (Ps_front.size() < Ps_back.size()){
+      Eigen::Matrix4d reflection;
+      reflection << 1, 0, 0, 0,
+                    0, 1, 0, 0,
+                    0, 0, -1, 0,
+                    0, 0, 0, 1;
+      T_camera_model = reflection * T_camera_model;
   }
   out_T_t_c = T_camera_model; // object pose in camera frame
   return true;

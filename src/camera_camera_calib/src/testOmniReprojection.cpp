@@ -18,7 +18,7 @@
 using namespace std;
 using namespace cv;
 
-bool SYNTHTIC = false;
+bool SYNTHTIC = true;
 
 std::pair<double, double> getXYZ(double squareDist, int id, int m_tagRows, int m_tagCols){
   double x = ( id % (m_tagCols+1) ) * squareDist;
@@ -34,16 +34,17 @@ cv::Point3f pointTransform(const cv::Point3f& p0, const Eigen::Matrix4d& transfo
     return cv::Point3f(eigen_p1(0), eigen_p1(1), eigen_p1(2));
 }
 
-cv::Point2f targetPoint2ImagePixel(const OCamCalibModel& cam, 
+cv::Point2f targetPoint2ImagePixel(const OmniModel& cam, 
                                    const cv::Point3f& p0, 
                                    const Eigen::Matrix4d& target_pose){
     cv::Point3f p1 = pointTransform(p0, target_pose);
 
-    double Ps[3] = {p1.x, p1.y, p1.z};
-    double Ms[2];
-    cam.world2cam(Ms, Ps);
+    Eigen::Matrix<float, 3, 1> Ps;
+    Eigen::Matrix<float, 2, 1> Ms;
+    Ps << p0.x, p0.y, p0.z;
+    cam.euclideanToKeypoint(Ps, Ms);
 
-    return cv::Point2f(Ms[0], Ms[1]);
+    return cv::Point2f(Ms(0,0), Ms(1, 0));
 }
 
 /*
@@ -98,30 +99,6 @@ int main(int argc, char **argv)
     double tagSize = 0.088; // unit: m
     double tagSpacing = 0.25; // unit: %
 
-    // // Camera intrinsics
-    std::vector<double> cam0_ss;
-    double temp[] = {-2.575876e+02, 0.000000e+00, 2.283578e-04, 8.908668e-06, -2.621133e-08, 3.037693e-11 };
-    for (size_t i=0; i<6; i++)
-        cam0_ss.push_back(temp[i]);
-
-    double cam0_u0 = 532.425687;
-    double cam0_v0 = 517.382409;
-    double cam0_c = 1.000805;
-    double cam0_d = 0.000125;
-    double cam0_e = 2.5200e-04;
-
-
-    std::vector<double> cam1_ss;
-    double temp1[] = {-2.593081e+02, 0.000000e+00, 4.238530e-04, 7.434385e-06, -2.212919e-08, 2.642407e-11};
-    for (size_t i=0; i<6; i++)
-        cam1_ss.push_back(temp1[i]);
-
-    double cam1_u0 = 512.560101;
-    double cam1_v0 = 523.645938;
-    double cam1_c = 1.001192;
-    double cam1_d = 0.000227;
-    double cam1_e = 0.000224;
-
     Mat cam0_proj = s.intrinsics0;
     Mat cam0_dist = s.distortion0;
     double cam0_xi =  s.xi0;
@@ -130,8 +107,12 @@ int main(int argc, char **argv)
     Mat cam1_dist = s.distortion1;
     double cam1_xi =  s.xi1;
    
-    OmniModel cam0(cam0_proj, cam0_dist, cam0_xi, cam0_u0, cam0_v0, cam0_ss, cam0_c, cam0_d, cam0_e);
-    OmniModel cam1(cam1_proj, cam1_dist, cam1_xi, cam1_u0, cam1_v0, cam1_ss, cam1_c, cam1_d, cam1_e);
+    double cam0_u0 = 532.425687;
+    double cam0_v0 = 517.382409;
+    double cam1_u0 = 512.560101;
+    double cam1_v0 = 523.645938;
+    OmniModel cam0(cam0_proj, cam0_dist, cam0_xi, cam0_u0, cam0_v0);
+    OmniModel cam1(cam1_proj, cam1_dist, cam1_xi, cam1_u0, cam1_v0);
    
     
     AprilTagsDetector apriltags0(cam0_u0, cam0_v0, 
@@ -148,18 +129,11 @@ int main(int argc, char **argv)
                                  tagSize, tagSpacing,
                                  string("cam1_apriltags_detection"));
 
-    OCamCalibModel ocamcalib_cam0;
-    char ocamfile0[] = "/home/audren/Documents/data/small_drone_v2/Dart_21905596_high_res/calib_results_dart_21905596_high_res.txt";
-    bool bopen0 = ocamcalib_cam0.get_ocam_model(ocamfile0);
-
-    OCamCalibModel ocamcalib_cam1;
-    char ocamfile1[] = "/home/audren/Documents/data/small_drone_v2/Dart_21905597_high_res/calib_results_dart_21905597_high_res.txt";
-    bool bopen1 = ocamcalib_cam1.get_ocam_model(ocamfile1);
-
-    if (!SYNTHTIC){
     vector<cv::Mat> &im_seq = im1_seq;
     AprilTagsDetector &apriltags = apriltags1;
-    OCamCalibModel &cam = ocamcalib_cam1;
+    OmniModel &cam = cam1;
+    if (!SYNTHTIC){
+    
     for (size_t i=0; i<im_seq.size(); i++){
         /*
          * Step 1: Find out camera extrinsic parameter using PnP
@@ -178,37 +152,37 @@ int main(int argc, char **argv)
         cv::cvtColor(im, reproj_im, cv::COLOR_GRAY2BGR);
 
         bool bfind = apriltags.getDetections(im, detections, objPts, imgPts, tagid_found);
-        bool good_estimation = cam.findCamPose(imgPts, objPts, target_pose);
+        bool good_estimation = cam.estimateTransformation(imgPts, objPts, target_pose);
         cout << target_pose << endl;
         waitKey(10);
         cout << "objPts number: " << objPts.size() << endl;
         /*
          * test 1: cam2world and world2cam
          */
-        int TESTNO = 2;
-        if (TESTNO == 1){
-        for (size_t j=0; j<objPts.size(); j++){
-            double Ms[2] = {imgPts[j].x, imgPts[j].y};
-            double Ps[3];
-            cam.cam2world(Ps, Ms);
-            cam.world2cam(Ms, Ps);
-            
-            cv::circle(reproj_im, cv::Point2f(imgPts[j].x, imgPts[j].y), 1, cv::Scalar(0,255,14,0), 1);
-            cv::circle(reproj_im, cv::Point2f(Ms[0], Ms[1]), 5, cv::Scalar(255,0,0,0), 1);
-        }
-        }else{
-        /*
-         * test 2: pose estimation
-         */
-        for (size_t j=0; j<objPts.size(); j++){
-            cv::Point2f pt = targetPoint2ImagePixel(cam, objPts[j], target_pose);
+        // int TESTNO = 1;
+        // if (TESTNO == 1){
+        // for (size_t j=0; j<objPts.size(); j++){
+        //     double Ms[2] = {imgPts[j].x, imgPts[j].y};
+        //     double Ps[3];
+        //     cam.keypointToEuclidean(Ms, Ps);
+        //     cam.euclideanToKeypoint(Ms, Ps);
+
+        //     cv::circle(reproj_im, cv::Point2f(imgPts[j].x, imgPts[j].y), 1, cv::Scalar(0,255,14,0), 1);
+        //     cv::circle(reproj_im, cv::Point2f(Ms[0], Ms[1]), 5, cv::Scalar(255,0,0,0), 1);
+        // }
+        // }else{
+        // /*
+        //  * test 2: pose estimation
+        //  */
+        // for (size_t j=0; j<objPts.size(); j++){
+        //     cv::Point2f pt = targetPoint2ImagePixel(cam, objPts[j], target_pose);
     
-            cv::circle(reproj_im, cv::Point2f(imgPts[j].x, imgPts[j].y), 1, cv::Scalar(0,255,14,0), 1);
-            cv::circle(reproj_im, cv::Point2f(pt.x, pt.y), 8, cv::Scalar(255,0,0,0), 2);
-        }
-        }
-        imshow("Reprojection", reproj_im);
-        waitKey(0);
+        //     cv::circle(reproj_im, cv::Point2f(imgPts[j].x, imgPts[j].y), 1, cv::Scalar(0,255,14,0), 1);
+        //     cv::circle(reproj_im, cv::Point2f(pt.x, pt.y), 1, cv::Scalar(255,0,0,0), 2);
+        // }
+        // }
+        // imshow("Reprojection", reproj_im);
+        // waitKey(0);
 
     }
     }else{
@@ -242,7 +216,7 @@ int main(int argc, char **argv)
         /*
          * draw ID
          */
-        cv::Point2f center_i = targetPoint2ImagePixel(ocamcalib_cam1, cv::Point3f(cx, cy, 0), 
+        cv::Point2f center_i = targetPoint2ImagePixel(cam, cv::Point3f(cx, cy, 0), 
                                                       pose_ground_truth);
         std::ostringstream strSt;
         strSt << "#" << i;
@@ -263,7 +237,7 @@ int main(int argc, char **argv)
 
     vector<cv::Point2f> imgPts;
     for (size_t i=0; i<objPts.size(); i++){
-        cv::Point2f ipt = targetPoint2ImagePixel(ocamcalib_cam1, objPts[i], pose_ground_truth);
+        cv::Point2f ipt = targetPoint2ImagePixel(cam, objPts[i], pose_ground_truth);
         imgPts.push_back(ipt);
         /*
          * orientation is correct
@@ -274,12 +248,12 @@ int main(int argc, char **argv)
     imshow("Test", img);
     waitKey(0);
 
-    // from synthetic image poinsts and object points recover pose of target
+    // from synthetic image points and object points recover pose of target
     /*
      * test pass
      */
     Eigen::Matrix4d pose_estimated;
-    bool good_estimation1 = ocamcalib_cam1.findCamPose(imgPts, objPts, pose_estimated);
+    bool good_estimation1 = cam.estimateTransformation(imgPts, objPts, pose_estimated);
     cout << "---------------target pose in camera frame-----------------" << endl;
     cout << pose_estimated << endl;
     }

@@ -349,11 +349,12 @@ bool OCamCalibModel::findCamPose( std::vector<cv::Point2f> Ms,
   // cv::solvePnPRansac(Ps, Ms, cv::Mat::eye(3, 3, CV_64F), distCoeffs, rvec, tvec);
 
   if (Ms_behind.size() > Ms_front.size()){
-      cv::solvePnPRansac(Ps_behind, Ms_behind, cv::Mat::eye(3, 3, CV_64F), distCoeffs, rvec, tvec);
-      // tvec.at<double>(2, 0) = -tvec.at<double>(2, 0);
+      cv::solvePnPRansac(Ps_behind, Ms_behind, cv::Mat::eye(3, 3, CV_64F), distCoeffs, rvec, tvec, false, 500, 8.0,100, cv::noArray(), CV_ITERATIVE);
+      // cv::solvePnP(Ps_behind, Ms_behind, cv::Mat::eye(3, 3, CV_64F), distCoeffs, rvec, tvec);
   }
   else{
-      cv::solvePnPRansac(Ps_front, Ms_front, cv::Mat::eye(3, 3, CV_64F), distCoeffs, rvec, tvec);
+      cv::solvePnPRansac(Ps_front, Ms_front, cv::Mat::eye(3, 3, CV_64F), distCoeffs, rvec, tvec, false, 500, 8.0,100, cv::noArray(), CV_ITERATIVE);
+      // cv::solvePnP(Ps_front, Ms_front, cv::Mat::eye(3, 3, CV_64F), distCoeffs, rvec, tvec);
   }
 
   // convert the rvec/tvec to a transformation

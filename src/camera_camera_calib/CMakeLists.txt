@@ -228,7 +228,20 @@ target_link_libraries(camera_camera_calib ${CERES_LIBRARIES})
 target_link_libraries(camera_camera_calib apriltags)
 
 
-add_executable(calib_reproj_test src/testReprojection.cpp 
+add_executable(omni_reproj_test src/testOmniReprojection.cpp 
+                                   src/loadBag.cpp 
+                                   src/objectPose.cpp
+                                   src/omniModel.cpp
+                                   src/optimizer.cpp
+                                   src/aprilTagsDetector.cpp
+                                   )
+target_link_libraries(omni_reproj_test ${catkin_LIBRARIES})
+target_link_libraries(omni_reproj_test ${OpenCV_LIBRARIES} opencv_nonfree)
+target_link_libraries(omni_reproj_test ${Eigen_LIBRARIES})
+target_link_libraries(omni_reproj_test ${CERES_LIBRARIES})
+target_link_libraries(omni_reproj_test apriltags)
+
+add_executable(ocam_reproj_test src/testOcamReprojection.cpp 
                                    src/loadBag.cpp 
                                    src/objectPose.cpp
                                    src/omniModel.cpp
@@ -236,8 +249,8 @@ add_executable(calib_reproj_test src/testReprojection.cpp
                                    src/aprilTagsDetector.cpp
                                    src/ocamCalibModel.cpp
                                    )
-target_link_libraries(calib_reproj_test ${catkin_LIBRARIES})
-target_link_libraries(calib_reproj_test ${OpenCV_LIBRARIES} opencv_nonfree)
-target_link_libraries(calib_reproj_test ${Eigen_LIBRARIES})
-target_link_libraries(calib_reproj_test ${CERES_LIBRARIES})
-target_link_libraries(calib_reproj_test apriltags)
+target_link_libraries(ocam_reproj_test ${catkin_LIBRARIES})
+target_link_libraries(ocam_reproj_test ${OpenCV_LIBRARIES} opencv_nonfree)
+target_link_libraries(ocam_reproj_test ${Eigen_LIBRARIES})
+target_link_libraries(ocam_reproj_test ${CERES_LIBRARIES})
+target_link_libraries(ocam_reproj_test apriltags)

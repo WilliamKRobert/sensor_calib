@@ -101,8 +101,8 @@ int main(int argc, char **argv)
     Mat cam1_dist = s.distortion1;
     double cam1_xi =  s.xi1;
 
-    OmniModel cam0(cam0_proj, cam0_dist, cam0_xi, cam0_u0, cam0_v0, cam0_ss, cam0_c, cam0_d, cam0_e);
-    OmniModel cam1(cam1_proj, cam1_dist, cam1_xi, cam1_u0, cam1_v0, cam1_ss, cam1_c, cam1_d, cam1_e);
+    OmniModel cam0(cam0_proj, cam0_dist, cam0_xi, cam0_u0, cam0_v0);
+    OmniModel cam1(cam1_proj, cam1_dist, cam1_xi, cam1_u0, cam1_v0);
     cout << "Cam0 intrinsic matrix: " << endl << cam0_proj << endl << endl;
     cout << "Distortion coefficients: " << endl << cam0_dist << endl << endl;
     cout << "Mirror parameter: " << endl << cam0_xi << endl  ;
