@@ -58,12 +58,13 @@ public:
     int get_ocam_model(char *filename);
     void cam2world(double point3D[3], double point2D[2]);
     bool cam2world_unitfocal(cv::Point2f &Ms,
-                          cv::Point3f &Ps)const;
+                          cv::Point3f &Ps, bool &isback)const;
 
 
     bool findCamPose(std::vector<cv::Point2f> Ms,
                                 std::vector<cv::Point3f> Ps,
                                 Eigen::Matrix4d &  out_T_t_c) const;
+
     //------------------------------------------------------------------------------
     template <typename T>
     void world2cam(T point2D[2], T point3D[3])const
@@ -102,6 +103,35 @@ public:
         }
 
         excoordinate2D(point2D);
+    }
+
+    template <typename T> 
+    void triangulate(const Eigen::Matrix<T, 3, 1> & point1, const Eigen::Matrix<T, 3, 1> & ray1,
+                                 const Eigen::Matrix<T, 3, 1> & point2, const Eigen::Matrix<T, 3, 1> & ray2,
+                                 Eigen::Matrix<T, 3, 1> & outTriangulatedPoint, T & outGap,
+                                 T & outS1, T & outS2, 
+                                 Eigen::Matrix<T, 3, 1> &xm, Eigen::Matrix<T, 3, 1> &xn) const{
+
+        Eigen::Matrix<T, 3, 1> t12 = point2 - point1;
+
+        Eigen::Matrix<T, 2, 1> b;
+        b(0, 0) = t12.dot(ray1);
+        b(1, 0) = t12.dot(ray2);
+        Eigen::Matrix<T, 2, 2> A;
+        A(0, 0) = ray1.dot(ray1);
+        A(1, 0) = ray1.dot(ray2);
+        A(0, 1) = -A(1, 0);
+        A(1, 1) = -ray2.dot(ray2);
+        Eigen::Matrix<T, 2, 1> lambda = A.inverse() * b;
+        xm = point1 + lambda[0] * ray1;
+        xn = point2 + lambda[1] * ray2;
+        t12 = (xm - xn);
+
+        outGap = t12.norm();
+        outTriangulatedPoint = xn + T(0.5) * t12;
+        outS1 = lambda(0, 0);
+        outS2 = lambda(1, 0);
+
     }
 
     cv::Point3f pointTransform(const cv::Point3f& p0, const Eigen::Matrix4d& transform);

@@ -246,7 +246,7 @@ void OCamCalibModel::cam2world(double point3D[3], double point2D[2])
  * Adapted from camera model of OCamCalib
  */
 bool OCamCalibModel::cam2world_unitfocal(cv::Point2f &Ms,
-                          cv::Point3f &Ps)const{
+                          cv::Point3f &Ps, bool &isback)const{
     // change coordinate system to OCamCalib Model
     excoordinate2D(Ms);
     // Eigen::Matrix2d A;
@@ -267,8 +267,6 @@ bool OCamCalibModel::cam2world_unitfocal(cv::Point2f &Ms,
     // Ps.x = m(0) / f;
     // Ps.y = m(1) / f;
     // Ps.z = 1;
-
-    bool pt_behind_cam;
 
     double invdet  = 1/(m_c-m_d*m_e); // 1/det(A), where A = [c,d;e,1] as in the Matlab file
 
@@ -293,21 +291,23 @@ bool OCamCalibModel::cam2world_unitfocal(cv::Point2f &Ms,
     Ps.y = invnorm*yp; 
     Ps.z = invnorm*zp;
 
+    if (Ps.z > 0 && Ps.z < 0.6) return false;
+
     if (Ps.z > 0 ){
         Ps.x /= Ps.z;
         Ps.y /= Ps.z; 
-        pt_behind_cam = true;
+        isback = true;
     }
     else{
         Ps.x /= -Ps.z;
         Ps.y /= -Ps.z;
-        pt_behind_cam  = false;
+        isback  = false;
     }
 
     // change back to OmniModel
     excoordinate3D(Ps);
 
-    return pt_behind_cam;
+    return true;
 }
 
 bool OCamCalibModel::findCamPose( std::vector<cv::Point2f> Ms, 
@@ -318,11 +318,12 @@ bool OCamCalibModel::findCamPose( std::vector<cv::Point2f> Ms,
     for (size_t i = 0; i < Ms.size(); ++i) {
         cv::Point3f undistortPt;
 
-        bool pt_behind_cam = cam2world_unitfocal(Ms[i], undistortPt);
+        bool isback;
+        bool valid = cam2world_unitfocal(Ms[i], undistortPt, isback);
         Ms[i].x = undistortPt.x;
         Ms[i].y = undistortPt.y;
-
-        if (pt_behind_cam){
+        if (!valid) continue;
+        if (isback){
             Ms_behind.push_back(Ms[i]);
             Ps_behind.push_back(Ps[i]);
         }

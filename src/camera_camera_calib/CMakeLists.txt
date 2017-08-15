@@ -125,6 +125,7 @@ catkin_package(
 ## Your package locations should be listed before other locations
 include_directories(
   include
+  test
   ../Thirdparty/apriltags
   #src/Thirdparty/apriltags/build/include/AprilTags
   src/Thirdparty/apriltags/build/lib
@@ -213,7 +214,7 @@ include_directories(
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
 link_directories(../Thirdparty/apriltags/build/lib)
-add_executable(camera_camera_calib src/calibrate.cpp 
+add_executable(camera_camera_calib test/testCalibrate.cpp 
                                    src/loadBag.cpp 
                                    src/objectPose.cpp
                                    src/omniModel.cpp
@@ -227,8 +228,23 @@ target_link_libraries(camera_camera_calib ${Eigen_LIBRARIES})
 target_link_libraries(camera_camera_calib ${CERES_LIBRARIES})
 target_link_libraries(camera_camera_calib apriltags)
 
+link_directories(../Thirdparty/apriltags/build/lib)
+add_executable(camera_camera_calib_ray test/testCalibrateRay.cpp 
+                                   src/loadBag.cpp 
+                                   src/objectPose.cpp
+                                   src/omniModel.cpp
+                                   src/optimizerRay.cpp
+                                   src/aprilTagsDetector.cpp
+                                   src/ocamCalibModel.cpp
+                                   )
+target_link_libraries(camera_camera_calib_ray ${catkin_LIBRARIES})
+target_link_libraries(camera_camera_calib_ray ${OpenCV_LIBRARIES} opencv_nonfree)
+target_link_libraries(camera_camera_calib_ray ${Eigen_LIBRARIES})
+target_link_libraries(camera_camera_calib_ray ${CERES_LIBRARIES})
+target_link_libraries(camera_camera_calib_ray apriltags)
 
-add_executable(omni_reproj_test src/testOmniReprojection.cpp 
+
+add_executable(omni_reproj_test test/testOmniReprojection.cpp 
                                    src/loadBag.cpp 
                                    src/objectPose.cpp
                                    src/omniModel.cpp
@@ -241,7 +257,7 @@ target_link_libraries(omni_reproj_test ${Eigen_LIBRARIES})
 target_link_libraries(omni_reproj_test ${CERES_LIBRARIES})
 target_link_libraries(omni_reproj_test apriltags)
 
-add_executable(ocam_reproj_test src/testOcamReprojection.cpp 
+add_executable(ocam_reproj_test test/testOcamReprojection.cpp 
                                    src/loadBag.cpp 
                                    src/objectPose.cpp
                                    src/omniModel.cpp
