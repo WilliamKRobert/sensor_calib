@@ -291,7 +291,7 @@ bool OCamCalibModel::cam2world_unitfocal(cv::Point2f &Ms,
     Ps.y = invnorm*yp; 
     Ps.z = invnorm*zp;
 
-    if (Ps.z > 0 && Ps.z < 0.6) return false;
+    //if (Ps.z > 0 && Ps.z < 0.6) return false;
 
     if (Ps.z > 0 ){
         Ps.x /= Ps.z;
@@ -313,7 +313,7 @@ bool OCamCalibModel::cam2world_unitfocal(cv::Point2f &Ms,
 bool OCamCalibModel::findCamPose( std::vector<cv::Point2f> Ms, 
                                   std::vector<cv::Point3f> Ps,
                                   Eigen::Matrix4d &  out_T_t_c) const{
-    std::vector<cv::Point2f> Ms_behind, Ms_front;
+    std::vector<cv::Point2f> Ms_back, Ms_front;
     std::vector<cv::Point3f> Ps_behind, Ps_front;
     for (size_t i = 0; i < Ms.size(); ++i) {
         cv::Point3f undistortPt;
@@ -324,7 +324,7 @@ bool OCamCalibModel::findCamPose( std::vector<cv::Point2f> Ms,
         Ms[i].y = undistortPt.y;
         if (!valid) continue;
         if (isback){
-            Ms_behind.push_back(Ms[i]);
+            Ms_back.push_back(Ms[i]);
             Ps_behind.push_back(Ps[i]);
         }
         else{
@@ -338,7 +338,7 @@ bool OCamCalibModel::findCamPose( std::vector<cv::Point2f> Ms,
   cv::Mat rvec(3, 1, CV_64F);
   cv::Mat tvec(3, 1, CV_64F);
 
-  if (Ps_front.size() < 4) {
+  if (Ps_front.size() < 4 && Ps_behind.size() < 4) {
   // SM_DEBUG_STREAM(
   // "At least 4 points are needed for calling PnP. Found " << Ps.size());
     // std::cout << Ps.size() << " points found!" << endl;
@@ -349,12 +349,12 @@ bool OCamCalibModel::findCamPose( std::vector<cv::Point2f> Ms,
   // cv::solvePnP(Ps, Ms, cv::Mat::eye(3, 3, CV_64F), distCoeffs, rvec, tvec);
   // cv::solvePnPRansac(Ps, Ms, cv::Mat::eye(3, 3, CV_64F), distCoeffs, rvec, tvec);
 
-  if (Ms_behind.size() > Ms_front.size()){
-      cv::solvePnPRansac(Ps_behind, Ms_behind, cv::Mat::eye(3, 3, CV_64F), distCoeffs, rvec, tvec, false, 500, 8.0,100, cv::noArray(), CV_ITERATIVE);
-      // cv::solvePnP(Ps_behind, Ms_behind, cv::Mat::eye(3, 3, CV_64F), distCoeffs, rvec, tvec);
+  if (Ms_back.size() > Ms_front.size()){
+      cv::solvePnPRansac(Ps_behind, Ms_back, cv::Mat::eye(3, 3, CV_64F), distCoeffs, rvec, tvec);
+      // cv::solvePnP(Ps_behind, Ms_back, cv::Mat::eye(3, 3, CV_64F), distCoeffs, rvec, tvec);
   }
   else{
-      cv::solvePnPRansac(Ps_front, Ms_front, cv::Mat::eye(3, 3, CV_64F), distCoeffs, rvec, tvec, false, 500, 8.0,100, cv::noArray(), CV_ITERATIVE);
+      cv::solvePnPRansac(Ps_front, Ms_front, cv::Mat::eye(3, 3, CV_64F), distCoeffs, rvec, tvec);
       // cv::solvePnP(Ps_front, Ms_front, cv::Mat::eye(3, 3, CV_64F), distCoeffs, rvec, tvec);
   }
 
@@ -369,7 +369,7 @@ bool OCamCalibModel::findCamPose( std::vector<cv::Point2f> Ms,
     }
   }
 
-  if (Ms_behind.size() > Ms_front.size()){
+  if (Ms_back.size() > Ms_front.size()){
       Eigen::Matrix4d reflection;
       reflection << 1, 0, 0, 0,
                     0, 1, 0, 0,
@@ -378,6 +378,128 @@ bool OCamCalibModel::findCamPose( std::vector<cv::Point2f> Ms,
       T_camera_model = reflection * T_camera_model;
   }
   out_T_t_c = T_camera_model; // object pose in camera frame
+  return true;
+}
+
+bool OCamCalibModel::findCamPose( std::vector<cv::Point2f> Ms, 
+                                  std::vector<cv::Point3f> Ps,
+                                  cv::Mat &rvec,
+                                  cv::Mat &tvec) const{
+    std::vector<cv::Point2f> Ms_back, Ms_front;
+    std::vector<cv::Point3f> Ps_behind, Ps_front;
+    for (size_t i = 0; i < Ms.size(); ++i) {
+        cv::Point3f undistortPt;
+
+        bool isback;
+        bool valid = cam2world_unitfocal(Ms[i], undistortPt, isback);
+        Ms[i].x = undistortPt.x;
+        Ms[i].y = undistortPt.y;
+        if (!valid) continue;
+        if (isback){
+            Ms_back.push_back(Ms[i]);
+            Ps_behind.push_back(Ps[i]);
+        }
+        else{
+            Ms_front.push_back(Ms[i]);
+            Ps_front.push_back(Ps[i]);
+        }
+    }
+
+  std::vector<double> distCoeffs(4, 0.0);
+
+  if (Ps_front.size() < 4 && Ps_behind.size() < 4) {
+  // SM_DEBUG_STREAM(
+  // "At least 4 points are needed for calling PnP. Found " << Ps.size());
+    // std::cout << Ps.size() << " points found!" << endl;
+    // std::cout << "At least 4 points are needed for calling PnP. Found" << std::endl;
+    return false;
+  }
+
+  // cv::solvePnP(Ps, Ms, cv::Mat::eye(3, 3, CV_64F), distCoeffs, rvec, tvec);
+  // cv::solvePnPRansac(Ps, Ms, cv::Mat::eye(3, 3, CV_64F), distCoeffs, rvec, tvec);
+
+  if (Ms_back.size() > Ms_front.size()){
+      cv::solvePnPRansac(Ps_behind, Ms_back, cv::Mat::eye(3, 3, CV_64F), distCoeffs, rvec, tvec);
+      // cv::solvePnP(Ps_behind, Ms_back, cv::Mat::eye(3, 3, CV_64F), distCoeffs, rvec, tvec);
+  }
+  else{
+      cv::solvePnPRansac(Ps_front, Ms_front, cv::Mat::eye(3, 3, CV_64F), distCoeffs, rvec, tvec);
+      // cv::solvePnP(Ps_front, Ms_front, cv::Mat::eye(3, 3, CV_64F), distCoeffs, rvec, tvec);
+  }
+
+  cv::Mat rvec_validate(3, 1, CV_64F);
+  cv::Mat tvec_validate(3, 1, CV_64F);
+  if (Ms_back.size() > Ms_front.size()){
+      cv::Mat reflection = cv::Mat::eye(3, 3, CV_64F);
+      cv::Mat reflection_vec(3, 1, CV_64F);
+      reflection.at<double>(2, 2) = -1;
+      cv::Rodrigues(reflection, reflection_vec);
+      for (size_t i=0; i<3; i++){
+          rvec_validate.at<double>(i, 0) = rvec.at<double>(i, 0) + reflection_vec.at<double>(i, 0);
+          tvec_validate.at<double>(i, 0) = tvec.at<double>(i, 0);
+      }
+      // tvec_validate.at<double  >(2, 0) = -tvec_validate.at<double>(2, 0);
+  }
+  else{
+      for (size_t i=0; i<3; i++){
+          rvec_validate.at<double>(i, 0) = rvec.at<double>(i, 0) ;
+          tvec_validate.at<double>(i, 0) = tvec.at<double>(i, 0);
+      }
+  }
+
+
+
+
+  // // convert the rvec/tvec to a transformation
+  // std::cout << "before" << std::endl;
+  // std::cout << rvec.at<double>(0,0) << " " << rvec.at<double>(1,0) << " " << rvec.at<double>(2,0);
+  // std::cout<< std::endl;
+  // std::cout << tvec.at<double>(0,0) << " " << tvec.at<double>(1,0) << " " << tvec.at<double>(2,0);
+  // std::cout<< std::endl;
+
+  // Eigen::Matrix4d T_camera_model;
+  // transformVec2Mat(rvec, tvec, T_camera_model);
+  // if (Ms_back.size() > Ms_front.size()){
+  //     std::cout << "back" << std::endl; 
+  //     Eigen::Matrix4d reflection;
+  //     reflection << 1, 0, 0, 0,
+  //                   0, 1, 0, 0,
+  //                   0, 0, -1, 0,
+  //                   0, 0, 0, 1;
+  //     T_camera_model = reflection * T_camera_model;
+  // }
+
+  // transformMat2Vec(T_camera_model, rvec, tvec);
+  // std::cout << "after" << std::endl;
+  // std::cout << rvec.at<double>(0,0) << " " << rvec.at<double>(1,0) << " " << rvec.at<double>(2,0);
+  // std::cout<< std::endl;
+  // std::cout << tvec.at<double>(0,0) << " " << tvec.at<double>(1,0) << " " << tvec.at<double>(2,0);
+  // std::cout<< std::endl;
+
+
+  // if (Ms_back.size() > Ms_front.size())
+  //     std::cout << "behind:" << std::endl;
+  // else
+  //     std::cout << "front:" << std::endl;
+  // std::cout << T_camera_model << std::endl << std::endl;
+
+  // transformVec2Mat(rvec_validate, tvec_validate, T_camera_model);
+  // std::cout << "valideate:" << std::endl;
+  // std::cout << T_camera_model << std::endl << std::endl;
+  
+
+  // cv::Mat rotation_matrix(3, 3, CV_64F);
+  // for (size_t i=0; i<3; i++){
+  //     for (size_t j=0; j<3; j++){
+  //         rotation_matrix.at<double>(i, j) = T_camera_model(i, j);
+  //     }
+  // }
+  // cv::Rodrigues(rotation_matrix, rvec);
+
+  // for (size_t i=0; i<3; i++){
+  //     tvec.at<double>(i, 0) = T_camera_model(i, 3);
+  // }
+
   return true;
 }
 
@@ -398,4 +520,30 @@ cv::Point2f OCamCalibModel::targetPoint2ImagePixel(const cv::Point3f& p0, const 
     world2cam(Ms, Ps);
 
     return cv::Point2f(Ms[0], Ms[1]);
+}
+
+void OCamCalibModel::transformVec2Mat(const cv::Mat& rvec, const cv::Mat& tvec, 
+                                      Eigen::Matrix4d& T_camera_model) const{
+    cv::Mat C_camera_model = cv::Mat::eye(3, 3, CV_64F);
+    T_camera_model = Eigen::Matrix4d::Identity();
+    cv::Rodrigues(rvec, C_camera_model);
+    for (int r = 0; r < 3; ++r) {
+        T_camera_model(r, 3) = tvec.at<double>(r, 0);
+        for (int c = 0; c < 3; ++c) {
+            T_camera_model(r, c) = C_camera_model.at<double>(r, c);
+        }
+    }
+}
+
+void OCamCalibModel::transformMat2Vec(const Eigen::Matrix4d& T_camera_model, 
+                                                 cv::Mat& rvec, cv::Mat& tvec) const{
+    cv::Mat R(3, 3, CV_64F);
+    for (size_t i=0; i<3; i++){
+        tvec.at<double>(i, 0) =  T_camera_model(i, 3);
+        for (size_t j=0; j<3; j++){
+            R.at<double>(i, j) = T_camera_model(i, j);
+        }
+    }
+    cv::Rodrigues(R, rvec);
+    
 }

@@ -53,7 +53,7 @@ public:
     bool estimateTransformation(std::vector<cv::Point2f> Ms,
                                 std::vector<cv::Point3f> Ps,
                                 Eigen::Matrix4d &  out_T_t_c);
-
+    
     // obtained directly from OCamCalib
     int get_ocam_model(char *filename);
     void cam2world(double point3D[3], double point2D[2]);
@@ -64,7 +64,10 @@ public:
     bool findCamPose(std::vector<cv::Point2f> Ms,
                                 std::vector<cv::Point3f> Ps,
                                 Eigen::Matrix4d &  out_T_t_c) const;
-
+    bool findCamPose(std::vector<cv::Point2f> Ms, 
+                                std::vector<cv::Point3f> Ps,
+                                cv::Mat &rvec,
+                                cv::Mat &tvec) const;
     //------------------------------------------------------------------------------
     template <typename T>
     void world2cam(T point2D[2], T point3D[3])const
@@ -136,6 +139,10 @@ public:
 
     cv::Point3f pointTransform(const cv::Point3f& p0, const Eigen::Matrix4d& transform);
     cv::Point2f targetPoint2ImagePixel(const cv::Point3f& p0, const Eigen::Matrix4d& target_pose);
+    void transformVec2Mat(const cv::Mat& rvec, const cv::Mat& tvec, 
+                          Eigen::Matrix4d& T_camera_model) const;
+    void transformMat2Vec(const Eigen::Matrix4d& T_camera_model, 
+                          cv::Mat& rvec, cv::Mat& tvec) const;
 
 private:
 

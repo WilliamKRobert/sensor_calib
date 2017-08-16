@@ -18,20 +18,24 @@
         
  */
 void optimizer::bundleAdjustment(OCamCalibModel& ocamcalib_cam0,
-                                 std::vector<cv::Point2f>& cam0_imgPts,
-                                 std::vector<cv::Point3f>& cam1_objPts,
-                                 double* parameter
+                                 std::vector<std::vector<cv::Point2f> >& cam0_imgPts,
+                                 std::vector<std::vector<cv::Point3f> >& cam1_objPts,
+                                 double* parameter,
+                                 double* poses
                                  )
 {   
     // Create residuals for each observation in the bundle adjustment problem. The
     // parameters for cameras and points are added automatically.
     ceres::Problem problem; 
     
+    std::cout << cam0_imgPts.size() << std::endl;
     for (size_t i = 0; i < cam0_imgPts.size(); ++i) {
         // Each Residual block takes a point and a camera as input and outputs a 1
         // dimensional residual. 
-            ceres::CostFunction* cs = SnavelyReprojectionError::Create( ocamcalib_cam0, cam0_imgPts[i], cam1_objPts[i]);
-            problem.AddResidualBlock(cs, NULL /* squared loss */, &parameter[0]);
+        for (size_t j=0; j < cam0_imgPts[i].size(); ++j ){
+            ceres::CostFunction* cs = SnavelyReprojectionError::Create( ocamcalib_cam0, cam0_imgPts[i][j], cam1_objPts[i][j]);
+            problem.AddResidualBlock(cs, NULL /* squared loss */, &parameter[0], &poses[6*i]);
+        }
         
     }
 

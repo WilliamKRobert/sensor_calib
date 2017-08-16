@@ -32,9 +32,10 @@ public:
                           double* parameter);
 
     void bundleAdjustment(OCamCalibModel& ocamcalib_cam0,
-                          std::vector<cv::Point2f>& cam0_imgPts,
-                          std::vector<cv::Point3f>& cam1_objPts,
-                          double* parameter);
+                          std::vector<std::vector<cv::Point2f> >& cam0_imgPts,
+                          std::vector<std::vector<cv::Point3f> >& cam1_objPts,
+                          double* parameter,
+                          double* poses);
 };
 
 // Templated pinhole camera model for used with Ceres.  The camera is
@@ -99,26 +100,29 @@ struct SnavelyReprojectionError {
     
     template <typename T>
     bool operator()(const T* const transform,
+                    const T* const pose,
                     T* residuals) const {
         // transform[0,1,2] are the angle-axis rotation.
         // transform[3,4,5] are the translation.
         
         // step 1: transform the object points in cam1 frame to that in cam0 frame
-        if (isnan(_cam1_objPts.x) || isnan(_cam1_objPts.y) || isnan(_cam1_objPts.z) 
-                  || isnan(_cam0_imgPts.x) || isnan(_cam0_imgPts.y)){
-            std::cout << "invalid value!" << std::endl;
-            return false;
-        }
-        T p[3], q[3];
+        // if (isnan(_cam1_objPts.x) || isnan(_cam1_objPts.y) || isnan(_cam1_objPts.z) 
+        //           || isnan(_cam0_imgPts.x) || isnan(_cam0_imgPts.y)){
+        //     std::cout << "invalid value!" << std::endl;
+        //     return false;
+        // }
+        T p[3], q[3], t[3];
         p[0] = T(_cam1_objPts.x);
         p[1] = T(_cam1_objPts.y);
         p[2] = T(_cam1_objPts.z);
-        ceres::AngleAxisRotatePoint(transform, p, q);
-        q[0] += T(transform[3]);
-        q[1] += T(transform[4]);
-        q[2] += T(transform[5]);
 
-        T obj_pt_in_ocamcalib[3] = {q[0], q[1], q[2]};
+        ceres::AngleAxisRotatePoint(pose, p, q);
+        q[0] += T(pose[3]); q[1] += T(pose[4]); q[2] += T(pose[5]);
+
+        ceres::AngleAxisRotatePoint(transform, q, t);
+        t[0] += T(transform[3]); t[1] += T(transform[4]); t[2] += T(transform[5]);
+
+        T obj_pt_in_ocamcalib[3] = {t[0], t[1], t[2]};
         T img_pt_projected[2];
         _ocamcalib_cam0.world2cam(img_pt_projected, obj_pt_in_ocamcalib);
         
@@ -131,7 +135,7 @@ struct SnavelyReprojectionError {
     // Factory to hide the construction of the CostFunction object from
     // the client code.
     static ceres::CostFunction* Create(OCamCalibModel ocamcalib_cam0, cv::Point2f cam0_imgPts, cv::Point3f cam1_objPts) {
-        return (new ceres::AutoDiffCostFunction<SnavelyReprojectionError, 2, 6>(
+        return (new ceres::AutoDiffCostFunction<SnavelyReprojectionError, 2, 6, 6>(
                     new SnavelyReprojectionError(ocamcalib_cam0, cam0_imgPts, cam1_objPts)));
     }
 
