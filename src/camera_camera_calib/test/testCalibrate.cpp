@@ -1,4 +1,5 @@
 #include <iostream>
+#include <sstream>
 
 #include <opencv2/opencv.hpp>
 #include <opencv2/calib3d/calib3d.hpp>
@@ -37,6 +38,13 @@ void miniparameter(const cv::Mat rvec, const cv::Mat tvec, double minip[6]){
     for (size_t i=3; i<6; i++){
         minip[i] = tvec.at<double>(i-3, 0);
     }
+}
+
+string IntToString (int a)
+{
+    ostringstream temp;
+    temp<<a;
+    return temp.str();
 }
 /*
  * Lidar-camera extrinsic parameter calibration
@@ -115,8 +123,8 @@ int main(int argc, char **argv)
                                  tagSize, tagSpacing,
                                  string("cam1_apriltags_detection"));
 
-    vector<vector<cv::Point2f> > cam0_imgPts;
-    vector<vector<cv::Point3f> > cam1_objPts;
+    vector<vector<cv::Point2f> > cam0_imgPts, cam1_imgPts;
+    vector<vector<cv::Point3f> > cam0_objPts, cam1_objPts;
 
     size_t num_viewused = 0;
     OCamCalibModel ocamcalib_cam0;
@@ -131,7 +139,8 @@ int main(int argc, char **argv)
     std::vector<int> good_frame (good_array, good_array + sizeof(good_array) / sizeof(int) );
 
 
-    double *poses = new double[6*good_frame.size()];
+    double *poses0 = new double[6*good_frame.size()];
+    double *poses1 = new double[6*good_frame.size()];
     // for (size_t i=0; i<im0_seq.size(); i++){
     for (size_t iframe=0; iframe<good_frame.size(); iframe++){
         int i = good_frame[iframe];
@@ -207,46 +216,38 @@ int main(int argc, char **argv)
         
           
         if (bfind0 && bfind1){        
-        // if (bfind0 && bfind1 && (key0 == 121 || key0 == 89) && (key1 == 121 || key1 == 89)){
-            // cout << endl;
-            // cout << "--------------------------transform:------------------------------------- " << endl;
-            // Eigen::Matrix4d cam_transform = object_pose0.inverse() * object_pose1;
-            // cout << cam_transform << endl;
-            // cout << object_pose0 << endl;
-            // cout << object_pose1 << endl;
-            // cout << endl;
-            
-            vector<cv::Point2f> cam0_imgPtSet;
-            vector<cv::Point3f> cam1_objPtSet;
+            vector<cv::Point2f> cam0_imgPtSet, cam1_imgPtSet;
+            vector<cv::Point3f> cam0_objPtSet, cam1_objPtSet;
             num_viewused++;
             for (size_t j=0; j<tagid_found0.size(); j++){
                 if (tagid_found0[j].first && tagid_found1[j].first){
-                    // store cam0 image points
                     int index_pt_cam0 = tagid_found0[j].second;
                     for (size_t k=index_pt_cam0; k<index_pt_cam0+4; k++){
                         cam0_imgPtSet.push_back(imgPts0[k]);
+                        cam0_objPtSet.push_back(objPts0[k]);
                     }
-                    // transform cam1 obj points (in target frame) to cam1 frame
                     int index_pt_cam1 = tagid_found1[j].second;
                     
                     for (size_t k=index_pt_cam1; k<index_pt_cam1+4; k++){
-                        // cv::Point3f cv_pt = objPts1[k];
-                        // Eigen::Vector4d pt(cv_pt.x, cv_pt.y, cv_pt.z, 1);
-                        // Eigen::Vector4d new_pt = object_pose1 * pt;
-                        // cv::Point3f pt =  ocamcalib_cam1.pointTransform(objPts1[k], object_pose1);
+                        cam1_imgPtSet.push_back(imgPts1[k]);
                         cam1_objPtSet.push_back(objPts1[k]);
                        
                     }
                 }
             }
             cam0_imgPts.push_back(cam0_imgPtSet);
+            cam0_objPts.push_back(cam0_objPtSet);
+            cam1_imgPts.push_back(cam1_imgPtSet);
             cam1_objPts.push_back(cam1_objPtSet);
-            double object_pose1_mini[6];
+            double object_pose0_mini[6], object_pose1_mini[6];
 
+            miniparameter(object_pose_rvec0, object_pose_tvec0, object_pose0_mini);
             miniparameter(object_pose_rvec1, object_pose_tvec1, object_pose1_mini);
-            cout <<object_pose1_mini[0] << endl;
-            for (size_t kk = 0; kk<6; kk++)
-                poses[iframe*6+kk] = object_pose1_mini[kk];
+
+            for (size_t kk = 0; kk<6; kk++){
+                poses0[iframe*6+kk] = object_pose0_mini[kk];
+                poses1[iframe*6+kk] = object_pose1_mini[kk];
+            }
         }
 
         
@@ -255,7 +256,14 @@ int main(int argc, char **argv)
 
     for (size_t i=0; i<23; i++){
         for (size_t j=0; j<6; j++){
-            cout << poses[6*i+j] <<" ";
+            cout << poses0[6*i+j] <<" ";
+        }
+        cout << endl;
+    }
+
+    for (size_t i=0; i<23; i++){
+        for (size_t j=0; j<6; j++){
+            cout << poses1[6*i+j] <<" ";
         }
         cout << endl;
     }
@@ -265,7 +273,7 @@ int main(int argc, char **argv)
     //  * Step 2: Obtain camera-Camera estimated transform 
     //  */
     // initial guess of transform between cam0 and cam1
-    double transform_array[6] = { -3, 0.000, 0.00, -0.2, 0.20, -0.20};
+    double transform_array[6] = { -3.14, 0.000, 0.00, -0.00, 0.00, -0.195};
     cout << "--------------------------------------------" << endl;
     cout << "Initial value feed into Ceres Optimization program:" << endl;
     cout << " [rx (rad), ry (rad), rz (rad), tx (m), ty (m), tz (m)]" << endl;
@@ -279,7 +287,9 @@ int main(int argc, char **argv)
     //  */
     google::InitGoogleLogging("Bundle Adjustment");
     optimizer ba;    
-    ba.bundleAdjustment(ocamcalib_cam0, cam0_imgPts, cam1_objPts, transform_array, poses);
+    ba.bundleAdjustment(ocamcalib_cam0, cam0_imgPts, cam0_objPts, poses0, 
+                        ocamcalib_cam1, cam1_imgPts, cam1_objPts, poses1,
+                        transform_array);
     
     cout << "Optimized cam1 pose in cam0 frame " << endl;
     cout << " [rx (rad), ry (rad), rz (rad), tx (m), ty (m), tz (m)]:" << endl;
@@ -289,11 +299,18 @@ int main(int argc, char **argv)
 
     for (size_t i=0; i<23; i++){
         for (size_t j=0; j<6; j++){
-            cout << poses[6*i+j] <<" ";
+            cout << poses0[6*i+j] <<" ";
         }
         cout << endl;
     }
     cout << endl;
+
+    for (size_t i=0; i<23; i++){
+        for (size_t j=0; j<6; j++){
+            cout << poses1[6*i+j] <<" ";
+        }
+        cout << endl;
+    }
     cout << "--------------------------------------------" << endl;
     return 0;
 }

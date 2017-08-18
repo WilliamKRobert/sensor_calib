@@ -427,30 +427,7 @@ bool OCamCalibModel::findCamPose( std::vector<cv::Point2f> Ms,
       // cv::solvePnP(Ps_front, Ms_front, cv::Mat::eye(3, 3, CV_64F), distCoeffs, rvec, tvec);
   }
 
-  cv::Mat rvec_validate(3, 1, CV_64F);
-  cv::Mat tvec_validate(3, 1, CV_64F);
-  if (Ms_back.size() > Ms_front.size()){
-      cv::Mat reflection = cv::Mat::eye(3, 3, CV_64F);
-      cv::Mat reflection_vec(3, 1, CV_64F);
-      reflection.at<double>(2, 2) = -1;
-      cv::Rodrigues(reflection, reflection_vec);
-      for (size_t i=0; i<3; i++){
-          rvec_validate.at<double>(i, 0) = rvec.at<double>(i, 0) + reflection_vec.at<double>(i, 0);
-          tvec_validate.at<double>(i, 0) = tvec.at<double>(i, 0);
-      }
-      // tvec_validate.at<double  >(2, 0) = -tvec_validate.at<double>(2, 0);
-  }
-  else{
-      for (size_t i=0; i<3; i++){
-          rvec_validate.at<double>(i, 0) = rvec.at<double>(i, 0) ;
-          tvec_validate.at<double>(i, 0) = tvec.at<double>(i, 0);
-      }
-  }
-
-
-
-
-  // // convert the rvec/tvec to a transformation
+ 
   // std::cout << "before" << std::endl;
   // std::cout << rvec.at<double>(0,0) << " " << rvec.at<double>(1,0) << " " << rvec.at<double>(2,0);
   // std::cout<< std::endl;
@@ -461,12 +438,15 @@ bool OCamCalibModel::findCamPose( std::vector<cv::Point2f> Ms,
   // transformVec2Mat(rvec, tvec, T_camera_model);
   // if (Ms_back.size() > Ms_front.size()){
   //     std::cout << "back" << std::endl; 
+  //     std::cout << T_camera_model << std::endl;
+
   //     Eigen::Matrix4d reflection;
   //     reflection << 1, 0, 0, 0,
   //                   0, 1, 0, 0,
   //                   0, 0, -1, 0,
   //                   0, 0, 0, 1;
   //     T_camera_model = reflection * T_camera_model;
+  //     std::cout<< T_camera_model << std::endl;
   // }
 
   // transformMat2Vec(T_camera_model, rvec, tvec);
@@ -477,28 +457,11 @@ bool OCamCalibModel::findCamPose( std::vector<cv::Point2f> Ms,
   // std::cout<< std::endl;
 
 
-  // if (Ms_back.size() > Ms_front.size())
-  //     std::cout << "behind:" << std::endl;
-  // else
-  //     std::cout << "front:" << std::endl;
-  // std::cout << T_camera_model << std::endl << std::endl;
-
-  // transformVec2Mat(rvec_validate, tvec_validate, T_camera_model);
-  // std::cout << "valideate:" << std::endl;
-  // std::cout << T_camera_model << std::endl << std::endl;
+  // transformVec2Mat(rvec, tvec, T_camera_model);
+  // std::cout << "after after" << std::endl;
+  // std::cout << T_camera_model;
+  // std::cout<< std::endl;
   
-
-  // cv::Mat rotation_matrix(3, 3, CV_64F);
-  // for (size_t i=0; i<3; i++){
-  //     for (size_t j=0; j<3; j++){
-  //         rotation_matrix.at<double>(i, j) = T_camera_model(i, j);
-  //     }
-  // }
-  // cv::Rodrigues(rotation_matrix, rvec);
-
-  // for (size_t i=0; i<3; i++){
-  //     tvec.at<double>(i, 0) = T_camera_model(i, 3);
-  // }
 
   return true;
 }
@@ -535,6 +498,7 @@ void OCamCalibModel::transformVec2Mat(const cv::Mat& rvec, const cv::Mat& tvec,
     }
 }
 
+
 void OCamCalibModel::transformMat2Vec(const Eigen::Matrix4d& T_camera_model, 
                                                  cv::Mat& rvec, cv::Mat& tvec) const{
     cv::Mat R(3, 3, CV_64F);
@@ -545,5 +509,70 @@ void OCamCalibModel::transformMat2Vec(const Eigen::Matrix4d& T_camera_model,
         }
     }
     cv::Rodrigues(R, rvec);
+    // rvec = rotationMatrixToEulerAngles(R);
+
+    
     
 }
+
+
+// void OCamCalibModel::pointCloudPose(const std::vector<cv::Point3f> &point_cloud_1, const std::vector<cv::Point3f> &point_cloud_2, cv::Mat &R, cv::Mat &t)
+// {
+//     float p1_x=0, p1_y=0, p1_z=0;
+//     float p2_x=0, p2_y=0, p2_z=0;
+    
+//     const int point_num = index.size();
+//     int p_index;
+//     for (int i=0; i<point_num; i++){
+//         p_index = index[i];
+//         p1_x += point_cloud_1[p_index].x;
+//         p1_y += point_cloud_1[p_index].y;
+//         p1_z += point_cloud_1[p_index].z;
+        
+//         p2_x += point_cloud_2[p_index].x;
+//         p2_y += point_cloud_2[p_index].y;
+//         p2_z += point_cloud_2[p_index].z;
+//     }
+    
+//     // centroids of two point clouds
+//     p1_x /= point_num;
+//     p1_y /= point_num;
+//     p1_z /= point_num;
+    
+//     p2_x /= point_num;
+//     p2_y /= point_num;
+//     p2_z /= point_num;
+    
+//     Mat H = cv::Mat::zeros(3, 3, CV_32F);
+//     for (int i=0; i<point_num; i++){
+//         p_index = index[i];
+        
+//         Point3f p1 = point_cloud_1[p_index] - Point3f(p1_x, p1_y, p1_z);
+//         Point3f p2 = point_cloud_2[p_index] - Point3f(p2_x, p2_y, p2_z);
+        
+//         H.at<float>(0,0) += p1.x * p2.x;
+//         H.at<float>(0,1) += p1.x * p2.y;
+//         H.at<float>(0,2) += p1.x * p2.z;
+        
+//         H.at<float>(1,0) += p1.y * p2.x;
+//         H.at<float>(1,1) += p1.y * p2.y;
+//         H.at<float>(1,2) += p1.y * p2.z;
+        
+//         H.at<float>(2,0) += p1.z * p2.x;
+//         H.at<float>(2,1) += p1.z * p2.y;
+//         H.at<float>(2,2) += p1.z * p2.z;
+        
+//     }
+    
+//     Mat e, U, V, U_transpose;
+//     cv::SVDecomp(H, e, U, V, cv::SVD::FULL_UV);
+//     transpose(U, U_transpose);
+//     R = V * U_transpose;
+    
+//     t.at<float>(0) = p2_x - R.at<float>(0,0)*p1_x + R.at<float>(0,1)*p1_y + R.at<float>(0,2)*p1_z;
+//     t.at<float>(1) = p2_y - R.at<float>(1,0)*p1_x + R.at<float>(1,1)*p1_y + R.at<float>(1,2)*p1_z;
+//     t.at<float>(2) = p2_z - R.at<float>(2,0)*p1_x + R.at<float>(2,1)*p1_y + R.at<float>(2,2)*p1_z;
+    
+// }
+
+
