@@ -1,4 +1,4 @@
-# sensor_calib
+# SENSOR_CALIB
 
 LIDAR-Camera extrinsic parameters calibration using Ceres optimization library. Our solution is suitable for the omnidirectional camera model with large field of view.
 
