@@ -1,0 +1,16 @@
+/home/audren/Documents/sensor_calib/src/Thirdparty/apriltags/build/CMakeFiles/rebuild_cache.dir
+/home/audren/Documents/sensor_calib/src/Thirdparty/apriltags/build/CMakeFiles/edit_cache.dir
+/home/audren/Documents/sensor_calib/src/Thirdparty/apriltags/build/CMakeFiles/tmp.dir
+/home/audren/Documents/sensor_calib/src/Thirdparty/apriltags/build/CMakeFiles/install.dir
+/home/audren/Documents/sensor_calib/src/Thirdparty/apriltags/build/CMakeFiles/list_install_components.dir
+/home/audren/Documents/sensor_calib/src/Thirdparty/apriltags/build/CMakeFiles/apriltags.dir
+/home/audren/Documents/sensor_calib/src/Thirdparty/apriltags/build/CMakeFiles/install/local.dir
+/home/audren/Documents/sensor_calib/src/Thirdparty/apriltags/build/CMakeFiles/install/strip.dir
+/home/audren/Documents/sensor_calib/src/Thirdparty/apriltags/build/example/CMakeFiles/install.dir
+/home/audren/Documents/sensor_calib/src/Thirdparty/apriltags/build/example/CMakeFiles/list_install_components.dir
+/home/audren/Documents/sensor_calib/src/Thirdparty/apriltags/build/example/CMakeFiles/rebuild_cache.dir
+/home/audren/Documents/sensor_calib/src/Thirdparty/apriltags/build/example/CMakeFiles/edit_cache.dir
+/home/audren/Documents/sensor_calib/src/Thirdparty/apriltags/build/example/CMakeFiles/apriltags_demo.dir
+/home/audren/Documents/sensor_calib/src/Thirdparty/apriltags/build/example/CMakeFiles/imu.dir
+/home/audren/Documents/sensor_calib/src/Thirdparty/apriltags/build/example/CMakeFiles/install/strip.dir
+/home/audren/Documents/sensor_calib/src/Thirdparty/apriltags/build/example/CMakeFiles/install/local.dir
