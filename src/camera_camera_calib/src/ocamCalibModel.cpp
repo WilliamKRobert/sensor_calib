@@ -9,7 +9,7 @@
 #include <opengv/math/cayley.hpp>
 
 
-#include <gsl/gsl_poly.h>
+// #include <gsl/gsl_poly.h>
 
 
 #include "camera_camera_calib/ocamCalibModel.h" 
