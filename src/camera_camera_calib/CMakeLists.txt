@@ -224,6 +224,7 @@ add_executable(camera_camera_calib test/testCalibrate.cpp
                                    )
 target_link_libraries(camera_camera_calib ${catkin_LIBRARIES})
 target_link_libraries(camera_camera_calib ${OpenCV_LIBRARIES})
+
 target_link_libraries(camera_camera_calib ${Eigen_LIBRARIES})
 target_link_libraries(camera_camera_calib ${CERES_LIBRARIES})
 target_link_libraries(camera_camera_calib apriltags)
@@ -238,6 +239,7 @@ add_executable(camera_camera_calib_ray test/testCalibrateRay.cpp
                                    src/ocamCalibModel.cpp
                                    )
 target_link_libraries(camera_camera_calib_ray ${catkin_LIBRARIES})
+
 target_link_libraries(camera_camera_calib_ray ${OpenCV_LIBRARIES})
 target_link_libraries(camera_camera_calib_ray ${Eigen_LIBRARIES})
 target_link_libraries(camera_camera_calib_ray ${CERES_LIBRARIES})

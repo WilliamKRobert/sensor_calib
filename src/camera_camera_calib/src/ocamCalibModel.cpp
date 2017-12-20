@@ -1,4 +1,5 @@
 #include <math.h>
+
 //#include <gsl/gsl_poly.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -6,6 +7,10 @@
 #include <opengv/absolute_pose/methods.hpp>
 #include <opengv/absolute_pose/CentralAbsoluteAdapter.hpp>
 #include <opengv/math/cayley.hpp>
+
+
+#include <gsl/gsl_poly.h>
+
 
 #include "camera_camera_calib/ocamCalibModel.h" 
 
@@ -62,7 +67,9 @@
    
 //     for (size_t i=0; i<m_ss.size(); i++){
 //         f += m_ss[i] * pow(rho, i); 
+
 //     }  
+
    
 //     Ps.x = m(0) / f;
 //     Ps.y = m(1) / f;
@@ -541,6 +548,7 @@ void OCamCalibModel::transformMat2Vec(const Eigen::Matrix4d& T_camera_model,
 //     mlpnp_transformation = absolute_pose::mlpnp(adapter);
 
 // }
+
 
 // void OCamCalibModel::pointCloudPose(const std::vector<cv::Point3f> &point_cloud_1, const std::vector<cv::Point3f> &point_cloud_2, cv::Mat &R, cv::Mat &t)
 // {

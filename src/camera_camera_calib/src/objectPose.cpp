@@ -5,7 +5,11 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/calib3d/calib3d.hpp>
 #include "opencv2/features2d/features2d.hpp"
+<<<<<<< HEAD
 //#include "opencv2/nonfree/features2d.hpp"
+=======
+#include "opencv2/nonfree/features2d.hpp"
+>>>>>>> 4611257807c3b3d30c3c75a2b645c8e7b21ccccc
 
 
 #include "camera_camera_calib/objectPose.h"
@@ -64,22 +68,38 @@ void featureMatching(const Mat& img_1, const Mat& img_2, std::vector<KeyPoint> &
   //-- Step 1: Detect the keypoints using SURF Detector
   int minHessian = 400;
 
-  //SurfFeatureDetector detector( minHessian );
-  Ptr<FeatureDetector> detector = ORB::create();
+
+  // //SurfFeatureDetector detector( minHessian );
+  // Ptr<FeatureDetector> detector = ORB::create();
+
+  // std::vector<KeyPoint> keypoints_1, keypoints_2;
+
+  // detector->detect( img_1, keypoints_1 );
+  // detector->detect( img_2, keypoints_2 );
+
+  // //-- Step 2: Calculate descriptors (feature vectors)
+  // //SurfDescriptorExtractor extractor;
+  // Ptr<DescriptorExtractor> extractor = ORB::create();
+
+  // Mat descriptors_1, descriptors_2;
+
+  // extractor->compute( img_1, keypoints_1, descriptors_1 );
+  // extractor->compute( img_2, keypoints_2, descriptors_2 );
+
+  SurfFeatureDetector detector( minHessian );
 
   std::vector<KeyPoint> keypoints_1, keypoints_2;
 
-  detector->detect( img_1, keypoints_1 );
-  detector->detect( img_2, keypoints_2 );
+  detector.detect( img_1, keypoints_1 );
+  detector.detect( img_2, keypoints_2 );
 
   //-- Step 2: Calculate descriptors (feature vectors)
-  //SurfDescriptorExtractor extractor;
-  Ptr<DescriptorExtractor> extractor = ORB::create();
+  SurfDescriptorExtractor extractor;
 
   Mat descriptors_1, descriptors_2;
 
-  extractor->compute( img_1, keypoints_1, descriptors_1 );
-  extractor->compute( img_2, keypoints_2, descriptors_2 );
+  extractor.compute( img_1, keypoints_1, descriptors_1 );
+  extractor.compute( img_2, keypoints_2, descriptors_2 );
 
   //-- Step 3: Matching descriptor vectors using FLANN matcher
   FlannBasedMatcher matcher;

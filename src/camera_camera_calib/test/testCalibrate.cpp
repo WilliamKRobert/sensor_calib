@@ -55,6 +55,7 @@ int main(int argc, char **argv)
      * Load image, convert from ROS image format to OpenCV Mat
      */
     ros::init(argc, argv, "camera_camera_calib");    
+
     string bag_file("../data/small_drone_v2/ufo_2017-08-01-19-58-02.bag");
 
     vector<Mat> im0_seq, im1_seq;
@@ -76,7 +77,9 @@ int main(int argc, char **argv)
      * Read setting files
      */
     Settings s;
+
     string inputSettingsFile("./src/camera_camera_calib/settings/settings.xml");
+
     FileStorage fs(inputSettingsFile, FileStorage::READ); // Read the settings
     if (!fs.isOpened())
     {
@@ -128,6 +131,7 @@ int main(int argc, char **argv)
 
     size_t num_viewused = 0;
     OCamCalibModel ocamcalib_cam0;
+
     char ocamfile0[] = "../data/small_drone_v2/Dart_high_res/calib_results_dart_21905596_high_res.txt";
     bool bopen0 = ocamcalib_cam0.get_ocam_model(ocamfile0);
 
@@ -166,7 +170,9 @@ int main(int argc, char **argv)
         vector<std::pair<bool, int> >tagid_found0, tagid_found1;
         
         bool bfind0 = apriltags0.getDetections(im0, detections0, objPts0, imgPts0, tagid_found0);
+
         waitKey(0);
+
         bool bfind1 = apriltags1.getDetections(im1, detections1, objPts1, imgPts1, tagid_found1);
         waitKey(10);
 
@@ -273,7 +279,9 @@ int main(int argc, char **argv)
     //  * Step 2: Obtain camera-Camera estimated transform 
     //  */
     // initial guess of transform between cam0 and cam1
-    double transform_array[6] = { -3.14, 0.000, 0.00, 0.00, 0.00, -0.200};
+
+    double transform_array[6] = { -3.14, 0.000, 0.00, -0.00, 0.00, -0.195};
+
     cout << "--------------------------------------------" << endl;
     cout << "Initial value feed into Ceres Optimization program:" << endl;
     cout << " [rx (rad), ry (rad), rz (rad), tx (m), ty (m), tz (m)]" << endl;
