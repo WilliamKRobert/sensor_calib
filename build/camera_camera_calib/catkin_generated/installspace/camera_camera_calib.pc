@@ -1,8 +1,0 @@
-prefix=/home/audren/Documents/sensor_calib/install
-
-Name: camera_camera_calib
-Description: Description of camera_camera_calib
-Version: 0.0.0
-Cflags: -I/home/audren/Documents/sensor_calib/install/include
-Libs: -L/home/audren/Documents/sensor_calib/install/lib 
-Requires: roscpp rospy std_msgs

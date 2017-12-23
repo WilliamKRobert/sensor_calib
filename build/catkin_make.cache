@@ -1,2 +1,0 @@
-camera_camera_calib:lidar_camera_calib
--DCATKIN_DEVEL_PREFIX=/home/audren/Documents/sensor_calib/devel -DCMAKE_INSTALL_PREFIX=/home/audren/Documents/sensor_calib/install -G Unix Makefiles

@@ -1,8 +1,0 @@
-prefix=/home/audren/Documents/sensor_calib/devel
-
-Name: lidar_camera_calib
-Description: Description of lidar_camera_calib
-Version: 0.0.0
-Cflags: -I/home/audren/Documents/sensor_calib/src/lidar_camera_calib/include
-Libs: -L/home/audren/Documents/sensor_calib/devel/lib -lfind_camera_pose
-Requires: roscpp rospy std_msgs
