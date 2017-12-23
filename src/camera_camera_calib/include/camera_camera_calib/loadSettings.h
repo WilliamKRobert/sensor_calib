@@ -20,7 +20,7 @@ class Settings
 {
 public:
     Settings() : goodInput(false) {}
-    enum Pattern { NOT_EXISTING, CHESSBOARD, CIRCLES_GRID, ASYMMETRIC_CIRCLES_GRID };
+    enum Pattern { NOT_EXISTING, CHESSBOARD, APRILTAG, CIRCLES_GRID, ASYMMETRIC_CIRCLES_GRID };
     enum InputType {INVALID, CAMERA, VIDEO_FILE, IMAGE_LIST};
 
     void write(FileStorage& fs) const                        //Write serialization for this class
@@ -28,16 +28,11 @@ public:
         fs << "{" << "BoardSize_Width"  << boardSize.width
                   << "BoardSize_Height" << boardSize.height
                   << "Square_Size"         << squareSize
+                  << "Image_Width" << imageWidth
+                  << "Image_Height" << imageHeight
                   << "Calibrate_Pattern" << patternToUse
-                  << "Cam0Intrinsics" << intrinsics0
-                  << "Cam0Distortion" << distortion0
-                  << "Cam0MirrorPara" << xi0
-                  << "Cam1Intrinsics" << intrinsics1
-                  << "Cam1Distortion" << distortion1
-                  << "Cam1MirrorPara" << xi1
                   << "InitialRotation" << initialRotation
-                  << "InitialTranslation" << initialTranslation
-           << "}";
+                  << "InitialTranslation" << initialTranslation;  
     }
     void read(const FileNode& node)                          //Read serialization for this class
     {
@@ -45,14 +40,11 @@ public:
         node["BoardSize_Height"] >> boardSize.height;
         node["Calibrate_Pattern"] >> patternToUse;
         node["Square_Size"]  >> squareSize;
-        node["Cam0Intrinsics"] >> intrinsics0;
-        node["Cam0Distortion"] >> distortion0;
-        node["Cam0MirrorPara"] >> xi0;
-        node["Cam1Intrinsics"] >> intrinsics1;
-        node["Cam1Distortion"] >> distortion1;
-        node["Cam1MirrorPara"] >> xi1;
+        node["Image_Width"] >> imageWidth;
+        node["Image_Height"] >> imageHeight;
         node["InitialRotation"] >> initialRotation;
         node["InitialTranslation"] >> initialTranslation;
+
         interprate();
     }
     void interprate()
@@ -72,6 +64,7 @@ public:
 
         calibrationPattern = NOT_EXISTING;
         if (!patternToUse.compare("CHESSBOARD")) calibrationPattern = CHESSBOARD;
+        if (!patternToUse.compare("APRILTAG")) calibrationPattern = APRILTAG;
         if (!patternToUse.compare("CIRCLES_GRID")) calibrationPattern = CIRCLES_GRID;
         if (!patternToUse.compare("ASYMMETRIC_CIRCLES_GRID")) calibrationPattern = ASYMMETRIC_CIRCLES_GRID;
         if (calibrationPattern == NOT_EXISTING)
@@ -137,15 +130,10 @@ public:
     bool showUndistorsed;       // Show undistorted images after calibration
     string input;               // The input ->
 
-    Mat intrinsics0;   // Camera intrinsic paramter
-    Mat distortion0;   // Camera distortion coefficients
-    double xi0;        // Mirror parameter
-
-    Mat intrinsics1;   // Camera intrinsic paramter
-    Mat distortion1;   // Camera distortion coefficients
-    double xi1;        // Mirror parameter
+    
     // Size resolution;            // Camera resolution 
-
+    int imageWidth;
+    int imageHeight;
     Mat initialRotation;
     Mat initialTranslation;
 
@@ -155,11 +143,74 @@ public:
     VideoCapture inputCapture;
     InputType inputType;
     bool goodInput;
-    int flag;
+    int flag;; // unit: %
+
 
 private:
     string patternToUse;
 
+
+};
+
+
+class AprilTagOcamConfig : public Settings       // make AprilTag OcamCalib derive from Setting parent
+{
+public:
+
+    void write(FileStorage& fs) const                        //Write serialization for this class
+    {
+        Settings::write(fs);
+
+        fs  << "Tag_Space" << tagSpace
+            << "}";
+    }
+
+    void read(const FileNode& node)           //Read serialization for this class
+    {   
+        node["Tag_Space"] >> tagSpace;
+        Settings::read(node);
+    }
+
+public:
+    double tagSpace;
+};
+
+class CheckerboardOmniConfig : public Settings       // make AprilTag OcamCalib derive from Setting parent
+{
+public:
+
+    void write(FileStorage& fs) const                        //Write serialization for this class
+    {
+        Settings::write(fs);
+
+        fs  << "Cam0Intrinsics" << intrinsics0
+            << "Cam0Distortion" << distortion0
+            << "Cam0MirrorPara" << xi0
+            << "Cam1Intrinsics" << intrinsics1
+            << "Cam1Distortion" << distortion1
+            << "Cam1MirrorPara" << xi1
+            << "}";
+    }
+
+    void read(const FileNode& node)           //Read serialization for this class
+    {
+        node["Cam0Intrinsics"] >> intrinsics0;
+        node["Cam0Distortion"] >> distortion0;
+        node["Cam0MirrorPara"] >> xi0;
+        node["Cam1Intrinsics"] >> intrinsics1;
+        node["Cam1Distortion"] >> distortion1;
+        node["Cam1MirrorPara"] >> xi1;
+        Settings::read(node);
+    }
+
+public:
+    Mat intrinsics0;   // Camera intrinsic paramter
+    Mat distortion0;   // Camera distortion coefficients
+    double xi0;        // Mirror parameter
+
+    Mat intrinsics1;   // Camera intrinsic paramter
+    Mat distortion1;   // Camera distortion coefficients
+    double xi1;        // Mirror parameter
 
 };
 
@@ -171,10 +222,20 @@ static void read(const FileNode& node, Settings& x, const Settings& default_valu
         x.read(node);
 }
 
+static void read(const FileNode& node, AprilTagOcamConfig& x, const Settings& default_value = Settings())
+{
+    
+    x.read(node);
+}
+
+static void read(const FileNode& node, CheckerboardOmniConfig& x, const Settings& default_value = Settings())
+{
+    
+    x.read(node);
+}
+
 enum { DETECTION = 0, CAPTURING = 1, CALIBRATED = 2 };
 
 bool runCalibrationAndSave(Settings& s, Size imageSize, Mat&  cameraMatrix, Mat& distCoeffs,
                            vector<vector<Point2f> > imagePoints );
-
-
 #endif

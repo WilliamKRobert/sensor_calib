@@ -230,20 +230,20 @@ target_link_libraries(camera_camera_calib ${CERES_LIBRARIES})
 target_link_libraries(camera_camera_calib apriltags)
 
 link_directories(../Thirdparty/apriltags/build/lib)
-add_executable(camera_camera_calib_ray test/testCalibrateRay.cpp 
-                                   src/loadBag.cpp 
-                                   src/objectPose.cpp
-                                   src/omniModel.cpp
-                                   src/optimizerRay.cpp
-                                   src/aprilTagsDetector.cpp
-                                   src/ocamCalibModel.cpp
-                                   )
-target_link_libraries(camera_camera_calib_ray ${catkin_LIBRARIES})
+#add_executable(camera_camera_calib_ray test/testCalibrateRay.cpp 
+#                                   src/loadBag.cpp 
+#                                   src/objectPose.cpp
+#                                   src/omniModel.cpp
+#                                   src/optimizerRay.cpp
+#                                   src/aprilTagsDetector.cpp
+#                                   src/ocamCalibModel.cpp
+#                                   )
+#target_link_libraries(camera_camera_calib_ray ${catkin_LIBRARIES})
 
-target_link_libraries(camera_camera_calib_ray ${OpenCV_LIBRARIES})
-target_link_libraries(camera_camera_calib_ray ${Eigen_LIBRARIES})
-target_link_libraries(camera_camera_calib_ray ${CERES_LIBRARIES})
-target_link_libraries(camera_camera_calib_ray apriltags)
+#target_link_libraries(camera_camera_calib_ray ${OpenCV_LIBRARIES})
+#target_link_libraries(camera_camera_calib_ray ${Eigen_LIBRARIES})
+#target_link_libraries(camera_camera_calib_ray ${CERES_LIBRARIES})
+#target_link_libraries(camera_camera_calib_ray apriltags)
 
 
 add_executable(omni_reproj_test test/testOmniReprojection.cpp 

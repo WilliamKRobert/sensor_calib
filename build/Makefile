@@ -270,19 +270,6 @@ omni_reproj_test/fast:
 .PHONY : omni_reproj_test/fast
 
 #=============================================================================
-# Target rules for targets named camera_camera_calib_ray
-
-# Build rule for target.
-camera_camera_calib_ray: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 camera_camera_calib_ray
-.PHONY : camera_camera_calib_ray
-
-# fast build rule for target.
-camera_camera_calib_ray/fast:
-	$(MAKE) -f camera_camera_calib/CMakeFiles/camera_camera_calib_ray.dir/build.make camera_camera_calib/CMakeFiles/camera_camera_calib_ray.dir/build
-.PHONY : camera_camera_calib_ray/fast
-
-#=============================================================================
 # Target rules for targets named topic_tools_generate_messages_nodejs
 
 # Build rule for target.
@@ -1070,7 +1057,6 @@ help:
 	@echo "... gtest"
 	@echo "... gtest_main"
 	@echo "... omni_reproj_test"
-	@echo "... camera_camera_calib_ray"
 	@echo "... topic_tools_generate_messages_nodejs"
 	@echo "... topic_tools_generate_messages_lisp"
 	@echo "... topic_tools_generate_messages_eus"

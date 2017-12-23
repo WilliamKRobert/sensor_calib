@@ -229,32 +229,6 @@ camera_camera_calib/ocamCalibModel.h
 /home/audren/Documents/sensor_calib/src/camera_camera_calib/src/camera_camera_calib/ocamCalibModel.h
 
 /home/audren/Documents/sensor_calib/src/camera_camera_calib/test/testCalibrateRay.cpp
-iostream
--
-opencv2/opencv.hpp
--
-opencv2/calib3d/calib3d.hpp
--
-opencv2/highgui/highgui.hpp
--
-ros/ros.h
-/home/audren/Documents/sensor_calib/src/camera_camera_calib/test/ros/ros.h
-ceres/rotation.h
-/home/audren/Documents/sensor_calib/src/camera_camera_calib/test/ceres/rotation.h
-camera_camera_calib/loadBag.h
-/home/audren/Documents/sensor_calib/src/camera_camera_calib/test/camera_camera_calib/loadBag.h
-camera_camera_calib/loadSettings.h
-/home/audren/Documents/sensor_calib/src/camera_camera_calib/test/camera_camera_calib/loadSettings.h
-camera_camera_calib/objectPose.h
-/home/audren/Documents/sensor_calib/src/camera_camera_calib/test/camera_camera_calib/objectPose.h
-camera_camera_calib/optimizerRay.h
-/home/audren/Documents/sensor_calib/src/camera_camera_calib/test/camera_camera_calib/optimizerRay.h
-camera_camera_calib/omniModel.h
-/home/audren/Documents/sensor_calib/src/camera_camera_calib/test/camera_camera_calib/omniModel.h
-camera_camera_calib/aprilTagsDetector.h
-/home/audren/Documents/sensor_calib/src/camera_camera_calib/test/camera_camera_calib/aprilTagsDetector.h
-camera_camera_calib/ocamCalibModel.h
-/home/audren/Documents/sensor_calib/src/camera_camera_calib/test/camera_camera_calib/ocamCalibModel.h
 
 /opt/ros/kinetic/include/cv_bridge/cv_bridge.h
 sensor_msgs/Image.h
@@ -1061,10 +1035,6 @@ opencv2/videoio.hpp
 /opt/ros/kinetic/include/opencv-3.3.1/opencv2/opencv2/videoio.hpp
 opencv2/highgui/highgui_c.h
 /opt/ros/kinetic/include/opencv-3.3.1/opencv2/opencv2/highgui/highgui_c.h
-
-/opt/ros/kinetic/include/opencv-3.3.1/opencv2/highgui/highgui.hpp
-opencv2/highgui.hpp
-/opt/ros/kinetic/include/opencv-3.3.1/opencv2/highgui/opencv2/highgui.hpp
 
 /opt/ros/kinetic/include/opencv-3.3.1/opencv2/highgui/highgui_c.h
 opencv2/core/core_c.h

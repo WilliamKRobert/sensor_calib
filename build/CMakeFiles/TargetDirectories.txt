@@ -23,7 +23,6 @@
 /home/audren/Documents/sensor_calib/build/camera_camera_calib/CMakeFiles/install/local.dir
 /home/audren/Documents/sensor_calib/build/camera_camera_calib/CMakeFiles/install/strip.dir
 /home/audren/Documents/sensor_calib/build/camera_camera_calib/CMakeFiles/omni_reproj_test.dir
-/home/audren/Documents/sensor_calib/build/camera_camera_calib/CMakeFiles/camera_camera_calib_ray.dir
 /home/audren/Documents/sensor_calib/build/camera_camera_calib/CMakeFiles/topic_tools_generate_messages_nodejs.dir
 /home/audren/Documents/sensor_calib/build/camera_camera_calib/CMakeFiles/topic_tools_generate_messages_lisp.dir
 /home/audren/Documents/sensor_calib/build/camera_camera_calib/CMakeFiles/topic_tools_generate_messages_eus.dir

@@ -181,21 +181,6 @@ omni_reproj_test/fast:
 .PHONY : omni_reproj_test/fast
 
 # Convenience name for target.
-camera_camera_calib/CMakeFiles/camera_camera_calib_ray.dir/rule:
-	cd /home/audren/Documents/sensor_calib/build && $(MAKE) -f CMakeFiles/Makefile2 camera_camera_calib/CMakeFiles/camera_camera_calib_ray.dir/rule
-.PHONY : camera_camera_calib/CMakeFiles/camera_camera_calib_ray.dir/rule
-
-# Convenience name for target.
-camera_camera_calib_ray: camera_camera_calib/CMakeFiles/camera_camera_calib_ray.dir/rule
-
-.PHONY : camera_camera_calib_ray
-
-# fast build rule for target.
-camera_camera_calib_ray/fast:
-	cd /home/audren/Documents/sensor_calib/build && $(MAKE) -f camera_camera_calib/CMakeFiles/camera_camera_calib_ray.dir/build.make camera_camera_calib/CMakeFiles/camera_camera_calib_ray.dir/build
-.PHONY : camera_camera_calib_ray/fast
-
-# Convenience name for target.
 camera_camera_calib/CMakeFiles/topic_tools_generate_messages_nodejs.dir/rule:
 	cd /home/audren/Documents/sensor_calib/build && $(MAKE) -f CMakeFiles/Makefile2 camera_camera_calib/CMakeFiles/topic_tools_generate_messages_nodejs.dir/rule
 .PHONY : camera_camera_calib/CMakeFiles/topic_tools_generate_messages_nodejs.dir/rule
@@ -1057,7 +1042,6 @@ src/aprilTagsDetector.o: src/aprilTagsDetector.cpp.o
 # target to build an object file
 src/aprilTagsDetector.cpp.o:
 	cd /home/audren/Documents/sensor_calib/build && $(MAKE) -f camera_camera_calib/CMakeFiles/omni_reproj_test.dir/build.make camera_camera_calib/CMakeFiles/omni_reproj_test.dir/src/aprilTagsDetector.cpp.o
-	cd /home/audren/Documents/sensor_calib/build && $(MAKE) -f camera_camera_calib/CMakeFiles/camera_camera_calib_ray.dir/build.make camera_camera_calib/CMakeFiles/camera_camera_calib_ray.dir/src/aprilTagsDetector.cpp.o
 	cd /home/audren/Documents/sensor_calib/build && $(MAKE) -f camera_camera_calib/CMakeFiles/camera_camera_calib.dir/build.make camera_camera_calib/CMakeFiles/camera_camera_calib.dir/src/aprilTagsDetector.cpp.o
 	cd /home/audren/Documents/sensor_calib/build && $(MAKE) -f camera_camera_calib/CMakeFiles/ocam_reproj_test.dir/build.make camera_camera_calib/CMakeFiles/ocam_reproj_test.dir/src/aprilTagsDetector.cpp.o
 .PHONY : src/aprilTagsDetector.cpp.o
@@ -1069,7 +1053,6 @@ src/aprilTagsDetector.i: src/aprilTagsDetector.cpp.i
 # target to preprocess a source file
 src/aprilTagsDetector.cpp.i:
 	cd /home/audren/Documents/sensor_calib/build && $(MAKE) -f camera_camera_calib/CMakeFiles/omni_reproj_test.dir/build.make camera_camera_calib/CMakeFiles/omni_reproj_test.dir/src/aprilTagsDetector.cpp.i
-	cd /home/audren/Documents/sensor_calib/build && $(MAKE) -f camera_camera_calib/CMakeFiles/camera_camera_calib_ray.dir/build.make camera_camera_calib/CMakeFiles/camera_camera_calib_ray.dir/src/aprilTagsDetector.cpp.i
 	cd /home/audren/Documents/sensor_calib/build && $(MAKE) -f camera_camera_calib/CMakeFiles/camera_camera_calib.dir/build.make camera_camera_calib/CMakeFiles/camera_camera_calib.dir/src/aprilTagsDetector.cpp.i
 	cd /home/audren/Documents/sensor_calib/build && $(MAKE) -f camera_camera_calib/CMakeFiles/ocam_reproj_test.dir/build.make camera_camera_calib/CMakeFiles/ocam_reproj_test.dir/src/aprilTagsDetector.cpp.i
 .PHONY : src/aprilTagsDetector.cpp.i
@@ -1081,7 +1064,6 @@ src/aprilTagsDetector.s: src/aprilTagsDetector.cpp.s
 # target to generate assembly for a file
 src/aprilTagsDetector.cpp.s:
 	cd /home/audren/Documents/sensor_calib/build && $(MAKE) -f camera_camera_calib/CMakeFiles/omni_reproj_test.dir/build.make camera_camera_calib/CMakeFiles/omni_reproj_test.dir/src/aprilTagsDetector.cpp.s
-	cd /home/audren/Documents/sensor_calib/build && $(MAKE) -f camera_camera_calib/CMakeFiles/camera_camera_calib_ray.dir/build.make camera_camera_calib/CMakeFiles/camera_camera_calib_ray.dir/src/aprilTagsDetector.cpp.s
 	cd /home/audren/Documents/sensor_calib/build && $(MAKE) -f camera_camera_calib/CMakeFiles/camera_camera_calib.dir/build.make camera_camera_calib/CMakeFiles/camera_camera_calib.dir/src/aprilTagsDetector.cpp.s
 	cd /home/audren/Documents/sensor_calib/build && $(MAKE) -f camera_camera_calib/CMakeFiles/ocam_reproj_test.dir/build.make camera_camera_calib/CMakeFiles/ocam_reproj_test.dir/src/aprilTagsDetector.cpp.s
 .PHONY : src/aprilTagsDetector.cpp.s
@@ -1093,7 +1075,6 @@ src/loadBag.o: src/loadBag.cpp.o
 # target to build an object file
 src/loadBag.cpp.o:
 	cd /home/audren/Documents/sensor_calib/build && $(MAKE) -f camera_camera_calib/CMakeFiles/omni_reproj_test.dir/build.make camera_camera_calib/CMakeFiles/omni_reproj_test.dir/src/loadBag.cpp.o
-	cd /home/audren/Documents/sensor_calib/build && $(MAKE) -f camera_camera_calib/CMakeFiles/camera_camera_calib_ray.dir/build.make camera_camera_calib/CMakeFiles/camera_camera_calib_ray.dir/src/loadBag.cpp.o
 	cd /home/audren/Documents/sensor_calib/build && $(MAKE) -f camera_camera_calib/CMakeFiles/camera_camera_calib.dir/build.make camera_camera_calib/CMakeFiles/camera_camera_calib.dir/src/loadBag.cpp.o
 	cd /home/audren/Documents/sensor_calib/build && $(MAKE) -f camera_camera_calib/CMakeFiles/ocam_reproj_test.dir/build.make camera_camera_calib/CMakeFiles/ocam_reproj_test.dir/src/loadBag.cpp.o
 .PHONY : src/loadBag.cpp.o
@@ -1105,7 +1086,6 @@ src/loadBag.i: src/loadBag.cpp.i
 # target to preprocess a source file
 src/loadBag.cpp.i:
 	cd /home/audren/Documents/sensor_calib/build && $(MAKE) -f camera_camera_calib/CMakeFiles/omni_reproj_test.dir/build.make camera_camera_calib/CMakeFiles/omni_reproj_test.dir/src/loadBag.cpp.i
-	cd /home/audren/Documents/sensor_calib/build && $(MAKE) -f camera_camera_calib/CMakeFiles/camera_camera_calib_ray.dir/build.make camera_camera_calib/CMakeFiles/camera_camera_calib_ray.dir/src/loadBag.cpp.i
 	cd /home/audren/Documents/sensor_calib/build && $(MAKE) -f camera_camera_calib/CMakeFiles/camera_camera_calib.dir/build.make camera_camera_calib/CMakeFiles/camera_camera_calib.dir/src/loadBag.cpp.i
 	cd /home/audren/Documents/sensor_calib/build && $(MAKE) -f camera_camera_calib/CMakeFiles/ocam_reproj_test.dir/build.make camera_camera_calib/CMakeFiles/ocam_reproj_test.dir/src/loadBag.cpp.i
 .PHONY : src/loadBag.cpp.i
@@ -1117,7 +1097,6 @@ src/loadBag.s: src/loadBag.cpp.s
 # target to generate assembly for a file
 src/loadBag.cpp.s:
 	cd /home/audren/Documents/sensor_calib/build && $(MAKE) -f camera_camera_calib/CMakeFiles/omni_reproj_test.dir/build.make camera_camera_calib/CMakeFiles/omni_reproj_test.dir/src/loadBag.cpp.s
-	cd /home/audren/Documents/sensor_calib/build && $(MAKE) -f camera_camera_calib/CMakeFiles/camera_camera_calib_ray.dir/build.make camera_camera_calib/CMakeFiles/camera_camera_calib_ray.dir/src/loadBag.cpp.s
 	cd /home/audren/Documents/sensor_calib/build && $(MAKE) -f camera_camera_calib/CMakeFiles/camera_camera_calib.dir/build.make camera_camera_calib/CMakeFiles/camera_camera_calib.dir/src/loadBag.cpp.s
 	cd /home/audren/Documents/sensor_calib/build && $(MAKE) -f camera_camera_calib/CMakeFiles/ocam_reproj_test.dir/build.make camera_camera_calib/CMakeFiles/ocam_reproj_test.dir/src/loadBag.cpp.s
 .PHONY : src/loadBag.cpp.s
@@ -1129,7 +1108,6 @@ src/objectPose.o: src/objectPose.cpp.o
 # target to build an object file
 src/objectPose.cpp.o:
 	cd /home/audren/Documents/sensor_calib/build && $(MAKE) -f camera_camera_calib/CMakeFiles/omni_reproj_test.dir/build.make camera_camera_calib/CMakeFiles/omni_reproj_test.dir/src/objectPose.cpp.o
-	cd /home/audren/Documents/sensor_calib/build && $(MAKE) -f camera_camera_calib/CMakeFiles/camera_camera_calib_ray.dir/build.make camera_camera_calib/CMakeFiles/camera_camera_calib_ray.dir/src/objectPose.cpp.o
 	cd /home/audren/Documents/sensor_calib/build && $(MAKE) -f camera_camera_calib/CMakeFiles/camera_camera_calib.dir/build.make camera_camera_calib/CMakeFiles/camera_camera_calib.dir/src/objectPose.cpp.o
 	cd /home/audren/Documents/sensor_calib/build && $(MAKE) -f camera_camera_calib/CMakeFiles/ocam_reproj_test.dir/build.make camera_camera_calib/CMakeFiles/ocam_reproj_test.dir/src/objectPose.cpp.o
 .PHONY : src/objectPose.cpp.o
@@ -1141,7 +1119,6 @@ src/objectPose.i: src/objectPose.cpp.i
 # target to preprocess a source file
 src/objectPose.cpp.i:
 	cd /home/audren/Documents/sensor_calib/build && $(MAKE) -f camera_camera_calib/CMakeFiles/omni_reproj_test.dir/build.make camera_camera_calib/CMakeFiles/omni_reproj_test.dir/src/objectPose.cpp.i
-	cd /home/audren/Documents/sensor_calib/build && $(MAKE) -f camera_camera_calib/CMakeFiles/camera_camera_calib_ray.dir/build.make camera_camera_calib/CMakeFiles/camera_camera_calib_ray.dir/src/objectPose.cpp.i
 	cd /home/audren/Documents/sensor_calib/build && $(MAKE) -f camera_camera_calib/CMakeFiles/camera_camera_calib.dir/build.make camera_camera_calib/CMakeFiles/camera_camera_calib.dir/src/objectPose.cpp.i
 	cd /home/audren/Documents/sensor_calib/build && $(MAKE) -f camera_camera_calib/CMakeFiles/ocam_reproj_test.dir/build.make camera_camera_calib/CMakeFiles/ocam_reproj_test.dir/src/objectPose.cpp.i
 .PHONY : src/objectPose.cpp.i
@@ -1153,7 +1130,6 @@ src/objectPose.s: src/objectPose.cpp.s
 # target to generate assembly for a file
 src/objectPose.cpp.s:
 	cd /home/audren/Documents/sensor_calib/build && $(MAKE) -f camera_camera_calib/CMakeFiles/omni_reproj_test.dir/build.make camera_camera_calib/CMakeFiles/omni_reproj_test.dir/src/objectPose.cpp.s
-	cd /home/audren/Documents/sensor_calib/build && $(MAKE) -f camera_camera_calib/CMakeFiles/camera_camera_calib_ray.dir/build.make camera_camera_calib/CMakeFiles/camera_camera_calib_ray.dir/src/objectPose.cpp.s
 	cd /home/audren/Documents/sensor_calib/build && $(MAKE) -f camera_camera_calib/CMakeFiles/camera_camera_calib.dir/build.make camera_camera_calib/CMakeFiles/camera_camera_calib.dir/src/objectPose.cpp.s
 	cd /home/audren/Documents/sensor_calib/build && $(MAKE) -f camera_camera_calib/CMakeFiles/ocam_reproj_test.dir/build.make camera_camera_calib/CMakeFiles/ocam_reproj_test.dir/src/objectPose.cpp.s
 .PHONY : src/objectPose.cpp.s
@@ -1164,7 +1140,6 @@ src/ocamCalibModel.o: src/ocamCalibModel.cpp.o
 
 # target to build an object file
 src/ocamCalibModel.cpp.o:
-	cd /home/audren/Documents/sensor_calib/build && $(MAKE) -f camera_camera_calib/CMakeFiles/camera_camera_calib_ray.dir/build.make camera_camera_calib/CMakeFiles/camera_camera_calib_ray.dir/src/ocamCalibModel.cpp.o
 	cd /home/audren/Documents/sensor_calib/build && $(MAKE) -f camera_camera_calib/CMakeFiles/camera_camera_calib.dir/build.make camera_camera_calib/CMakeFiles/camera_camera_calib.dir/src/ocamCalibModel.cpp.o
 	cd /home/audren/Documents/sensor_calib/build && $(MAKE) -f camera_camera_calib/CMakeFiles/ocam_reproj_test.dir/build.make camera_camera_calib/CMakeFiles/ocam_reproj_test.dir/src/ocamCalibModel.cpp.o
 .PHONY : src/ocamCalibModel.cpp.o
@@ -1175,7 +1150,6 @@ src/ocamCalibModel.i: src/ocamCalibModel.cpp.i
 
 # target to preprocess a source file
 src/ocamCalibModel.cpp.i:
-	cd /home/audren/Documents/sensor_calib/build && $(MAKE) -f camera_camera_calib/CMakeFiles/camera_camera_calib_ray.dir/build.make camera_camera_calib/CMakeFiles/camera_camera_calib_ray.dir/src/ocamCalibModel.cpp.i
 	cd /home/audren/Documents/sensor_calib/build && $(MAKE) -f camera_camera_calib/CMakeFiles/camera_camera_calib.dir/build.make camera_camera_calib/CMakeFiles/camera_camera_calib.dir/src/ocamCalibModel.cpp.i
 	cd /home/audren/Documents/sensor_calib/build && $(MAKE) -f camera_camera_calib/CMakeFiles/ocam_reproj_test.dir/build.make camera_camera_calib/CMakeFiles/ocam_reproj_test.dir/src/ocamCalibModel.cpp.i
 .PHONY : src/ocamCalibModel.cpp.i
@@ -1186,7 +1160,6 @@ src/ocamCalibModel.s: src/ocamCalibModel.cpp.s
 
 # target to generate assembly for a file
 src/ocamCalibModel.cpp.s:
-	cd /home/audren/Documents/sensor_calib/build && $(MAKE) -f camera_camera_calib/CMakeFiles/camera_camera_calib_ray.dir/build.make camera_camera_calib/CMakeFiles/camera_camera_calib_ray.dir/src/ocamCalibModel.cpp.s
 	cd /home/audren/Documents/sensor_calib/build && $(MAKE) -f camera_camera_calib/CMakeFiles/camera_camera_calib.dir/build.make camera_camera_calib/CMakeFiles/camera_camera_calib.dir/src/ocamCalibModel.cpp.s
 	cd /home/audren/Documents/sensor_calib/build && $(MAKE) -f camera_camera_calib/CMakeFiles/ocam_reproj_test.dir/build.make camera_camera_calib/CMakeFiles/ocam_reproj_test.dir/src/ocamCalibModel.cpp.s
 .PHONY : src/ocamCalibModel.cpp.s
@@ -1198,7 +1171,6 @@ src/omniModel.o: src/omniModel.cpp.o
 # target to build an object file
 src/omniModel.cpp.o:
 	cd /home/audren/Documents/sensor_calib/build && $(MAKE) -f camera_camera_calib/CMakeFiles/omni_reproj_test.dir/build.make camera_camera_calib/CMakeFiles/omni_reproj_test.dir/src/omniModel.cpp.o
-	cd /home/audren/Documents/sensor_calib/build && $(MAKE) -f camera_camera_calib/CMakeFiles/camera_camera_calib_ray.dir/build.make camera_camera_calib/CMakeFiles/camera_camera_calib_ray.dir/src/omniModel.cpp.o
 	cd /home/audren/Documents/sensor_calib/build && $(MAKE) -f camera_camera_calib/CMakeFiles/camera_camera_calib.dir/build.make camera_camera_calib/CMakeFiles/camera_camera_calib.dir/src/omniModel.cpp.o
 	cd /home/audren/Documents/sensor_calib/build && $(MAKE) -f camera_camera_calib/CMakeFiles/ocam_reproj_test.dir/build.make camera_camera_calib/CMakeFiles/ocam_reproj_test.dir/src/omniModel.cpp.o
 .PHONY : src/omniModel.cpp.o
@@ -1210,7 +1182,6 @@ src/omniModel.i: src/omniModel.cpp.i
 # target to preprocess a source file
 src/omniModel.cpp.i:
 	cd /home/audren/Documents/sensor_calib/build && $(MAKE) -f camera_camera_calib/CMakeFiles/omni_reproj_test.dir/build.make camera_camera_calib/CMakeFiles/omni_reproj_test.dir/src/omniModel.cpp.i
-	cd /home/audren/Documents/sensor_calib/build && $(MAKE) -f camera_camera_calib/CMakeFiles/camera_camera_calib_ray.dir/build.make camera_camera_calib/CMakeFiles/camera_camera_calib_ray.dir/src/omniModel.cpp.i
 	cd /home/audren/Documents/sensor_calib/build && $(MAKE) -f camera_camera_calib/CMakeFiles/camera_camera_calib.dir/build.make camera_camera_calib/CMakeFiles/camera_camera_calib.dir/src/omniModel.cpp.i
 	cd /home/audren/Documents/sensor_calib/build && $(MAKE) -f camera_camera_calib/CMakeFiles/ocam_reproj_test.dir/build.make camera_camera_calib/CMakeFiles/ocam_reproj_test.dir/src/omniModel.cpp.i
 .PHONY : src/omniModel.cpp.i
@@ -1222,7 +1193,6 @@ src/omniModel.s: src/omniModel.cpp.s
 # target to generate assembly for a file
 src/omniModel.cpp.s:
 	cd /home/audren/Documents/sensor_calib/build && $(MAKE) -f camera_camera_calib/CMakeFiles/omni_reproj_test.dir/build.make camera_camera_calib/CMakeFiles/omni_reproj_test.dir/src/omniModel.cpp.s
-	cd /home/audren/Documents/sensor_calib/build && $(MAKE) -f camera_camera_calib/CMakeFiles/camera_camera_calib_ray.dir/build.make camera_camera_calib/CMakeFiles/camera_camera_calib_ray.dir/src/omniModel.cpp.s
 	cd /home/audren/Documents/sensor_calib/build && $(MAKE) -f camera_camera_calib/CMakeFiles/camera_camera_calib.dir/build.make camera_camera_calib/CMakeFiles/camera_camera_calib.dir/src/omniModel.cpp.s
 	cd /home/audren/Documents/sensor_calib/build && $(MAKE) -f camera_camera_calib/CMakeFiles/ocam_reproj_test.dir/build.make camera_camera_calib/CMakeFiles/ocam_reproj_test.dir/src/omniModel.cpp.s
 .PHONY : src/omniModel.cpp.s
@@ -1260,33 +1230,6 @@ src/optimizer.cpp.s:
 	cd /home/audren/Documents/sensor_calib/build && $(MAKE) -f camera_camera_calib/CMakeFiles/ocam_reproj_test.dir/build.make camera_camera_calib/CMakeFiles/ocam_reproj_test.dir/src/optimizer.cpp.s
 .PHONY : src/optimizer.cpp.s
 
-src/optimizerRay.o: src/optimizerRay.cpp.o
-
-.PHONY : src/optimizerRay.o
-
-# target to build an object file
-src/optimizerRay.cpp.o:
-	cd /home/audren/Documents/sensor_calib/build && $(MAKE) -f camera_camera_calib/CMakeFiles/camera_camera_calib_ray.dir/build.make camera_camera_calib/CMakeFiles/camera_camera_calib_ray.dir/src/optimizerRay.cpp.o
-.PHONY : src/optimizerRay.cpp.o
-
-src/optimizerRay.i: src/optimizerRay.cpp.i
-
-.PHONY : src/optimizerRay.i
-
-# target to preprocess a source file
-src/optimizerRay.cpp.i:
-	cd /home/audren/Documents/sensor_calib/build && $(MAKE) -f camera_camera_calib/CMakeFiles/camera_camera_calib_ray.dir/build.make camera_camera_calib/CMakeFiles/camera_camera_calib_ray.dir/src/optimizerRay.cpp.i
-.PHONY : src/optimizerRay.cpp.i
-
-src/optimizerRay.s: src/optimizerRay.cpp.s
-
-.PHONY : src/optimizerRay.s
-
-# target to generate assembly for a file
-src/optimizerRay.cpp.s:
-	cd /home/audren/Documents/sensor_calib/build && $(MAKE) -f camera_camera_calib/CMakeFiles/camera_camera_calib_ray.dir/build.make camera_camera_calib/CMakeFiles/camera_camera_calib_ray.dir/src/optimizerRay.cpp.s
-.PHONY : src/optimizerRay.cpp.s
-
 test/testCalibrate.o: test/testCalibrate.cpp.o
 
 .PHONY : test/testCalibrate.o
@@ -1313,33 +1256,6 @@ test/testCalibrate.s: test/testCalibrate.cpp.s
 test/testCalibrate.cpp.s:
 	cd /home/audren/Documents/sensor_calib/build && $(MAKE) -f camera_camera_calib/CMakeFiles/camera_camera_calib.dir/build.make camera_camera_calib/CMakeFiles/camera_camera_calib.dir/test/testCalibrate.cpp.s
 .PHONY : test/testCalibrate.cpp.s
-
-test/testCalibrateRay.o: test/testCalibrateRay.cpp.o
-
-.PHONY : test/testCalibrateRay.o
-
-# target to build an object file
-test/testCalibrateRay.cpp.o:
-	cd /home/audren/Documents/sensor_calib/build && $(MAKE) -f camera_camera_calib/CMakeFiles/camera_camera_calib_ray.dir/build.make camera_camera_calib/CMakeFiles/camera_camera_calib_ray.dir/test/testCalibrateRay.cpp.o
-.PHONY : test/testCalibrateRay.cpp.o
-
-test/testCalibrateRay.i: test/testCalibrateRay.cpp.i
-
-.PHONY : test/testCalibrateRay.i
-
-# target to preprocess a source file
-test/testCalibrateRay.cpp.i:
-	cd /home/audren/Documents/sensor_calib/build && $(MAKE) -f camera_camera_calib/CMakeFiles/camera_camera_calib_ray.dir/build.make camera_camera_calib/CMakeFiles/camera_camera_calib_ray.dir/test/testCalibrateRay.cpp.i
-.PHONY : test/testCalibrateRay.cpp.i
-
-test/testCalibrateRay.s: test/testCalibrateRay.cpp.s
-
-.PHONY : test/testCalibrateRay.s
-
-# target to generate assembly for a file
-test/testCalibrateRay.cpp.s:
-	cd /home/audren/Documents/sensor_calib/build && $(MAKE) -f camera_camera_calib/CMakeFiles/camera_camera_calib_ray.dir/build.make camera_camera_calib/CMakeFiles/camera_camera_calib_ray.dir/test/testCalibrateRay.cpp.s
-.PHONY : test/testCalibrateRay.cpp.s
 
 test/testOcamReprojection.o: test/testOcamReprojection.cpp.o
 
@@ -1405,7 +1321,6 @@ help:
 	@echo "... install/local"
 	@echo "... install/strip"
 	@echo "... omni_reproj_test"
-	@echo "... camera_camera_calib_ray"
 	@echo "... topic_tools_generate_messages_nodejs"
 	@echo "... topic_tools_generate_messages_lisp"
 	@echo "... topic_tools_generate_messages_eus"
@@ -1485,15 +1400,9 @@ help:
 	@echo "... src/optimizer.o"
 	@echo "... src/optimizer.i"
 	@echo "... src/optimizer.s"
-	@echo "... src/optimizerRay.o"
-	@echo "... src/optimizerRay.i"
-	@echo "... src/optimizerRay.s"
 	@echo "... test/testCalibrate.o"
 	@echo "... test/testCalibrate.i"
 	@echo "... test/testCalibrate.s"
-	@echo "... test/testCalibrateRay.o"
-	@echo "... test/testCalibrateRay.i"
-	@echo "... test/testCalibrateRay.s"
 	@echo "... test/testOcamReprojection.o"
 	@echo "... test/testOcamReprojection.i"
 	@echo "... test/testOcamReprojection.s"

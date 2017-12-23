@@ -42,11 +42,8 @@ public:
     m_windowName(string("apriltags_detection"))
  	{}
 
-    AprilTagsDetector(double px, double py,
-                      double fx, double fy, 
-                    //cv::Mat intrinsics, cv::Mat distortionCoeff, double mirror, 
- 	 				  double width, double height, 
- 					  int tagRows, int tagCols,
+ 	// for ocam camera
+    AprilTagsDetector(int tagRows, int tagCols,
  					  double tagSize, double tagSpacing,
                       std::string windowName) :
     // default settings, most can be modified through command line options (see below)
@@ -56,8 +53,6 @@ public:
     m_draw(true),
     m_timing(false),
 
-    m_width(width),
-    m_height(height),
     m_tagRows(tagRows),
     m_tagCols(tagCols),
     m_tagSize(tagSize),
@@ -66,19 +61,15 @@ public:
     m_deviceId(0),
     m_windowName(windowName),
     m_verbose(false)
+    
  	{
- 		m_px = px;
-		m_py = py;
-		// m_fx = fx;
-		// m_fy = fy;
-		// m_xi = cam.m_xi;
-		// m_k1 = cam.m_k1;
-		// m_k2 = cam.m_k2;
-		// m_p1 = cam.m_p1;
-		// m_p2 = cam.m_p2;
-		// m_fov_parameter = cam.m_fov_parameter;
-
         setup();
+        m_width = 640;
+	    m_height = 480;
+	    m_fx = 600;
+	    m_fy = 600;
+	    m_px = m_width/2;
+	    m_py = m_height/2;
  	}
 
 	bool getDetections(cv::Mat& img, 
@@ -104,21 +95,18 @@ private:
     bool m_verbose; // print detections
 	bool m_timing; // print timing information for each tag extraction call
 
-	int m_width; // image size in pixels
-	int m_height;
-
 	int m_tagRows;
 	int m_tagCols;
 	double m_tagSize; // April tag side length in meters of square black frame
 	double m_tagSpacing; // in percentage
-	double m_fx; // camera focal length in pixels
-	double m_fy;
-	double m_px; // camera principal point
-	double m_py;
-	// double m_xi;
 
-	// double m_k1, m_k2, m_p1, m_p2; // camera distortion parameters
-	// double m_fov_parameter;
+
+	int m_width;
+    int m_height;
+    double m_fx;
+    double m_fy;
+    double m_px;
+    double m_py;
 
 	int m_deviceId; // camera id (in case of multiple cameras)
 

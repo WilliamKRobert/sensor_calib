@@ -57,7 +57,6 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "camera_camera_calib");    
 
     string bag_file("../data/small_drone_v2/ufo_2017-08-01-19-58-02.bag");
-
     vector<Mat> im0_seq, im1_seq;
     string topic0 = string("/synthetic_gimbal/cam0") + "/image_raw";
     string topic1 = string("/synthetic_gimbal/cam1") + "/image_raw";
@@ -65,35 +64,42 @@ int main(int argc, char **argv)
     size_t max_im_num = 500;
     loadBag(bag_file, topic0, topic1, im0_seq, im1_seq, sample_num, max_im_num);
 
-    if (im0_seq.size() != im1_seq.size() || im0_seq.size() < 10){
+    if (im0_seq.size() != im1_seq.size() || im0_seq.size() < 3){
         cout << "Inconsistent image numbers or too few images!" << endl;
-        return 0;
+        return -1;
     }
-    cout << "---------------------------------------------" << endl;
-    cout << "Number of left images:   " << im0_seq.size() << endl;
-    cout << "Number of right images:  " << im1_seq.size() << endl;
-    cout << "---------------------------------------------" << endl;
+    cout << endl;
+    cout << "Number of left and right images:   ";
+    cout << im0_seq.size() << ", " << im1_seq.size() <<endl;
+    cout << endl;
+
+    
+
+
     /*
      * Read setting files
      */
-    Settings s;
+    AprilTagOcamConfig s;
 
-    string inputSettingsFile("./src/camera_camera_calib/settings/settings.xml");
+    string inputSettingsFile("./src/camera_camera_calib/settings/settings_apriltag.xml");
 
     FileStorage fs(inputSettingsFile, FileStorage::READ); // Read the settings
     if (!fs.isOpened())
     {
-        cout << "Could not open the configuration file: \"" << inputSettingsFile << "\"" << endl;
+        cout << "Could not open the configuration file: \"";
+        cout << inputSettingsFile << "\"" << endl;
         return -1;
     }
     fs["Settings"] >> s;
-    fs.release();                                         // close Settings file
+    fs.release();    // close Settings file
 
     if (!s.goodInput)
     {
         cout << "Invalid input detected. Application stopping. " << endl;
         return -1;
     }
+
+
 
     double width = 1050;//526;
     double height = 1050; //526;
@@ -106,23 +112,11 @@ int main(int argc, char **argv)
     
     double cam1_u0 = 512.560101;
     double cam1_v0 = 523.645938;
-    
-    Mat cam0_proj = s.intrinsics0;
-    Mat cam0_dist = s.distortion0;
-    
-    Mat cam1_proj = s.intrinsics1;
-    Mat cam1_dist = s.distortion1;
 
-    AprilTagsDetector apriltags0(cam0_u0, cam0_v0, 
-                                 cam0_proj.at<double>(0,0), cam0_proj.at<double>(1,1), 
-                                 width, height, 
-                                 tagRows, tagCols,
+    AprilTagsDetector apriltags0(tagRows, tagCols,
                                  tagSize, tagSpacing,
                                  string("cam0_apriltags_detection"));
-    AprilTagsDetector apriltags1(cam1_u0, cam1_v0, 
-                                 cam1_proj.at<double>(0,0), cam1_proj.at<double>(1,1), 
-                                 width, height, 
-                                 tagRows, tagCols,
+    AprilTagsDetector apriltags1(tagRows, tagCols,
                                  tagSize, tagSpacing,
                                  string("cam1_apriltags_detection"));
 

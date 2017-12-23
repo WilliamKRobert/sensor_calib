@@ -18,16 +18,20 @@
 using namespace std;
 using namespace cv;
 
-bool SYNTHTIC = true;
+bool SYNTHTIC = false;
 
-std::pair<double, double> getXYZ(double squareDist, int id, int m_tagRows, int m_tagCols){
+std::pair<double, double> getXYZ(double squareDist, 
+                                int id, 
+                                int m_tagRows, 
+                                int m_tagCols){
   double x = ( id % (m_tagCols+1) ) * squareDist;
   double y = ( id / (m_tagCols+1) ) * squareDist;
   
   return std::pair<double, double>(x, y);
 }
 
-cv::Point3f pointTransform(const cv::Point3f& p0, const Eigen::Matrix4d& transform){
+cv::Point3f pointTransform(const cv::Point3f& p0, 
+                            const Eigen::Matrix4d& transform){
     Eigen::Vector4d eigen_p0;
     eigen_p0 << p0.x, p0.y, p0.z, 1;
     Eigen::Vector4d eigen_p1 = transform * eigen_p0;
@@ -55,14 +59,15 @@ int main(int argc, char **argv)
      * Load image, convert from ROS image format to OpenCV Mat
      */
     ros::init(argc, argv, "camera_camera_calib");    
-    string bag_file("/home/audren/Documents/data/small_drone_v2/ufo_2017-08-01-19-58-02.bag");
+    string bag_file("../data/small_drone_v2/ufo_2017-08-01-19-58-02.bag");
 
     vector<Mat> im0_seq, im1_seq;
     string topic0 = string("/synthetic_gimbal/cam0") + "/image_raw";
     string topic1 = string("/synthetic_gimbal/cam1") + "/image_raw";
     size_t sample_num = 10;
     size_t max_im_num = 500;
-    loadBag(bag_file, topic0, topic1, im0_seq, im1_seq, sample_num, max_im_num);
+    loadBag(bag_file, topic0, topic1, 
+        im0_seq, im1_seq, sample_num, max_im_num);
 
     if (im0_seq.size() != im1_seq.size() || im0_seq.size() < 10){
         cout << "Inconsistent image numbers or too few images!" << endl;
@@ -72,15 +77,23 @@ int main(int argc, char **argv)
     cout << "Number of left images:   " << im0_seq.size() << endl;
     cout << "Number of right images:  " << im1_seq.size() << endl;
     cout << "---------------------------------------------" << endl;
+
+
+
+
     /*
      * Read setting files
      */
-    Settings s;
-    string inputSettingsFile("/home/audren/Documents/lidar-camera-calib/src/camera_camera_calib/settings/settings.xml");
+    AprilTagOcamConfig s;
+    string inputSettingsFile("./src/camera_camera_calib/settings/"
+                            "settings_apriltag.xml");
     FileStorage fs(inputSettingsFile, FileStorage::READ); // Read the settings
     if (!fs.isOpened())
     {
-        cout << "Could not open the configuration file: \"" << inputSettingsFile << "\"" << endl;
+        cout << "Could not open the configuration file: \"" 
+             << inputSettingsFile 
+             << "\"" 
+             << endl;
         return -1;
     }
     fs["Settings"] >> s;
@@ -92,66 +105,45 @@ int main(int argc, char **argv)
         return -1;
     }
 
-    double width = 1050;//526;
-    double height = 1050; //526;
-    int tagRows = 10, tagCols = 7;
-    double tagSize = 0.088; // unit: m
-    double tagSpacing = 0.25; // unit: %
+    int tagRows = s.boardSize.height, tagCols = s.boardSize.width;
+    double tagSize = s.squareSize/1000; // unit: m
+    double tagSpacing = s.tagSpace; // unit: %
+    int width = s.imageWidth;
+    int height = s.imageHeight;
 
-    // // Camera intrinsics
-    std::vector<double> cam0_ss;
-    double temp[] = {-2.575876e+02, 0.000000e+00, 2.283578e-04, 8.908668e-06, -2.621133e-08, 3.037693e-11 };
-    for (size_t i=0; i<6; i++)
-        cam0_ss.push_back(temp[i]);
-
-    double cam0_u0 = 532.425687;
-    double cam0_v0 = 517.382409;
-    double cam0_c = 1.000805;
-    double cam0_d = 0.000125;
-    double cam0_e = 2.5200e-04;
+    cout << tagRows << " " << tagCols << " " << endl;
+    cout << tagSize << " " << tagSpacing << " " << endl;
+    cout << width << " " << height << endl;
+    return 0;
 
 
-    std::vector<double> cam1_ss;
-    double temp1[] = {-2.593081e+02, 0.000000e+00, 4.238530e-04, 7.434385e-06, -2.212919e-08, 2.642407e-11};
-    for (size_t i=0; i<6; i++)
-        cam1_ss.push_back(temp1[i]);
-
-    double cam1_u0 = 512.560101;
-    double cam1_v0 = 523.645938;
-    double cam1_c = 1.001192;
-    double cam1_d = 0.000227;
-    double cam1_e = 0.000224;
-
-    Mat cam0_proj = s.intrinsics0;
-    Mat cam0_dist = s.distortion0;
-    double cam0_xi =  s.xi0;
-
-    Mat cam1_proj = s.intrinsics1;
-    Mat cam1_dist = s.distortion1;
-    double cam1_xi =  s.xi1;
-   
-    AprilTagsDetector apriltags0(cam0_u0, cam0_v0, 
-                                 cam0_proj.at<double>(0,0), cam0_proj.at<double>(1,1),  
-                                 width, height, 
-                                 tagRows, tagCols,
+    /*
+     * Read camera parameters
+     */
+    AprilTagsDetector apriltags0(tagRows, tagCols,
                                  tagSize, tagSpacing,
                                  string("cam0_apriltags_detection"));
 
-    AprilTagsDetector apriltags1(cam1_u0, cam1_v0, 
-                                 cam1_proj.at<double>(0,0), cam1_proj.at<double>(1,1),  
-                                 width, height, 
-                                 tagRows, tagCols,
+    AprilTagsDetector apriltags1(tagRows, tagCols,
                                  tagSize, tagSpacing,
                                  string("cam1_apriltags_detection"));
 
     OCamCalibModel ocamcalib_cam0;
-    char ocamfile0[] = "/home/audren/Documents/data/small_drone_v2/Dart_21905596_high_res/calib_results_dart_21905596_high_res.txt";
+    char ocamfile0[] = "../data/small_drone_v2/Dart_high_res/"
+                        "calib_results_dart_21905596_high_res.txt";
     bool bopen0 = ocamcalib_cam0.get_ocam_model(ocamfile0);
 
     OCamCalibModel ocamcalib_cam1;
-    char ocamfile1[] = "/home/audren/Documents/data/small_drone_v2/Dart_21905597_high_res/calib_results_dart_21905597_high_res.txt";
+    char ocamfile1[] = "../data/small_drone_v2/Dart_high_res/"
+                        "calib_results_dart_21905597_high_res.txt";
     bool bopen1 = ocamcalib_cam1.get_ocam_model(ocamfile1);
 
+
+
+
+    /*
+     * Pattern detection and pose estimation
+     */
     vector<cv::Mat> &im_seq = im1_seq;
     AprilTagsDetector &apriltags = apriltags1;
     OCamCalibModel &cam = ocamcalib_cam1;
@@ -173,8 +165,12 @@ int main(int argc, char **argv)
         Mat reproj_im = im.clone();
         cv::cvtColor(im, reproj_im, cv::COLOR_GRAY2BGR);
 
-        bool bfind = apriltags.getDetections(im, detections, objPts, imgPts, tagid_found);
-        bool good_estimation = cam.findCamPose(imgPts, objPts, target_pose);
+        bool bfind = apriltags.getDetections(im, detections, 
+                                            objPts, imgPts, 
+                                            tagid_found);
+        bool good_estimation = cam.findCamPose(imgPts, 
+                                            objPts, 
+                                            target_pose);
         cout << target_pose << endl;
         waitKey(10);
         cout << "objPts number: " << objPts.size() << endl;
@@ -189,8 +185,16 @@ int main(int argc, char **argv)
             cam.cam2world(Ps, Ms);
             cam.world2cam(Ms, Ps);
             
-            cv::circle(reproj_im, cv::Point2f(imgPts[j].x, imgPts[j].y), 1, cv::Scalar(0,255,14,0), 1);
-            cv::circle(reproj_im, cv::Point2f(Ms[0], Ms[1]), 5, cv::Scalar(255,0,0,0), 1);
+            cv::circle(reproj_im, 
+                    cv::Point2f(imgPts[j].x, imgPts[j].y), 
+                    1, 
+                    cv::Scalar(0,255,14,0), 
+                    1);
+            cv::circle(reproj_im, 
+                    cv::Point2f(Ms[0], Ms[1]), 
+                    5, 
+                    cv::Scalar(255,0,0,0), 
+                    1);
         }
         }else{
         /*
@@ -199,8 +203,16 @@ int main(int argc, char **argv)
         for (size_t j=0; j<objPts.size(); j++){
             cv::Point2f pt = targetPoint2ImagePixel(cam, objPts[j], target_pose);
     
-            cv::circle(reproj_im, cv::Point2f(imgPts[j].x, imgPts[j].y), 1, cv::Scalar(0,255,14,0), 1);
-            cv::circle(reproj_im, cv::Point2f(pt.x, pt.y), 1, cv::Scalar(255,0,0,0), 2);
+            cv::circle(reproj_im, 
+                    cv::Point2f(imgPts[j].x, imgPts[j].y), 
+                    1, 
+                    cv::Scalar(0,255,14,0), 
+                    1);
+            cv::circle(reproj_im, 
+                    cv::Point2f(pt.x, pt.y), 
+                    1, 
+                    cv::Scalar(255,0,0,0), 
+                    2);
         }
         }
         imshow("Reprojection", reproj_im);

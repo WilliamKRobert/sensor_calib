@@ -26,7 +26,7 @@
 //     return fabs(num) < epsilon;
 // }
 
-// void OCamCalibModel::setParameter(int width, int height,
+// void OCamCalibModel::setParameter(int width, int height,W
 //               double u0, double v0, 
 //               std::vector<double> ss,
 //               std::vector<double> ss_inv,
