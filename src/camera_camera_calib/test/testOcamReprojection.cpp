@@ -1,8 +1,13 @@
 #include <iostream>
+#include <iterator>
+#include <random>
+#include <chrono>
 
+#include <eigen3/Eigen/Eigen>
 #include <opencv2/opencv.hpp>
 #include <opencv2/calib3d/calib3d.hpp>
 #include <opencv2/highgui/highgui.hpp>
+#include <opencv2/core/eigen.hpp>
 
 #include "ros/ros.h"
 #include "ceres/rotation.h"
@@ -18,7 +23,7 @@
 using namespace std;
 using namespace cv;
 
-bool SYNTHTIC = false;
+bool SYNTHTIC = true;
 
 std::pair<double, double> getXYZ(double squareDist, 
                                 int id, 
@@ -111,11 +116,8 @@ int main(int argc, char **argv)
     int width = s.imageWidth;
     int height = s.imageHeight;
 
-    cout << tagRows << " " << tagCols << " " << endl;
-    cout << tagSize << " " << tagSpacing << " " << endl;
-    cout << width << " " << height << endl;
-    return 0;
 
+    
 
     /*
      * Read camera parameters
@@ -150,7 +152,7 @@ int main(int argc, char **argv)
     if (!SYNTHTIC){
     for (size_t i=0; i<im_seq.size(); i++){
         /*
-         * Step 1: Find out camera extrinsic parameter using PnP
+         * Find out camera extrinsic parameter using PnP
          */
         Mat im = im_seq[i];
         if (im.channels() == 3)
@@ -174,10 +176,14 @@ int main(int argc, char **argv)
         cout << target_pose << endl;
         waitKey(10);
         cout << "objPts number: " << objPts.size() << endl;
+
+
+
+
         /*
          * test 1: cam2world and world2cam
          */
-        int TESTNO = 2;
+        int TESTNO = 1;
         if (TESTNO == 1){
         for (size_t j=0; j<objPts.size(); j++){
             double Ms[2] = {imgPts[j].x, imgPts[j].y};
@@ -197,42 +203,64 @@ int main(int argc, char **argv)
                     1);
         }
         }else{
-        /*
-         * test 2: pose estimation
-         */
-        for (size_t j=0; j<objPts.size(); j++){
-            cv::Point2f pt = targetPoint2ImagePixel(cam, objPts[j], target_pose);
-    
-            cv::circle(reproj_im, 
-                    cv::Point2f(imgPts[j].x, imgPts[j].y), 
-                    1, 
-                    cv::Scalar(0,255,14,0), 
-                    1);
-            cv::circle(reproj_im, 
-                    cv::Point2f(pt.x, pt.y), 
-                    1, 
-                    cv::Scalar(255,0,0,0), 
-                    2);
-        }
+            /*
+             * test 2: pose estimation
+             */
+            for (size_t j=0; j<objPts.size(); j++){
+                cv::Point2f pt = targetPoint2ImagePixel(cam, objPts[j], target_pose);
+        
+                cv::circle(reproj_im, 
+                        cv::Point2f(imgPts[j].x, imgPts[j].y), 
+                        1, 
+                        cv::Scalar(0,255,14,0), 
+                        1);
+                cv::circle(reproj_im, 
+                        cv::Point2f(pt.x, pt.y), 
+                        1, 
+                        cv::Scalar(255,0,0,0), 
+                        2);
+            }
         }
         imshow("Reprojection", reproj_im);
         waitKey(0);
 
     }
-    }else{
+    }
+
+
+
+
+    else{
     /*
      * test: using synthetic data 
+     *
+     * a.
+     * input: given points on the AprilTag (in apriltag frame)
+     *        and pose of the AprilTag (in camera frame)
+     * output: corresponding image points using ocam camera model  
+     *         show these image points
+     *
+     * b.
+     * input: given scene points and image points (from a output)
+     *        estimate pose of AprilTag (without noise)
+     *        estimate pose of AprilTag (Gaussian noise) 
      * test pass
      */
+    // a. assume a pose beforehand, and project points on AprilTag
+    //    on image
     Eigen::Matrix4d pose_ground_truth;
-    // pose_ground_truth << 1, 0, 0, -3,
-    //                      0, 0.866, 0.5, 0,
-    //                      0, -0.5, 0.866, 0.5,
+    pose_ground_truth << 1,     0,     0,   -1,
+                         0, 0.866,   0.5,     0.3,
+                         0,  -0.5, 0.866,   0.5,
+                         0,     0,     0,     1;
+    Eigen::Matrix3d rotation_ground_truth = pose_ground_truth.block<3,3>(0, 0);
+    Eigen::Vector3d translation_ground_truth = pose_ground_truth.block<3,1>(0,3);
+    std::cout << rotation_ground_truth << std::endl;
+    std::cout << translation_ground_truth << std::endl;
+    // pose_ground_truth << 1, 0, 0, 0,
+    //                      0, 1, 0, 0,
+    //                      0, 0, 1, 0.5,
     //                      0, 0, 0, 1;
-    pose_ground_truth << 1, 0, 0, 0,
-                         0, 1, 0, 0,
-                         0, 0, 1, 0.5,
-                         0, 0, 0, 1;
 
 
     double squareDist = tagSize + tagSize * tagSpacing;
@@ -250,13 +278,15 @@ int main(int argc, char **argv)
         /*
          * draw ID
          */
-        cv::Point2f center_i = targetPoint2ImagePixel(cam, cv::Point3f(cx, cy, 0), 
-                                                      pose_ground_truth);
+        cv::Point2f center_i = 
+        targetPoint2ImagePixel(cam, cv::Point3f(cx, cy, 0), 
+                                pose_ground_truth);
         std::ostringstream strSt;
         strSt << "#" << i;
         cv::putText(img, strSt.str(),
                   center_i,
-                  cv::FONT_HERSHEY_PLAIN, 1, cv::Scalar(0,0,255));
+                  cv::FONT_HERSHEY_PLAIN, 
+                  1, cv::Scalar(0,0,255));
 
 
         /* pass
@@ -269,9 +299,13 @@ int main(int argc, char **argv)
         objPts.push_back(cv::Point3f(cx - halfSquare, cy + halfSquare, 0));
     }
 
+
+
+    // show ID of each tag
     vector<cv::Point2f> imgPts;
     for (size_t i=0; i<objPts.size(); i++){
-        cv::Point2f ipt = targetPoint2ImagePixel(cam, objPts[i], pose_ground_truth);
+        cv::Point2f ipt = 
+        targetPoint2ImagePixel(cam, objPts[i], pose_ground_truth);
         imgPts.push_back(ipt);
         /*
          * orientation is correct
@@ -279,17 +313,65 @@ int main(int argc, char **argv)
         cv::circle(img, cv::Point2f(ipt.x, ipt.y), 1, cv::Scalar(255,255,255,0), 1);
     }
 
-    imshow("Test", img);
+    imshow("Reprojection of AprilTag Points", img);
     waitKey(0);
 
-    // from synthetic image points and object points recover pose of target
-    /*
-     * test pass
+
+
+
+    /* b. from synthetic image points and object points 
+     *    recover pose of target in camera frame
+     *
+     * test with gaussian noise 
+     *       with zero mean, and variance 0.0, 0.1, ..., 1.0
      */
-    Eigen::Matrix4d pose_estimated;
-    bool good_estimation1 = cam.findCamPose(imgPts, objPts, pose_estimated);
-    cout << "---------------target pose in camera frame-----------------" << endl;
-    cout << pose_estimated << endl;
+
+    // construct a trivial random generator engine from a time-based seed:
+    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+    std::default_random_engine generator (seed);
+
+    for (size_t i=0; i<11; ++i){
+        std::normal_distribution<double> distribution (0.0,0.1*i);
+        std::cout << "Normal-distributed(0.0," 
+                  << 0.1*i 
+                  << ") results:" << std::endl;
+
+        double rotation_error = 0;
+        double translation_eror = 0;
+        size_t num_exp = 20;
+        for (size_t j=0; j<num_exp; j++){
+            vector<cv::Point2f> noise_imgPts = imgPts;
+            for (size_t k=0; k<noise_imgPts.size(); k++){
+                noise_imgPts[k].x += distribution(generator);
+                noise_imgPts[k].y += distribution(generator);
+            }
+            
+            Eigen::Matrix4d pose_estimated;
+            bool good_est = cam.findCamPose(noise_imgPts, objPts, pose_estimated);
+
+            Eigen::Matrix3d rotation_estimated = pose_estimated.block<3,3>(0, 0);
+            Eigen::Matrix3d delta_rotation = rotation_estimated 
+                            * rotation_ground_truth.transpose();
+
+            cv::Mat delta_rotation_cv(3, 3, CV_64F);
+            cv::eigen2cv(delta_rotation, delta_rotation_cv);                
+            cv::Mat rvec_estimted(3, 1, CV_64F);
+            cv::Rodrigues(delta_rotation_cv, rvec_estimted);
+            rotation_error += cv::norm(rvec_estimted);
+
+            Eigen::Vector3d translation_estimated = pose_estimated.block<3,1>(0, 3);
+            Eigen::Vector3d delta_translation = translation_ground_truth 
+                                            - translation_estimated;
+            translation_eror += delta_translation.norm();                                            
+
+        }
+
+        std::cout << "average rotation error (in radian): " 
+                  << rotation_error/num_exp << std::endl
+                  << "average translation error (in meter): "
+                  << translation_eror/num_exp << std::endl
+                  << std::endl;
+    }
     }
     
     return 0;

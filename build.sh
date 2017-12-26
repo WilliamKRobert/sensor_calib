@@ -4,7 +4,7 @@ mkdir build
 cd build
 cmake ..
 make
-sudo make install
+# sudo make install
 
 echo "Building slam_sensor_calib"
 cd ../../../../
