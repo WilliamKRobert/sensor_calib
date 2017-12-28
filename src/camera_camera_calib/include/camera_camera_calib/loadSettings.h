@@ -25,9 +25,8 @@ public:
 
     void write(FileStorage& fs) const                        //Write serialization for this class
     {
-        fs << "{" << "BoardSize_Width"  << boardSize.width
-                  << "BoardSize_Height" << boardSize.height
-                  << "Square_Size"         << squareSize
+        fs << "{" << "BoardSize_Column"  << boardSize.width
+                  << "BoardSize_Row" << boardSize.height
                   << "Image_Width" << imageWidth
                   << "Image_Height" << imageHeight
                   << "Calibrate_Pattern" << patternToUse
@@ -36,10 +35,9 @@ public:
     }
     void read(const FileNode& node)                          //Read serialization for this class
     {
-        node["BoardSize_Width" ] >> boardSize.width;
-        node["BoardSize_Height"] >> boardSize.height;
+        node["BoardSize_Column" ] >> boardSize.width;
+        node["BoardSize_Row"]     >> boardSize.height;
         node["Calibrate_Pattern"] >> patternToUse;
-        node["Square_Size"]  >> squareSize;
         node["Image_Width"] >> imageWidth;
         node["Image_Height"] >> imageHeight;
         node["InitialRotation"] >> initialRotation;
@@ -55,11 +53,11 @@ public:
             cerr << "Invalid Board size: " << boardSize.width << " " << boardSize.height << endl;
             goodInput = false;
         }
-        if (squareSize <= 10e-6)
-        {
-            cerr << "Invalid square size " << squareSize << endl;
-            goodInput = false;
-        }
+        // if (squareSize <= 10e-6)
+        // {
+        //     cerr << "Invalid square size " << squareSize << endl;
+        //     goodInput = false;
+        // }
 
 
         calibrationPattern = NOT_EXISTING;
@@ -117,7 +115,7 @@ public:
 public:
     Size boardSize;            // The size of the board -> Number of items by width and height
     Pattern calibrationPattern;// One of the Chessboard, circles, or asymmetric circle pattern
-    float squareSize;          // The size of a square in your defined unit (point, millimeter,etc).
+
     int nrFrames;              // The number of frames to use from the input for calibration
     float aspectRatio;         // The aspect ratio
     int delay;                 // In case of a video input
@@ -161,21 +159,24 @@ public:
     {
         Settings::write(fs);
 
-        fs  << "Tag_Space" << tagSpace
+        fs  << "Tag_Size"  << tagSize
+            << "Tag_Space" << tagSpace
             << "}";
     }
 
     void read(const FileNode& node)           //Read serialization for this class
     {   
+        node["Tag_Size"]  >> tagSize;
         node["Tag_Space"] >> tagSpace;
         Settings::read(node);
     }
 
 public:
+    double tagSize;    // in millimeter
     double tagSpace;
 };
 
-class CheckerboardOmniConfig : public Settings       // make AprilTag OcamCalib derive from Setting parent
+class AprilTagOmniConfig : public Settings       // make AprilTag OcamCalib derive from Setting parent
 {
 public:
 
@@ -189,6 +190,8 @@ public:
             << "Cam1Intrinsics" << intrinsics1
             << "Cam1Distortion" << distortion1
             << "Cam1MirrorPara" << xi1
+            << "Tag_Size"       << tagSize
+            << "Tag_Space" << tagSpace
             << "}";
     }
 
@@ -200,6 +203,8 @@ public:
         node["Cam1Intrinsics"] >> intrinsics1;
         node["Cam1Distortion"] >> distortion1;
         node["Cam1MirrorPara"] >> xi1;
+        node["Tag_Size"]  >> tagSize;
+        node["Tag_Space"] >> tagSpace;
         Settings::read(node);
     }
 
@@ -211,6 +216,9 @@ public:
     Mat intrinsics1;   // Camera intrinsic paramter
     Mat distortion1;   // Camera distortion coefficients
     double xi1;        // Mirror parameter
+
+    double tagSize;    // in millimeter
+    double tagSpace;   
 
 };
 
@@ -228,7 +236,7 @@ static void read(const FileNode& node, AprilTagOcamConfig& x, const Settings& de
     x.read(node);
 }
 
-static void read(const FileNode& node, CheckerboardOmniConfig& x, const Settings& default_value = Settings())
+static void read(const FileNode& node, AprilTagOmniConfig& x, const Settings& default_value = Settings())
 {
     
     x.read(node);

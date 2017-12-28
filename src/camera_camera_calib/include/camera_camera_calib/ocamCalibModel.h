@@ -68,6 +68,14 @@ public:
                                 std::vector<cv::Point3f> Ps,
                                 cv::Mat &rvec,
                                 cv::Mat &tvec) const;
+    bool solveCamPose( std::vector<cv::Point2f> Ms, 
+                                  std::vector<cv::Point3f> Ps,
+                                  cv::Mat &rvec,
+                                  cv::Mat &tvec) const;
+
+    bool findExtrinsic(std::vector<cv::Point2f> Ms, 
+                                  std::vector<cv::Point3f> Ps,
+                                  std::vector<Eigen::Matrix<float, 3, 4> > &Rt_set) const;
     //------------------------------------------------------------------------------
     template <typename T>
     void world2cam(T point2D[2], T point3D[3])const

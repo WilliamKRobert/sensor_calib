@@ -91,7 +91,7 @@ int main(int argc, char **argv)
      */
     AprilTagOcamConfig s;
     string inputSettingsFile("./src/camera_camera_calib/settings/"
-                            "settings_apriltag.xml");
+                            "settings_apriltag_ocam.xml");
     FileStorage fs(inputSettingsFile, FileStorage::READ); // Read the settings
     if (!fs.isOpened())
     {
@@ -111,7 +111,7 @@ int main(int argc, char **argv)
     }
 
     int tagRows = s.boardSize.height, tagCols = s.boardSize.width;
-    double tagSize = s.squareSize/1000; // unit: m
+    double tagSize = s.tagSize/1000; // unit: m
     double tagSpacing = s.tagSpace; // unit: %
     int width = s.imageWidth;
     int height = s.imageHeight;
@@ -330,6 +330,10 @@ int main(int argc, char **argv)
     unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
     std::default_random_engine generator (seed);
 
+    cv::Mat rvec, tvec;
+    bool good_est = cam.solveCamPose(imgPts, objPts, rvec, tvec);
+    return 0;
+
     for (size_t i=0; i<11; ++i){
         std::normal_distribution<double> distribution (0.0,0.1*i);
         std::cout << "Normal-distributed(0.0," 
@@ -343,12 +347,13 @@ int main(int argc, char **argv)
             vector<cv::Point2f> noise_imgPts = imgPts;
             for (size_t k=0; k<noise_imgPts.size(); k++){
                 noise_imgPts[k].x += distribution(generator);
-                noise_imgPts[k].y += distribution(generator);
+                noise_imgPts[k].y += distribution(generator); 
             }
             
             Eigen::Matrix4d pose_estimated;
             bool good_est = cam.findCamPose(noise_imgPts, objPts, pose_estimated);
 
+            // errors of rotation matrixS
             Eigen::Matrix3d rotation_estimated = pose_estimated.block<3,3>(0, 0);
             Eigen::Matrix3d delta_rotation = rotation_estimated 
                             * rotation_ground_truth.transpose();
@@ -359,6 +364,7 @@ int main(int argc, char **argv)
             cv::Rodrigues(delta_rotation_cv, rvec_estimted);
             rotation_error += cv::norm(rvec_estimted);
 
+            // errors of translation vectors
             Eigen::Vector3d translation_estimated = pose_estimated.block<3,1>(0, 3);
             Eigen::Vector3d delta_translation = translation_ground_truth 
                                             - translation_estimated;

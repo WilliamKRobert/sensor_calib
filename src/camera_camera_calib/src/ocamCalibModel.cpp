@@ -478,6 +478,153 @@ bool OCamCalibModel::findCamPose( std::vector<cv::Point2f> Ms,
 }
 
 
+/*
+ * Analytical solution given in Scaramuzza, 2006
+ * 
+ * Input: 
+ *      scene points Ps (in target board frame)
+ *      image points Ms (in image frame, pixels, 
+                        origin is at the center of image)
+ * Output:
+ *      rvec: rotation vector
+ *      tvec: translation vector
+ *
+ */
+bool OCamCalibModel::solveCamPose( std::vector<cv::Point2f> Ms, 
+                                  std::vector<cv::Point3f> Ps,
+                                  cv::Mat &rvec,
+                                  cv::Mat &tvec) const{
+
+    for (size_t i = 0; i < Ms.size(); ++i) {
+        cv::Point3f undistortPt;
+
+        bool isback;
+        bool valid = cam2world_unitfocal(Ms[i], undistortPt, isback);
+        Ms[i].x = undistortPt.x;
+        Ms[i].y = undistortPt.y;
+    }
+
+    std::vector<Eigen::Matrix<float, 3, 4> > Rt_set;   // Rt = [r1 r2 t]
+
+    bool flag = findExtrinsic(Ms, Ps, Rt_set); 
+
+    for (size_t i=0; i<Rt_set.size(); i++){
+        std::cout << Rt_set[i] << std::endl;
+    }
+    
+    // Eigen::Vector3f r3 = r1.cross(r2);
+
+    // Eigen::Matrix3f intermediate;
+    // intermediate.block<3,1>(0,0)  = r1;
+    // intermediate.block<3,1>(0,1) = r2;
+    // intermediate.block<3,1>(0,2) = r3;
+    // Eigen::JacobiSVD<Eigen::Matrix3f> svd2(intermediate, Eigen::ComputeFullU | Eigen::ComputeFullV);
+    // std::cout << svd2.matrixU() * svd2.matrixV().transpose() << std::endl; 
+    
+
+    return true;
+}
+
+bool OCamCalibModel::findExtrinsic(std::vector<cv::Point2f> Ms, 
+                                  std::vector<cv::Point3f> Ps,
+                                  std::vector<Eigen::Matrix<float, 3, 4> > &Rt_set) const{
+    Eigen::MatrixXf A;
+    std::vector<float> entries;
+    int rows = Ms.size(), cols = 6;
+    for (size_t i=0; i<rows; i++) {
+        entries.push_back(-Ms[i].y * Ps[i].x); 
+        entries.push_back(-Ms[i].y * Ps[i].y); 
+        entries.push_back( Ms[i].x * Ps[i].x); 
+        entries.push_back( Ms[i].x * Ps[i].y); 
+        entries.push_back(-Ms[i].y); 
+        entries.push_back( Ms[i].x); 
+    }
+
+    A = Eigen::Map< Eigen::Matrix<float, 
+              Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> >
+              (&entries[0], rows, cols);
+
+    Eigen::JacobiSVD<Eigen::MatrixXf> svd(A, Eigen::ComputeThinU | Eigen::ComputeFullV);
+    // std::cout << "Its left singular values are:" << std::endl
+    //           << svd.singularValues() << std::endl;         
+    // std::cout << "Its left singular vectors are the"
+    //              " columns of the thin U matrix:" 
+    //           << std::endl << svd.matrixU() << std::endl;
+    // std::cout << "Its right singular vectors are the"
+    //           << " columns of the thin V matrix:" 
+    //           << std::endl << svd.matrixV() << std::endl;
+    
+    /* solve Ax = 0
+     *    use SVD decomposition
+     *    the null space of A is the eigenvector 
+     *        corresponding to the smallest eigenvalue 
+     */
+    Eigen::VectorXf x = svd.matrixV().block<6, 1>(0, 5);
+
+    float alpha = x(0, 0) * x(1, 0) + x(2, 0) * x(3, 0);  // r11 * r12 + r21 * r22
+    float gamma = x(0, 0) * x(0, 0) + x(2, 0) * x(2, 0);  // r11^2 + r21^2
+    float beta = gamma
+              - (x(1, 0) * x(1, 0) + x(3, 0) * x(3, 0));  // r11^2 + r21^2 - (r12^2+r22^2)
+
+    float r31_s, r31;        // r31_s = r31 ^ 2
+    float r32_s, r32;   // r32_s = r32 ^ 2
+    float scale_abs;
+
+    if (std::abs(alpha) < 1e-5){
+        r31   = 0;
+        r32_s = beta;   // r32 can be positive or negative
+        
+        // determine the sign of the scale factor
+        scale_abs =  std::sqrt(1.0 / gamma); 
+        Eigen::Vector2f nRR1, nRR2;
+        nRR1 << scale_abs*x(4) - Ms[0].x, scale_abs*x(5) - Ms[0].y; 
+        nRR2 << -scale_abs*x(4) - Ms[0].x, -scale_abs*x(5) - Ms[0].y; 
+        int sign = nRR1.norm() < nRR2.norm() ? 1 : -1;
+        for (size_t i=0; i<2; i++){
+            Eigen::Matrix<float, 3, 4> Rt;
+            r32 = std::pow(-1, i) * std::sqrt(r32_s);
+            
+            Rt << x(0), x(1), 0, x(4),
+                  x(2), x(3), 0, x(5),
+                  r31 ,  r32, 0,    0;
+            Rt = Rt * scale_abs * sign;
+            
+            Rt.block<3,1>(0, 2) =  Eigen::Vector3f(Rt(0,0), Rt(1,0), Rt(2,0)).cross(
+                              Eigen::Vector3f(Rt(0,1), Rt(1,1), Rt(2,1)));
+            Rt_set.push_back(Rt); 
+        }
+    }else{ 
+        for (size_t i=0; i<2; i++){
+            r31_s = (-beta + std::pow(-1, i) *std::sqrt(beta*beta + 4 * alpha)) / 2.0; 
+            if (r31_s < 0) continue;
+
+            r31 = std::sqrt(r31_s);
+            for (size_t j=0; j<2; j++){  
+                r31 = std::pow(-1, j) * r31;
+                r32 = -alpha / r31;  
+
+                // determine the sign of scale factor
+                scale_abs =  std::sqrt(1.0 / (gamma + r31_s)); 
+                Eigen::Vector2f nRR1, nRR2;
+                nRR1 << scale_abs*x(4) - Ms[0].x,  scale_abs*x(5) - Ms[0].y; 
+                nRR2 << -scale_abs*x(4) - Ms[0].x, -scale_abs*x(5) - Ms[0].y; 
+                int sign = nRR1.norm() < nRR2.norm() ? 1 : -1;
+
+                Eigen::Matrix<float, 3, 4> Rt;
+                Rt << x(0), x(1), 0, x(4),
+                      x(2), x(3), 0, x(5),
+                      r31 ,  r32, 0,    0;
+                Rt = Rt * scale_abs * sign;
+                Rt.block<3,1>(0, 2) =  Eigen::Vector3f(Rt(0,0), Rt(1,0), Rt(2,0)).cross(
+                              Eigen::Vector3f(Rt(0,1), Rt(1,1), Rt(2,1)));
+                Rt_set.push_back(Rt); 
+            }
+        }
+    }
+
+    return true;
+}
+
 // -----------------------------------------------------------------------------
 cv::Point3f OCamCalibModel::pointTransform(const cv::Point3f& p0, const Eigen::Matrix4d& transform){
     Eigen::Vector4d eigen_p0;

@@ -56,7 +56,7 @@ int main(int argc, char **argv)
      * Load image, convert from ROS image format to OpenCV Mat
      */
     ros::init(argc, argv, "camera_camera_calib");    
-    string bag_file("/home/audren/Documents/data/small_drone_v2/ufo_2017-08-01-19-58-02.bag");
+    string bag_file("../data/small_drone_v2/ufo_2017-08-01-19-58-02.bag");
 
     vector<Mat> im0_seq, im1_seq;
     string topic0 = string("/synthetic_gimbal/cam0") + "/image_raw";
@@ -69,19 +69,27 @@ int main(int argc, char **argv)
         cout << "Inconsistent image numbers or too few images!" << endl;
         return 0;
     }
-    cout << "---------------------------------------------" << endl;
-    cout << "Number of left images:   " << im0_seq.size() << endl;
-    cout << "Number of right images:  " << im1_seq.size() << endl;
-    cout << "---------------------------------------------" << endl;
+
+    cout << endl;
+    cout << "Number of left and right images:   ";
+    cout << im0_seq.size() << ", " << im1_seq.size() <<endl;
+    cout << endl;
+
+
+
+
     /*
      * Read setting files
      */
-    CheckerboardOmniConfig s;
-    string inputSettingsFile("/home/audren/Documents/lidar-camera-calib/src/camera_camera_calib/settings/settings.xml");
+    AprilTagOmniConfig s;
+    string inputSettingsFile("./src/camera_camera_calib/settings/"
+                            "settings_apriltag_sphere.xml");
     FileStorage fs(inputSettingsFile, FileStorage::READ); // Read the settings
     if (!fs.isOpened())
     {
-        cout << "Could not open the configuration file: \"" << inputSettingsFile << "\"" << endl;
+        cout << "Could not open the configuration file: \"" 
+             << inputSettingsFile << "\"" 
+             << endl;
         return -1;
     }
     fs["Settings"] >> s;
@@ -93,11 +101,11 @@ int main(int argc, char **argv)
         return -1;
     }
 
-    double width = 1050;//526;
-    double height = 1050; //526;
-    int tagRows = 10, tagCols = 7;
-    double tagSize = 0.088; // unit: m
-    double tagSpacing = 0.25; // unit: %
+    int width = s.imageWidth;
+    int height = s.imageHeight; 
+    int tagRows = s.boardSize.height, tagCols = s.boardSize.width;
+    double tagSize = s.tagSize; // unit: m
+    double tagSpacing = s.tagSpace; // unit: %
 
     Mat cam0_proj = s.intrinsics0;
     Mat cam0_dist = s.distortion0;
