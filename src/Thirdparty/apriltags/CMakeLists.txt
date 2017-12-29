@@ -5,6 +5,7 @@ project(apriltags)
 
 # pull in the pods macros. See cmake/pods.cmake for documentation
 set(POD_NAME apriltags)
+cmake_policy(SET CMP0026 OLD)
 include(cmake/pods.cmake)
 
 file(GLOB SOURCE_FILES "src/*.cc")

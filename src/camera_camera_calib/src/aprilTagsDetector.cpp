@@ -148,11 +148,12 @@ std::pair<double, double> getLocation(double squareDist, int id, int m_tagRows, 
   return std::pair<double, double>(x, y);
 }
 
+template <typename _Tp2, typename _Tp3>
 bool AprilTagsDetector::getDetections(cv::Mat& img, 
-                                      std::vector<AprilTags::TagDetection> &detections, 
-                                      std::vector<cv::Point3f> &objPts,
-                                      std::vector<cv::Point2f> &imgPts,
-                                      std::vector<std::pair<bool, int> >& tagid_found){
+                            std::vector<AprilTags::TagDetection> &detections, 
+                            std::vector<_Tp3> &objPts,
+                            std::vector<_Tp2> &imgPts,
+                            std::vector<std::pair<bool, int> >& tagid_found){
   // tagid_found: first: if tag is found, corresponding index in objPts 
   processImage(img, detections);
   
@@ -173,26 +174,40 @@ bool AprilTagsDetector::getDetections(cv::Mat& img,
 
       tagid_found[id] = std::pair<bool, int>(true, i*4);
 
-      std::pair<double, double> center = getLocation(squareDist, id, m_tagRows, m_tagCols);
+      std::pair<double, double> center = 
+          getLocation(squareDist, id, m_tagRows, m_tagCols);
       double cx = center.first;
       double cy = center.second;
 
-      objPts.push_back(cv::Point3f(cx - s, cy + s, 0));
-      objPts.push_back(cv::Point3f(cx + s, cy + s, 0));
-      objPts.push_back(cv::Point3f(cx + s, cy - s, 0));
-      objPts.push_back(cv::Point3f(cx - s, cy - s, 0));
+      objPts.push_back(_Tp3(cx - s, cy + s, 0));
+      objPts.push_back(_Tp3(cx + s, cy + s, 0));
+      objPts.push_back(_Tp3(cx + s, cy - s, 0));
+      objPts.push_back(_Tp3(cx - s, cy - s, 0));
 
-      std::pair<float, float> p1 = tag.p[0];
-      std::pair<float, float> p2 = tag.p[1];
-      std::pair<float, float> p3 = tag.p[2];
-      std::pair<float, float> p4 = tag.p[3];
-      imgPts.push_back(cv::Point2f(p1.first, p1.second));
-      imgPts.push_back(cv::Point2f(p2.first, p2.second));
-      imgPts.push_back(cv::Point2f(p3.first, p3.second));
-      imgPts.push_back(cv::Point2f(p4.first, p4.second));
+      std::pair<double, double> p1 = tag.p[0];
+      std::pair<double, double> p2 = tag.p[1];
+      std::pair<double, double> p3 = tag.p[2];
+      std::pair<double, double> p4 = tag.p[3];
+      imgPts.push_back(_Tp2(p1.first, p1.second));
+      imgPts.push_back(_Tp2(p2.first, p2.second));
+      imgPts.push_back(_Tp2(p3.first, p3.second));
+      imgPts.push_back(_Tp2(p4.first, p4.second));
 
   }
 
   return true;
 }
+
+template bool AprilTagsDetector::getDetections<cv::Point2f, cv::Point3f>(
+                        cv::Mat& img, 
+                        std::vector<AprilTags::TagDetection> &detections, 
+                        std::vector<cv::Point3f> &objPts,
+                        std::vector<cv::Point2f> &imgPts,
+                        std::vector<std::pair<bool, int> >& tagid_found);
+template bool AprilTagsDetector::getDetections<cv::Point2d, cv::Point3d>(
+                        cv::Mat& img, 
+                        std::vector<AprilTags::TagDetection> &detections, 
+                        std::vector<cv::Point3d> &objPts,
+                        std::vector<cv::Point2d> &imgPts,
+                        std::vector<std::pair<bool, int> >& tagid_found);
 

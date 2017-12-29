@@ -72,10 +72,11 @@ public:
 	    m_py = m_height/2;
  	}
 
+    template <typename _Tp2, typename _Tp3>
 	bool getDetections(cv::Mat& img, 
                        std::vector<AprilTags::TagDetection> &detections, 
-                       std::vector<cv::Point3f> &objPts,
-                       std::vector<cv::Point2f> &imgPts,
+                       std::vector<_Tp3> &objPts,
+                       std::vector<_Tp2> &imgPts,
                        std::vector<std::pair<bool, int> >& tagid_found);
 
 

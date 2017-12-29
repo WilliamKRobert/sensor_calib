@@ -23,7 +23,7 @@
 using namespace std;
 using namespace cv;
 
-bool SYNTHTIC = true;
+bool SYNTHTIC = false;
 
 std::pair<double, double> getXYZ(double squareDist, 
                                 int id, 
@@ -35,24 +35,24 @@ std::pair<double, double> getXYZ(double squareDist,
   return std::pair<double, double>(x, y);
 }
 
-cv::Point3f pointTransform(const cv::Point3f& p0, 
+cv::Point3d pointTransform(const cv::Point3d& p0, 
                             const Eigen::Matrix4d& transform){
     Eigen::Vector4d eigen_p0;
     eigen_p0 << p0.x, p0.y, p0.z, 1;
     Eigen::Vector4d eigen_p1 = transform * eigen_p0;
-    return cv::Point3f(eigen_p1(0), eigen_p1(1), eigen_p1(2));
+    return cv::Point3d(eigen_p1(0), eigen_p1(1), eigen_p1(2));
 }
 
-cv::Point2f targetPoint2ImagePixel(const OCamCalibModel& cam, 
-                                   const cv::Point3f& p0, 
+cv::Point2d targetPoint2ImagePixel(const OCamCalibModel& cam, 
+                                   const cv::Point3d& p0, 
                                    const Eigen::Matrix4d& target_pose){
-    cv::Point3f p1 = pointTransform(p0, target_pose);
+    cv::Point3d p1 = pointTransform(p0, target_pose);
 
     double Ps[3] = {p1.x, p1.y, p1.z};
     double Ms[2];
     cam.world2cam(Ms, Ps);
 
-    return cv::Point2f(Ms[0], Ms[1]);
+    return cv::Point2d(Ms[0], Ms[1]);
 }
 
 /*
@@ -122,14 +122,6 @@ int main(int argc, char **argv)
     /*
      * Read camera parameters
      */
-    AprilTagsDetector apriltags0(tagRows, tagCols,
-                                 tagSize, tagSpacing,
-                                 string("cam0_apriltags_detection"));
-
-    AprilTagsDetector apriltags1(tagRows, tagCols,
-                                 tagSize, tagSpacing,
-                                 string("cam1_apriltags_detection"));
-
     OCamCalibModel ocamcalib_cam0;
     char ocamfile0[] = "../data/small_drone_v2/Dart_high_res/"
                         "calib_results_dart_21905596_high_res.txt";
@@ -146,9 +138,11 @@ int main(int argc, char **argv)
     /*
      * Pattern detection and pose estimation
      */
-    vector<cv::Mat> &im_seq = im1_seq;
-    AprilTagsDetector &apriltags = apriltags1;
-    OCamCalibModel &cam = ocamcalib_cam1;
+    vector<cv::Mat> &im_seq = im0_seq;
+    OCamCalibModel &cam = ocamcalib_cam0;
+    AprilTagsDetector apriltags(tagRows, tagCols,
+                                 tagSize, tagSpacing,
+                                 string("apriltags_detection"));
     if (!SYNTHTIC){
     for (size_t i=0; i<im_seq.size(); i++){
         /*
@@ -160,8 +154,8 @@ int main(int argc, char **argv)
 
         Eigen::Matrix4d target_pose;
         vector<AprilTags::TagDetection> detections;
-        vector<cv::Point3f> objPts;
-        vector<cv::Point2f> imgPts;
+        vector<cv::Point3d> objPts;
+        vector<cv::Point2d> imgPts;
         vector<std::pair<bool, int> >tagid_found;
         
         Mat reproj_im = im.clone();
@@ -173,9 +167,9 @@ int main(int argc, char **argv)
         bool good_estimation = cam.findCamPose(imgPts, 
                                             objPts, 
                                             target_pose);
-        cout << target_pose << endl;
-        waitKey(10);
-        cout << "objPts number: " << objPts.size() << endl;
+        // cout << target_pose << endl;
+        // waitKey(0.1);
+        // cout << "objPts number: " << objPts.size() << endl;
 
 
 
@@ -183,41 +177,42 @@ int main(int argc, char **argv)
         /*
          * test 1: cam2world and world2cam
          */
-        int TESTNO = 1;
-        if (TESTNO == 1){
-        for (size_t j=0; j<objPts.size(); j++){
-            double Ms[2] = {imgPts[j].x, imgPts[j].y};
-            double Ps[3];
-            cam.cam2world(Ps, Ms);
-            cam.world2cam(Ms, Ps);
-            
-            cv::circle(reproj_im, 
-                    cv::Point2f(imgPts[j].x, imgPts[j].y), 
-                    1, 
-                    cv::Scalar(0,255,14,0), 
-                    1);
-            cv::circle(reproj_im, 
-                    cv::Point2f(Ms[0], Ms[1]), 
-                    5, 
-                    cv::Scalar(255,0,0,0), 
-                    1);
-        }
+        int TESTNO = 2;
+        if (TESTNO == 1){   // verify projection function
+                            // cam2world and world2cam
+            for (size_t j=0; j<objPts.size(); j++){
+                double Ms[2] = {imgPts[j].x, imgPts[j].y};
+                double Ps[3];
+                cam.cam2world(Ps, Ms);
+                cam.world2cam(Ms, Ps);
+                
+                cv::circle(reproj_im, 
+                        cv::Point2d(imgPts[j].x, imgPts[j].y), 
+                        1, 
+                        cv::Scalar(0,255,14,0), 
+                        1);
+                cv::circle(reproj_im, 
+                        cv::Point2d(Ms[0], Ms[1]), 
+                        5, 
+                        cv::Scalar(255,0,0,0), 
+                        1);
+            }
         }else{
             /*
              * test 2: pose estimation
              */
             for (size_t j=0; j<objPts.size(); j++){
-                cv::Point2f pt = targetPoint2ImagePixel(cam, objPts[j], target_pose);
+                cv::Point2d pt = targetPoint2ImagePixel(cam, objPts[j], target_pose);
         
                 cv::circle(reproj_im, 
-                        cv::Point2f(imgPts[j].x, imgPts[j].y), 
+                        cv::Point2d(imgPts[j].x, imgPts[j].y), 
                         1, 
-                        cv::Scalar(0,255,14,0), 
+                        cv::Scalar(0,255,14,0),  // green, detections 
                         1);
                 cv::circle(reproj_im, 
-                        cv::Point2f(pt.x, pt.y), 
-                        1, 
-                        cv::Scalar(255,0,0,0), 
+                        cv::Point2d(pt.x, pt.y), 
+                        5, 
+                        cv::Scalar(255,0,0,0),  // blue, reprojectiona
                         2);
             }
         }
@@ -265,7 +260,7 @@ int main(int argc, char **argv)
 
     double squareDist = tagSize + tagSize * tagSpacing;
     double halfSquare = tagSize / 2.0;
-    vector<cv::Point3f> objPts;
+    vector<cv::Point3d> objPts;
     vector<std::pair<double, double> > vec_center;
     Mat img(width, height, CV_8UC3, Scalar(0,0,0));
     for (size_t i=0; i<80; i++){
@@ -278,8 +273,8 @@ int main(int argc, char **argv)
         /*
          * draw ID
          */
-        cv::Point2f center_i = 
-        targetPoint2ImagePixel(cam, cv::Point3f(cx, cy, 0), 
+        cv::Point2d center_i = 
+        targetPoint2ImagePixel(cam, cv::Point3d(cx, cy, 0), 
                                 pose_ground_truth);
         std::ostringstream strSt;
         strSt << "#" << i;
@@ -293,24 +288,24 @@ int main(int argc, char **argv)
         * cout << "-------------------debug------------------" << endl;
         * cout << cx << " " << cy << endl;
         */
-        objPts.push_back(cv::Point3f(cx - halfSquare, cy - halfSquare, 0));
-        objPts.push_back(cv::Point3f(cx + halfSquare, cy - halfSquare, 0));
-        objPts.push_back(cv::Point3f(cx + halfSquare, cy + halfSquare, 0));
-        objPts.push_back(cv::Point3f(cx - halfSquare, cy + halfSquare, 0));
+        objPts.push_back(cv::Point3d(cx - halfSquare, cy - halfSquare, 0));
+        objPts.push_back(cv::Point3d(cx + halfSquare, cy - halfSquare, 0));
+        objPts.push_back(cv::Point3d(cx + halfSquare, cy + halfSquare, 0));
+        objPts.push_back(cv::Point3d(cx - halfSquare, cy + halfSquare, 0));
     }
 
 
 
     // show ID of each tag
-    vector<cv::Point2f> imgPts;
+    vector<cv::Point2d> imgPts;
     for (size_t i=0; i<objPts.size(); i++){
-        cv::Point2f ipt = 
+        cv::Point2d ipt = 
         targetPoint2ImagePixel(cam, objPts[i], pose_ground_truth);
         imgPts.push_back(ipt);
         /*
          * orientation is correct
          */
-        cv::circle(img, cv::Point2f(ipt.x, ipt.y), 1, cv::Scalar(255,255,255,0), 1);
+        cv::circle(img, cv::Point2d(ipt.x, ipt.y), 1, cv::Scalar(255,255,255,0), 1);
     }
 
     imshow("Reprojection of AprilTag Points", img);
@@ -330,10 +325,6 @@ int main(int argc, char **argv)
     unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
     std::default_random_engine generator (seed);
 
-    cv::Mat rvec, tvec;
-    bool good_est = cam.solveCamPose(imgPts, objPts, rvec, tvec);
-    return 0;
-
     for (size_t i=0; i<11; ++i){
         std::normal_distribution<double> distribution (0.0,0.1*i);
         std::cout << "Normal-distributed(0.0," 
@@ -344,7 +335,7 @@ int main(int argc, char **argv)
         double translation_eror = 0;
         size_t num_exp = 20;
         for (size_t j=0; j<num_exp; j++){
-            vector<cv::Point2f> noise_imgPts = imgPts;
+            vector<cv::Point2d> noise_imgPts = imgPts;
             for (size_t k=0; k<noise_imgPts.size(); k++){
                 noise_imgPts[k].x += distribution(generator);
                 noise_imgPts[k].y += distribution(generator); 
@@ -378,6 +369,16 @@ int main(int argc, char **argv)
                   << translation_eror/num_exp << std::endl
                   << std::endl;
     }
+
+
+    /* 
+     * c. test analytical solutions to the extrinsic paramters
+     *    recover pose of target in camera frame
+     *  
+     */
+    cv::Mat rvec, tvec;
+    bool good_est = cam.solveCamPose(imgPts, objPts, rvec, tvec);
+
     }
     
     return 0;
