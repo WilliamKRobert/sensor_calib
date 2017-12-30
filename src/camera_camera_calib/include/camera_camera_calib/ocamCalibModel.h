@@ -107,36 +107,42 @@ public:
                           cv::Mat& rvec, cv::Mat& tvec) const;
 
 private:
-      template <typename T>
-      void excoordinate2D(cv::Point_<T>& pt)const{
-         float temp = pt.x;
-         pt.x = pt.y;
-         pt.y = temp;
-      }
+    template <typename T>
+    void excoordinate2D(cv::Point_<T>& pt)const{
+       float temp = pt.x;
+       pt.x = pt.y;
+       pt.y = temp;
+    }
 
-      template <typename T>
-      void excoordinate3D(cv::Point3_<T>& pt)const{
-          float temp = pt.x;
-          pt.x = pt.y;
-          pt.y = temp;
-          pt.z = -pt.z;
-      }
+    template <typename T>
+    void excoordinate3D(cv::Point3_<T>& pt)const{
+        float temp = pt.x;
+        pt.x = pt.y;
+        pt.y = temp;
+        pt.z = -pt.z;
+    }
 
-      template <typename T>
-      void excoordinate2D(T point2D[2])const{
-          T temp = point2D[0];
-          point2D[0] = point2D[1];
-          point2D[1] = temp;
-      }
+    template <typename T>
+    void excoordinate2D(T point2D[2])const{
+        T temp = point2D[0];
+        point2D[0] = point2D[1];
+        point2D[1] = temp;
+    }
 
-      template <typename T>
-      void excoordinate3D(T point3D[3])const{
-          T temp = point3D[0];
-          point3D[0] = point3D[1];
-          point3D[1] = temp;
-          point3D[2] = -point3D[2];
-      }
+    template <typename T>
+    void excoordinate3D(T point3D[3])const{
+        T temp = point3D[0];
+        point3D[0] = point3D[1];
+        point3D[1] = temp;
+        point3D[2] = -point3D[2];
+    }
 
+    template <typename T>
+    bool pnpPose( std::vector<cv::Point_<T>> Ms, 
+                                  std::vector<cv::Point3_<T>> Ps,
+                                  cv::Mat &rvec,
+                                  cv::Mat &tvec,
+                                  bool &isback) const;
 
     double m_xc, m_yc; //camera paramter
 

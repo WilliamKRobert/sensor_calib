@@ -138,8 +138,8 @@ int main(int argc, char **argv)
     /*
      * Pattern detection and pose estimation
      */
-    vector<cv::Mat> &im_seq = im0_seq;
-    OCamCalibModel &cam = ocamcalib_cam0;
+    vector<cv::Mat> &im_seq = im1_seq;
+    OCamCalibModel &cam = ocamcalib_cam1;
     AprilTagsDetector apriltags(tagRows, tagCols,
                                  tagSize, tagSpacing,
                                  string("apriltags_detection"));
