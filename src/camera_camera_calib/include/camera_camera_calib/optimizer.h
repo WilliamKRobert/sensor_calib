@@ -31,15 +31,71 @@ public:
                           std::vector<cv::Point3f>& cam1_objPts,
                           double* parameter);
 
+    template <typename T>
     void bundleAdjustment(OCamCalibModel& ocamcalib_cam0,
-                                 std::vector<std::vector<cv::Point2f> >& cam0_imgPts,
-                                 std::vector<std::vector<cv::Point3f> >& cam0_objPts,
-                                 double* poses0,
-                                 OCamCalibModel& ocamcalib_cam1,
-                                 std::vector<std::vector<cv::Point2f> >& cam1_imgPts,
-                                 std::vector<std::vector<cv::Point3f> >& cam1_objPts,
-                                 double* poses1,
-                                 double* parameter);
+                         std::vector<std::vector<cv::Point_<T> > >& cam0_imgPts,
+                         std::vector<std::vector<cv::Point3_<T> > >& cam0_objPts,
+                         double* poses0,
+                         OCamCalibModel& ocamcalib_cam1,
+                         std::vector<std::vector<cv::Point_<T> > >& cam1_imgPts,
+                         std::vector<std::vector<cv::Point3_<T> > >& cam1_objPts,
+                         double* poses1,
+                         double* parameter);
+};
+
+struct ReprojectionError0 {
+    ReprojectionError0(OCamCalibModel ocamcalib_cam0, cv::Point2f cam0_imgPts, 
+                        cv::Point3f cam1_objPts, double *pose1)
+    : _ocamcalib_cam0(ocamcalib_cam0), _cam0_imgPts(cam0_imgPts), 
+        _cam1_objPts(cam1_objPts), _pose1(pose1) {}
+    
+    template <typename T>
+    bool operator()(const T* const transform,
+                    T* residuals) const {
+        // transform[0,1,2] are the angle-axis rotation.
+        // transform[3,4,5] are the translation.
+        // ============================================================================
+        // project object points in cam1 frame to cam0 image
+        // ============================================================================
+        T p[3], q[3], t[3];
+        p[0] = T(_cam1_objPts.x);
+        p[1] = T(_cam1_objPts.y);
+        p[2] = T(_cam1_objPts.z);
+
+        T pose1[6];
+        for (size_t i=0; i<6; i++)
+            pose1[i] = T(_pose1[i]);
+        ceres::AngleAxisRotatePoint(pose1, p, q);
+        q[0] += T(pose1[3]); q[1] += T(pose1[4]); q[2] += T(pose1[5]);
+
+        ceres::AngleAxisRotatePoint(transform, q, t);
+        t[0] += T(transform[3]); t[1] += T(transform[4]); t[2] += T(transform[5]);
+
+        T obj_pt_in_ocamcalib[3] = {t[0], t[1], t[2]};
+        T img_pt_projected[2];
+        _ocamcalib_cam0.world2cam(img_pt_projected, obj_pt_in_ocamcalib);
+        
+        // // the residuals is the distance between scan point and the checkerboard plane
+        residuals[0] = T(_cam0_imgPts.x) - img_pt_projected[0];
+        residuals[1] = T(_cam0_imgPts.y) - img_pt_projected[1];
+        return true;
+    }
+    
+    // Factory to hide the construction of the CostFunction object from
+    // the client code.
+    static ceres::CostFunction* Create(OCamCalibModel ocamcalib_cam0, 
+                                    cv::Point2f cam0_imgPts, 
+                                    cv::Point3f cam1_objPts, 
+                                    double* pose1) {
+        return (new ceres::AutoDiffCostFunction<ReprojectionError0, 2, 6>(
+                    new ReprojectionError0(ocamcalib_cam0, cam0_imgPts, 
+                                                    cam1_objPts, pose1)));
+    }
+
+    cv::Point2f _cam0_imgPts;    
+    cv::Point3f _cam1_objPts;
+    OCamCalibModel _ocamcalib_cam0;
+    double* _pose1;
 };
 
 // Templated pinhole camera model for used with Ceres.  The camera is

@@ -289,7 +289,9 @@ bool OCamCalibModel::pnpPose( std::vector<cv::Point_<T>> Ms,
                                   std::vector<cv::Point3_<T>> Ps,
                                   cv::Mat &rvec,
                                   cv::Mat &tvec,
-                                  bool &isback) const{
+                                  bool &isBoardBehindCamera) const{
+    if (Ps.size() <= 0) return false;
+
     std::vector<cv::Point_<T> > Ms_back, Ms_front;
     std::vector<cv::Point3_<T> > Ps_back, Ps_front;
     for (size_t i = 0; i < Ms.size(); ++i) {
@@ -312,20 +314,24 @@ bool OCamCalibModel::pnpPose( std::vector<cv::Point_<T>> Ms,
 
     std::vector<double> distCoeffs(4, 0.0);
 
+    
+    std::cout << Ps_front.size() << " " << Ps_back.size() << std::endl;
+    std::cout << Ps[0].x << " " << Ps[1].y << std::endl;
+  
     if (Ps_front.size() < 4 && Ps_back.size() < 4) {
         // At least 4 points are needed for calling PnP
         return false;
     }
 
     if (Ms_back.size() > Ms_front.size()){
-        isback = true;
+        isBoardBehindCamera = true;
         cv::solvePnPRansac(Ps_back, Ms_back, 
                            cv::Mat::eye(3, 3, CV_64F), 
                            distCoeffs, rvec, tvec);
         // cv::solvePnP is not as accurate as solvePnPRansac
     }
     else{
-        isback = false;
+        isBoardBehindCamera = false;
         cv::solvePnPRansac(Ps_front, Ms_front, 
                            cv::Mat::eye(3, 3, CV_64F), 
                            distCoeffs, rvec, tvec);
@@ -526,6 +532,43 @@ template bool OCamCalibModel::findExtrinsic<double>(
               std::vector<cv::Point_<double> > Ms, 
               std::vector<cv::Point3_<double> > Ps,
               std::vector<Eigen::Matrix<double, 3, 4> > &Rt_set) const;
+
+
+
+/* *******************************************************************
+ *
+ * Solve camera intrinsic parameter analytically
+ * 
+ * Input: 
+ *      scene points Ps (in target board frame)
+ *      image points Ms (in image frame, pixels, 
+ *                      origin is at the center of image)
+ *
+ *
+ *      partial extrinsic parameters obtained in findExtrinsic
+ *       
+ * Output:
+ *      
+ *        
+ *
+ * *******************************************************************/
+// template <typename T>
+// bool OCamCalibModel::findIntrinsic(
+//               std::vector<cv::Point_<T> > Ms, 
+//               std::vector<cv::Point3_<T> > Ps,
+//               std::vector<Eigen::Matrix<T, 3, 4> > &Rt_set) const{
+    
+// }
+// template bool OCamCalibModel::findIntrinsic<float>(
+//               std::vector<cv::Point_<float> > Ms, 
+//               std::vector<cv::Point3_<float> > Ps,
+//               std::vector<Eigen::Matrix<float, 3, 4> > &Rt_set) const;
+// template bool OCamCalibModel::findIntrinsic<double>(
+//               std::vector<cv::Point_<double> > Ms, 
+//               std::vector<cv::Point3_<double> > Ps,
+//               std::vector<Eigen::Matrix<double, 3, 4> > &Rt_set) const;
+
+
 
 
 /* *******************************************************************

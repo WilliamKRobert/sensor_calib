@@ -60,6 +60,14 @@ string IntToString (int a)
     temp<<a;
     return temp.str();
 }
+
+void inverseTransform(const Eigen::Matrix4d& pose, Eigen::Matrix4d& inversePose){
+    inversePose = Eigen::Matrix4d::Identity();
+    Eigen::Matrix3d rotation = pose.block<3, 3>(0,0);
+    Eigen::Matrix3d invRotation = rotation.transpose();
+    inversePose.block<3,3>(0,0) = invRotation;
+    inversePose.block<3,1>(0,3) = -invRotation * pose.block<3,1>(0,3);
+}
 /*
  * Lidar-camera extrinsic parameter calibration
  */
@@ -212,9 +220,19 @@ int main(int argc, char **argv)
          /*
          * Step 2: Verify reproject points are accurate enough
          */
-        Eigen::Matrix4d object_pose0, object_pose1;
+        Eigen::Matrix4d object_pose0, object_pose1; // rotation * rotation^T=1
         ensembleRt(object_pose_rvec0, object_pose_tvec0, object_pose0);
         ensembleRt(object_pose_rvec1, object_pose_tvec1, object_pose1);
+
+        // Eigen::Matrix4d inversePose0;
+        // inverseTransform(object_pose0, inversePose0);
+        Eigen::Matrix4d inversePose1;
+        inverseTransform(object_pose1, inversePose1);
+
+        // std::cout << inversePose1 << std::endl;
+        // std::cout << object_pose0 * inversePose1 << std::endl;
+        std::cout << object_pose_rvec0 << std::endl
+                  << object_pose_tvec0 << std::endl;
 
         double reproj_error0 = 0;
         double reproj_error1 = 0;
@@ -332,12 +350,11 @@ int main(int argc, char **argv)
     }
     cout << endl;
 
-    for (size_t i=0; i<23; i++){
-        for (size_t j=0; j<6; j++){
-            cout << poses1[6*i+j] <<" ";
-        }
-        cout << endl;
-    }
-    cout << "--------------------------------------------" << endl;
+    // for (size_t i=0; i<23; i++){
+    //     for (size_t j=0; j<6; j++){
+    //         cout << poses1[6*i+j] <<" ";
+    //     }
+    //     cout << endl;
+    // }
     return 0;
 }
