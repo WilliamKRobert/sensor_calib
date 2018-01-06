@@ -39,14 +39,17 @@ void optimizer::bundleAdjustment(OCamCalibModel& ocamcalib_cam0,
         // Each Residual block takes a point and a camera as input and outputs a 1
         // dimensional residual. 
         for (size_t j=0; j < cam0_imgPts[i].size(); ++j ){
+            // ceres::CostFunction* cs0 = ReprojectionError0::Create( ocamcalib_cam0, cam0_imgPts[i][j], cam1_objPts[i][j], &poses1[6*i]);
+            // problem.AddResidualBlock(cs0, NULL /* squared loss */, &parameter[0]);
+
             ceres::CostFunction* cs0 = ReprojectionError1::Create( ocamcalib_cam0, cam0_imgPts[i][j], cam1_objPts[i][j]);
             problem.AddResidualBlock(cs0, NULL /* squared loss */, &parameter[0], &poses1[6*i]);
 
-            ceres::CostFunction* cs1 = ReprojectionError2::Create(ocamcalib_cam1, cam1_imgPts[i][j], cam0_objPts[i][j]);
-            problem.AddResidualBlock(cs1, NULL /* squared loss */, &parameter[0], &poses0[6*i]);
+            // ceres::CostFunction* cs1 = ReprojectionError2::Create(ocamcalib_cam1, cam1_imgPts[i][j], cam0_objPts[i][j]);
+            // problem.AddResidualBlock(cs1, NULL  squared loss , &parameter[0], &poses0[6*i]);
 
-            ceres::CostFunction* cs2 = ReprojectionError3::Create(ocamcalib_cam0, cam0_imgPts[i][j], cam0_objPts[i][j]);
-            problem.AddResidualBlock(cs2, NULL /* squared loss */, &poses0[6*i]);
+            // ceres::CostFunction* cs2 = ReprojectionError3::Create(ocamcalib_cam0, cam0_imgPts[i][j], cam0_objPts[i][j]);
+            // problem.AddResidualBlock(cs2, NULL /* squared loss */, &poses0[6*i]);
 
             ceres::CostFunction* cs3 = ReprojectionError3::Create(ocamcalib_cam1, cam1_imgPts[i][j], cam1_objPts[i][j]);
             problem.AddResidualBlock(cs3, NULL /* squared loss */, &poses1[6*i]);

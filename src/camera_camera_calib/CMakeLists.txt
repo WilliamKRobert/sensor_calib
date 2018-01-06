@@ -274,7 +274,6 @@ target_link_libraries(ocam_reproj_test ${CERES_LIBRARIES})
 target_link_libraries(ocam_reproj_test apriltags)
 
 
-link_directories(../Thirdparty/apriltags/build/lib)
 add_executable(testSyntheticData test/testSyntheticData.cpp 
                                    src/loadBag.cpp 
                                    src/objectPose.cpp
@@ -290,5 +289,12 @@ target_link_libraries(testSyntheticData ${OpenCV_LIBRARIES})
 target_link_libraries(testSyntheticData ${Eigen_LIBRARIES})
 target_link_libraries(testSyntheticData ${CERES_LIBRARIES})
 target_link_libraries(testSyntheticData apriltags)
+
+
+add_executable(testSynchronizer test/testSynchronizer.cpp 
+                                   src/loadBag.cpp 
+                                   )
+target_link_libraries(testSynchronizer ${catkin_LIBRARIES})
+target_link_libraries(testSynchronizer ${OpenCV_LIBRARIES})
 
 

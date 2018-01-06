@@ -78,7 +78,8 @@ int main(int argc, char **argv)
      */
     ros::init(argc, argv, "camera_camera_calib");    
 
-    string bag_file("../data/small_drone_v2/ufo_2017-08-01-19-58-02.bag");
+    // string bag_file("../data/small_drone_v2/ufo_2017-08-01-19-58-02.bag");
+    string bag_file("./test.bag");
     vector<Mat> im0_seq, im1_seq;
     string topic0 = string("/synthetic_gimbal/cam0") + "/image_raw";
     string topic1 = string("/synthetic_gimbal/cam1") + "/image_raw";
@@ -229,10 +230,10 @@ int main(int argc, char **argv)
         Eigen::Matrix4d inversePose1;
         inverseTransform(object_pose1, inversePose1);
 
-        // std::cout << inversePose1 << std::endl;
-        // std::cout << object_pose0 * inversePose1 << std::endl;
-        std::cout << object_pose_rvec0 << std::endl
-                  << object_pose_tvec0 << std::endl;
+        std::cout << inversePose1 << std::endl;
+        std::cout << object_pose0 * inversePose1 << std::endl;
+            // std::cout << object_pose_rvec0 << std::endl
+            //           << object_pose_tvec0 << std::endl;
 
         double reproj_error0 = 0;
         double reproj_error1 = 0;
@@ -266,6 +267,7 @@ int main(int argc, char **argv)
         cout << "Reprojection error for cam1: " << reproj_error1 << endl;
 
         imshow("Reprojection of cam1", reproj_im1);
+        waitKey(0);
      
         total_reproj_error0 += reproj_error0;
         total_reproj_error1 += reproj_error1;
@@ -317,7 +319,7 @@ int main(int argc, char **argv)
     cout << "Right camera total reprojetion error: " << total_reproj_error1 << endl;
     
     // initial guess of transform between cam0 and cam1
-    double transform_array[6] = { -3.00, 0.000, 0.00, -0.00, 0.00, -0.24};
+    double transform_array[6] = { -2.00, 0.000, 0.00, -0.00, 0.00, -0.30};
 
     cout << "--------------------------------------------" << endl;
     cout << "Initial value feed into Ceres Optimization program:" << endl;
