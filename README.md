@@ -1,7 +1,9 @@
 # SENSOR_CALIB
 
+A toolbox aims at calibrating central camera with generalized camera model. Especially, this toolbox is good for super fisheye camera, i.e. camera with over 180 degree field of view (FOV).
+
 ## LIDAR-CAMERA EXTRINSIC PARAMETERS
-LIDAR-Camera extrinsic parameters calibration using Ceres optimization library. Our solution is suitable for the omnidirectional camera model with large field of view (FOV).
+LIDAR-Camera extrinsic parameters calibration using Ceres optimization library. Our solution is suitable for the omnidirectional camera model with large FOV.
 
 ### First, the poses of a checkerboard are estimated using PnP algorithm.
 Since we are using an omnidirectional camera to shoot video, we need a camera model that can reproject the object points (in checkerboard frame) onto the image points (in camera frame, suppose camera intrinsic parameters are known before calibration). The camera model here we use is decribed in the Kalibr camera calibration toolbox.
