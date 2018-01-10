@@ -14,38 +14,13 @@
 #include "camera_camera_calib/omniModel.h"
 #include "camera_camera_calib/aprilTagsDetector.h"
 #include "camera_camera_calib/ocamCalibModel.h"
+#include "camera_camera_calib/generateSyntheticData.h"
 
 using namespace std;
 using namespace cv;
 
 bool SYNTHTIC = true;
 
-std::pair<double, double> getXYZ(double squareDist, int id, int m_tagRows, int m_tagCols){
-  double x = ( id % (m_tagCols+1) ) * squareDist;
-  double y = ( id / (m_tagCols+1) ) * squareDist;
-  
-  return std::pair<double, double>(x, y);
-}
-
-cv::Point3f pointTransform(const cv::Point3f& p0, const Eigen::Matrix4d& transform){
-    Eigen::Vector4d eigen_p0;
-    eigen_p0 << p0.x, p0.y, p0.z, 1;
-    Eigen::Vector4d eigen_p1 = transform * eigen_p0;
-    return cv::Point3f(eigen_p1(0), eigen_p1(1), eigen_p1(2));
-}
-
-cv::Point2f targetPoint2ImagePixel(const OmniModel& cam, 
-                                   const cv::Point3f& p0, 
-                                   const Eigen::Matrix4d& target_pose){
-    cv::Point3f p1 = pointTransform(p0, target_pose);
-
-    Eigen::Matrix<float, 3, 1> Ps;
-    Eigen::Matrix<float, 2, 1> Ms;
-    Ps << p0.x, p0.y, p0.z;
-    cam.euclideanToKeypoint(Ps, Ms);
-
-    return cv::Point2f(Ms(0,0), Ms(1, 0));
-}
 
 /*
  * Camera-camera extrinsic parameter calibration

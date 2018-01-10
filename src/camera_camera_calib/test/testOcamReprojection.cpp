@@ -19,41 +19,12 @@
 #include "camera_camera_calib/omniModel.h"
 #include "camera_camera_calib/aprilTagsDetector.h"
 #include "camera_camera_calib/ocamCalibModel.h"
+#include "camera_camera_calib/generateSyntheticData.h"
 
 using namespace std;
 using namespace cv;
 
 bool SYNTHTIC = false;
-
-std::pair<double, double> getXYZ(double squareDist, 
-                                int id, 
-                                int m_tagRows, 
-                                int m_tagCols){
-  double x = ( id % (m_tagCols+1) ) * squareDist;
-  double y = ( id / (m_tagCols+1) ) * squareDist;
-  
-  return std::pair<double, double>(x, y);
-}
-
-cv::Point3d pointTransform(const cv::Point3d& p0, 
-                            const Eigen::Matrix4d& transform){
-    Eigen::Vector4d eigen_p0;
-    eigen_p0 << p0.x, p0.y, p0.z, 1;
-    Eigen::Vector4d eigen_p1 = transform * eigen_p0;
-    return cv::Point3d(eigen_p1(0), eigen_p1(1), eigen_p1(2));
-}
-
-cv::Point2d targetPoint2ImagePixel(const OCamCalibModel& cam, 
-                                   const cv::Point3d& p0, 
-                                   const Eigen::Matrix4d& target_pose){
-    cv::Point3d p1 = pointTransform(p0, target_pose);
-
-    double Ps[3] = {p1.x, p1.y, p1.z};
-    double Ms[2];
-    cam.world2cam(Ms, Ps);
-
-    return cv::Point2d(Ms[0], Ms[1]);
-}
 
 /*
  * Camera-camera extrinsic parameter calibration
@@ -159,7 +130,6 @@ int main(int argc, char **argv)
         vector<std::pair<bool, int> >tagid_found;
         
         Mat reproj_im = im.clone();
-        cv::cvtColor(im, reproj_im, cv::COLOR_GRAY2BGR);
 
         bool bfind = apriltags.getDetections(im, detections, 
                                             objPts, imgPts, 
@@ -171,13 +141,10 @@ int main(int argc, char **argv)
         // waitKey(0.1);
         // cout << "objPts number: " << objPts.size() << endl;
 
-
-
-
         /*
          * test 1: cam2world and world2cam
          */
-        int TESTNO = 2;
+        int TESTNO = 1;
         if (TESTNO == 1){   // verify projection function
                             // cam2world and world2cam
             for (size_t j=0; j<objPts.size(); j++){
@@ -217,11 +184,10 @@ int main(int argc, char **argv)
             }
         }
         imshow("Reprojection", reproj_im);
-        waitKey(0);
+        waitKey(10);
 
     }
     }
-
 
 
 
@@ -294,8 +260,6 @@ int main(int argc, char **argv)
         objPts.push_back(cv::Point3d(cx - halfSquare, cy + halfSquare, 0));
     }
 
-
-
     // show ID of each tag
     vector<cv::Point2d> imgPts;
     for (size_t i=0; i<objPts.size(); i++){
@@ -309,8 +273,7 @@ int main(int argc, char **argv)
     }
 
     imshow("Reprojection of AprilTag Points", img);
-    waitKey(0);
-
+    //waitKey(0.01);
 
 
 
@@ -371,15 +334,8 @@ int main(int argc, char **argv)
     }
 
 
-    /* 
-     * c. test analytical solutions to the extrinsic paramters
-     *    recover pose of target in camera frame
-     *  
-     */
-    cv::Mat rvec, tvec;
-    bool good_est = cam.solveCamPose(imgPts, objPts, rvec, tvec);
-
     }
     
     return 0;
 }
+  

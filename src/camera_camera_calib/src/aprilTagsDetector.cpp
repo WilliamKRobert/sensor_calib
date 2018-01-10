@@ -107,7 +107,6 @@ void AprilTagsDetector::processImage(cv::Mat& image, vector<AprilTags::TagDetect
     //      m_cap.retrieve(image);
 
     // detect April tags (requires a gray scale image)
-
     if (image.channels() == 3)
     	cv::cvtColor(image, image, CV_BGR2GRAY);
     double t0;

@@ -74,8 +74,9 @@ public:
                     cv::Mat &tvec) const;
 
     template <typename T>
-    bool solveCamPose( std::vector<cv::Point_<T> > Ms, 
+    bool solveAnalyticalSol( std::vector<cv::Point_<T> > Ms, 
                       std::vector<cv::Point3_<T> > Ps,
+                      const T xc, const T yc,
                       cv::Mat &rvec,
                       cv::Mat &tvec) const;
 
@@ -83,6 +84,15 @@ public:
     bool findExtrinsic(std::vector<cv::Point_<T> > Ms, 
                       std::vector<cv::Point3_<T> > Ps,
                       std::vector<Eigen::Matrix<T, 3, 4> > &Rt_set) const;
+
+    template <typename T>
+    bool findIntrinsic(
+              const std::vector<std::vector<cv::Point_<T> > > Ms, 
+              const std::vector<std::vector<cv::Point3_<T> > > Ps,
+              std::vector<Eigen::Matrix<T, 3, 4> > &Rt_set,
+              const T xc, const T yc, 
+              const int taylor_order,
+              const size_t num_pt) const;
     //------------------------------------------------------------------------------
     template <typename T>
     void world2cam(T point2D[2], T point3D[3])const;
