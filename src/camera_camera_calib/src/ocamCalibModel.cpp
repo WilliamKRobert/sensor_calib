@@ -8,8 +8,10 @@
 #include <opengv/absolute_pose/CentralAbsoluteAdapter.hpp>
 #include <opengv/math/cayley.hpp>
 
-
+#include "camera_camera_calib/utility.h"
 #include "camera_camera_calib/ocamCalibModel.h" 
+
+
 
 /*
  * some are directly from OCamCalib
@@ -373,8 +375,7 @@ bool OCamCalibModel::solveAnalyticalSol(
                         const std::vector<cv::Point_<T> > Ms_abs, 
                         const std::vector<cv::Point3_<T> > Ps,
                         const T xc, const T yc,
-                        cv::Mat &rvec,
-                        cv::Mat &tvec) const{
+                        Eigen::Matrix<T, 4, 4> &pose) const{
 
     // for (size_t i = 0; i < Ms.size(); ++i) {
     //     cv::Point3f undistortPt;
@@ -396,9 +397,9 @@ bool OCamCalibModel::solveAnalyticalSol(
 
     bool flag = findExtrinsic(Ms, Ps, Rt_set); 
 
-    for (size_t i=0; i<Rt_set.size(); i++){
-        std::cout << Rt_set[i] << std::endl;
-    }
+    // for (size_t i=0; i<Rt_set.size(); i++){
+    //     std::cout << Rt_set[i] << std::endl;
+    // }
     
     size_t num_pt = Ms.size();
     for (size_t i=0; i<Rt_set.size(); i++){
@@ -410,8 +411,24 @@ bool OCamCalibModel::solveAnalyticalSol(
 
         Ms_set.push_back(Ms);
         Ps_set.push_back(Ps);
-        findIntrinsic(Ms_set, Ps_set, pose_set, xc, yc, taylor_order, num_pt);
+        std::vector<double> poly;
+        bool flag = findIntrinsic(Ms_set, Ps_set, pose_set, xc, yc, taylor_order, num_pt, poly);
+        if (!flag) continue;
+        if (poly.size() != 0 && poly[0] > 0){
+            for (size_t j=0; j<poly.size(); j++){
+                std::cout << poly[j] << " ";
+            }
+            std::cout << std::endl;
+
+            pose.template block<3,4>(0,0) = pose_set[i];
+
+            Eigen::Matrix<T, 1, 4> last_line;
+            last_line << 0, 0, 0, 1;
+            pose.template block<1,4>(3,0) = last_line;
+            break;
+        }
     }
+
     
 
     return true;
@@ -420,15 +437,13 @@ template bool OCamCalibModel::solveAnalyticalSol<float>(
                                   std::vector<cv::Point_<float> > Ms, 
                                   std::vector<cv::Point3_<float> > Ps,
                                   const float xc, const float yc,
-                                  cv::Mat &rvec,
-                                  cv::Mat &tvec) const;
+                                  Eigen::Matrix<float, 4, 4> &pose) const;
 
 template bool OCamCalibModel::solveAnalyticalSol<double>(
                                   std::vector<cv::Point_<double> > Ms, 
                                   std::vector<cv::Point3_<double> > Ps,
                                   const double xc, const double yc,
-                                  cv::Mat &rvec,
-                                  cv::Mat &tvec) const;
+                                  Eigen::Matrix<double, 4, 4> &pose) const;
 
 
 /* *******************************************************************
@@ -484,6 +499,7 @@ bool OCamCalibModel::findExtrinsic(
     T scale_abs;
 
     T sqrt_det = std::sqrt(beta*beta + 4 * alpha * alpha);
+    // in each following situation, at most two solutions are possible
     if (std::abs(alpha) < 1e-9){
         r31   = 0;
         r32_s = beta;   // r32 can be positive or negative
@@ -577,7 +593,8 @@ bool OCamCalibModel::findIntrinsic(
               std::vector<Eigen::Matrix<T, 3, 4> > &Rt_set,
               const T xc, const T yc, 
               const int taylor_order,
-              const size_t num_pt) const{
+              const size_t num_pt,
+              std::vector<double> &poly) const{
     // here, Ms is the image points, and origin is at the center
     std::vector<T> entries;
     std::vector<T> right_col;
@@ -659,12 +676,21 @@ bool OCamCalibModel::findIntrinsic(
 
     Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> x;
     x = A.colPivHouseholderQr().solve(b);
+    
+    if (x(0) < 0) return false;
+    
+    for (size_t i=0; i<Rt_set.size(); i++){
+        Rt_set[i](2, 3) = x(taylor_order+i);
+    }
 
-    std::cout << A;
-    std::cout << b;
-    std::cout << x << std::endl;
+    poly.push_back(x(0));
+    poly.push_back(0);
+    for (size_t i=1; i<taylor_order; i++)
+        poly.push_back(x(i));
+    // OCamCalibModel cam_res(1050, 1050, 525, 525, poly, poly, 1.0, 0.0, 0.0);
+    // std::cout << cam_res.findRho(-1, 1.0/sqrt(2)) << std::endl;
 
-    return 0;    
+    return true;    
 }
 template bool OCamCalibModel::findIntrinsic<float>(
               std::vector<std::vector<cv::Point_<float> > > Ms, 
@@ -672,16 +698,26 @@ template bool OCamCalibModel::findIntrinsic<float>(
               std::vector<Eigen::Matrix<float, 3, 4> > &Rt_set,
               const float xc, const float yc, 
               const int taylor_order,
-              const size_t num_pt) const;
+              const size_t num_pt,
+              std::vector<double> &poly) const;
 template bool OCamCalibModel::findIntrinsic<double>(
               std::vector<std::vector<cv::Point_<double> > > Ms, 
               std::vector<std::vector<cv::Point3_<double> > > Ps,
               std::vector<Eigen::Matrix<double, 3, 4> > &Rt_set,
               const double xc, const double yc, 
               const int taylor_order,
-              const size_t num_pt) const;
+              const size_t num_pt,
+              std::vector<double> &poly) const;
 
 
+double OCamCalibModel::findRho(const double Z, const double invnorm){
+    double lower = 0.0;
+    double upper = 0.5 * sqrt(m_width * m_width + m_height * m_height);
+    double tol = 1e-6;
+    unsigned int max_iter = 1000;
+    return brents_fun(funRho, m_pol, Z, invnorm,
+            lower, upper, tol, max_iter);
+}
 
 
 /* *******************************************************************
@@ -753,4 +789,31 @@ void OCamCalibModel::transformMat2Vec(const Eigen::Matrix4d& T_camera_model,
     
     
 }
+
+
+// void findInvPoly(const std::vector<double> ss, 
+//                 double radius, std::vector<double> pol){
+//     double error = 1e5;
+//     int order = 1;
+//     do{
+//         error = findInvPoly(ss, radius, pol, order);
+//         order += 1;
+//     }while(error > 0.01)
+
+//     return;
+// }
+
+// double findInvPoly(const std::vector<double> ss, 
+//                   const double radius, 
+//                   const int order,
+//                   std::vector<double> pol){
+//     double error = 1e5;
+//     int order = 1;
+//     do{
+//         error = findInvPoly(ss, radius, pol, order);
+//         order += 1;
+//     }while(error > 0.01)
+
+//     return;
+// }
 

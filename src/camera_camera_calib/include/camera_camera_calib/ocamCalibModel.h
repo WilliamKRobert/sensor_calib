@@ -77,8 +77,7 @@ public:
     bool solveAnalyticalSol( std::vector<cv::Point_<T> > Ms, 
                       std::vector<cv::Point3_<T> > Ps,
                       const T xc, const T yc,
-                      cv::Mat &rvec,
-                      cv::Mat &tvec) const;
+                      Eigen::Matrix<T, 4, 4> &pose) const;
 
     template <typename T>
     bool findExtrinsic(std::vector<cv::Point_<T> > Ms, 
@@ -92,7 +91,8 @@ public:
               std::vector<Eigen::Matrix<T, 3, 4> > &Rt_set,
               const T xc, const T yc, 
               const int taylor_order,
-              const size_t num_pt) const;
+              const size_t num_pt,
+              std::vector<double> &poly) const;
     //------------------------------------------------------------------------------
     template <typename T>
     void world2cam(T point2D[2], T point3D[3])const;
@@ -116,7 +116,12 @@ public:
     void transformMat2Vec(const Eigen::Matrix4d& T_camera_model, 
                           cv::Mat& rvec, cv::Mat& tvec) const;
 
+
+    double findRho(const double Z, const double invnorm);
+
 private:
+    // The coordinate system in OCam is different from that in 
+    // OpenCV
     template <typename T>
     void excoordinate2D(cv::Point_<T>& pt)const{
        float temp = pt.x;
@@ -194,7 +199,7 @@ void OCamCalibModel::world2cam(T point2D[2], T point3D[3])const
     excoordinate3D(point3D);
 
     T norm        = sqrt(point3D[0]*point3D[0] + point3D[1]*point3D[1]);
-    T theta       = atan(point3D[2] / norm);
+    T theta       = atan2(point3D[2], norm);
     T t, t_i;
     T rho, x, y;
     T invnorm;
@@ -227,6 +232,39 @@ void OCamCalibModel::world2cam(T point2D[2], T point3D[3])const
     excoordinate2D(point2D);
 }
 
+
+// template <typename T>
+// void OCamCalibModel::world2cam_naive(T point2D[2], T point3D[3])const
+// {
+
+//     T norm        = sqrt(point3D[0]*point3D[0] + point3D[1]*point3D[1]);
+//     T theta       = atan2(point3D[2], norm);
+//     T t, t_i;
+//     T rho, x, y;
+//     T invnorm;
+
+//     if (norm != T(0)) 
+//     {
+//       invnorm = T(1) / norm;
+//       t  = theta;
+//       rho = T(m_pol_inv[0]);
+//       t_i = T(1);
+
+//       rho = findrho(point3D[3], invnorm);
+
+//       x = point3D[0]*invnorm*rho;
+//       y = point3D[1]*invnorm*rho;
+
+//       point2D[0] = x*m_c + y*m_d + m_xc;
+//       point2D[1] = x*m_e + y   + m_yc;
+//     }
+//     else
+//     {
+//       point2D[0] = T(m_xc);
+//       point2D[1] = T(m_yc);
+//     }
+
+// }
 
 /* *******************************************************************
  *

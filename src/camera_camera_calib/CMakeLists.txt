@@ -65,40 +65,39 @@ set(LINK_LIBRARIES
 
 file(GLOB_RECURSE SOURCE_FILES "src/*.cpp")
 
-#link_directories(../Thirdparty/apriltags/build/lib)
-add_executable(camera_camera_calib test/testCalibrate.cpp 
+add_executable(calibrateExample test/calibrateExample.cpp 
                                    ${SOURCE_FILES}
                                    )
-target_link_libraries(camera_camera_calib ${LINK_LIBRARIES})
+target_link_libraries(calibrateExample ${LINK_LIBRARIES})
 
 
-add_executable(omni_reproj_test test/testOmniReprojection.cpp 
+add_executable(omniReprojectionTest test/omniReprojectionTest.cpp 
                                    ${SOURCE_FILES}
                                    )
-target_link_libraries(omni_reproj_test ${LINK_LIBRARIES})
-#target_link_libraries(omni_reproj_test apriltags)
+target_link_libraries(omniReprojectionTest ${LINK_LIBRARIES})
 
-add_executable(ocam_reproj_test test/testOcamReprojection.cpp 
+add_executable(ocamReprojectionTest test/ocamReprojectionTest.cpp 
                                    ${SOURCE_FILES}
                                    )
-target_link_libraries(ocam_reproj_test ${LINK_LIBRARIES})
+target_link_libraries(ocamReprojectionTest ${LINK_LIBRARIES})
 
 
-add_executable(testSyntheticData test/testSyntheticData.cpp 
+add_executable(syntheticDataSimulation test/syntheticDataSimulation.cpp 
                                    ${SOURCE_FILES}
                                    )
-target_link_libraries(testSyntheticData ${LINK_LIBRARIES})
+target_link_libraries(syntheticDataSimulation ${LINK_LIBRARIES})
 
 
-add_executable(testSynchronizer test/testSynchronizer.cpp 
+add_executable(synchronizerTest test/synchronizerTest.cpp 
                                    src/loadBag.cpp 
                                    )
-target_link_libraries(testSynchronizer ${catkin_LIBRARIES})
-target_link_libraries(testSynchronizer ${OpenCV_LIBRARIES})
+target_link_libraries(synchronizerTest ${catkin_LIBRARIES})
+target_link_libraries(synchronizerTest ${OpenCV_LIBRARIES})
 
-add_executable(linearSolverComp test/linearSolverComp.cpp 
+add_executable(linearSolverTest test/linearSolverTest.cpp 
                                    ${SOURCE_FILES}
+                                   src/utility.cpp
                                    )
-target_link_libraries(linearSolverComp ${LINK_LIBRARIES})
+target_link_libraries(linearSolverTest ${LINK_LIBRARIES})
 
 

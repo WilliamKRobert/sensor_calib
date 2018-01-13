@@ -9,3 +9,4 @@ make
 echo "Building slam_sensor_calib"
 cd ../../../../
 catkin_make
+
