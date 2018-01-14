@@ -89,7 +89,6 @@ public:
               const std::vector<std::vector<cv::Point_<T> > > Ms, 
               const std::vector<std::vector<cv::Point3_<T> > > Ps,
               std::vector<Eigen::Matrix<T, 3, 4> > &Rt_set,
-              const T xc, const T yc, 
               const int taylor_order,
               const size_t num_pt,
               std::vector<double> &poly) const;
@@ -118,6 +117,9 @@ public:
 
 
     double findRho(const double Z, const double invnorm);
+
+    double getImageWidth(){ return m_width; }
+    double getImageHeight() { return m_height; }
 
 private:
     // The coordinate system in OCam is different from that in 

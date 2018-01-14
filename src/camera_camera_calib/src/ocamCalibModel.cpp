@@ -373,12 +373,13 @@ template bool OCamCalibModel::pnpPose<double>(
 template <typename T>
 bool OCamCalibModel::solveAnalyticalSol( 
                         const std::vector<cv::Point_<T> > Ms_abs, 
-                        const std::vector<cv::Point3_<T> > Ps,
+                        const std::vector<cv::Point3_<T> > Ps_abs,
                         const T xc, const T yc,
                         Eigen::Matrix<T, 4, 4> &pose) const{
-
+    std::vector<cv::Point_<T> > Ms = Ms_abs;
+    std::vector<cv::Point3_<T> > Ps = Ps_abs;
     // for (size_t i = 0; i < Ms.size(); ++i) {
-    //     cv::Point3f undistortPt;
+    //     cv::Point3_<T> undistortPt;
 
     //     bool isback;
     //     bool valid = cam2world_unitfocal(Ms[i], undistortPt, isback);
@@ -387,23 +388,30 @@ bool OCamCalibModel::solveAnalyticalSol(
     // }
 
     int taylor_order = 5;
-    std::vector<cv::Point_<T> > Ms = Ms_abs;
+    
+    double n1 = 2.0*std::sqrt(2)/m_width;
+    double n2 = 2.0*std::sqrt(2)/m_height;
+
+    double N1 = 10.0*std::sqrt(2);
+    double N2 = 10.0*std::sqrt(2);
+    
     for (size_t i=0; i < Ms.size(); ++i){
-        Ms[i].x = Ms_abs[i].x - xc; //512.560101; //532.425687;
-        Ms[i].y = Ms_abs[i].y - yc; //523.645938; //517.382409;
+        Ms[i].x = (Ms_abs[i].x - xc);///n1; //532.425687; //512.560101; //
+        Ms[i].y = (Ms_abs[i].y - yc);///n2; //517.382409; //523.645938; //
+
+        Ps[i].x = Ps[i].x;///N1; 
+        Ps[i].y = Ps[i].y;///N2; 
     }
 
     std::vector<Eigen::Matrix<T, 3, 4> > Rt_set;   // Rt = [r1 r2 t]
 
     bool flag = findExtrinsic(Ms, Ps, Rt_set); 
-
-    // for (size_t i=0; i<Rt_set.size(); i++){
-    //     std::cout << Rt_set[i] << std::endl;
-    // }
     
     size_t num_pt = Ms.size();
+    std::cout << Rt_set.size() << std::endl;
     for (size_t i=0; i<Rt_set.size(); i++){
         std::vector<Eigen::Matrix<T, 3, 4> > pose_set;
+    
         pose_set.push_back(Rt_set[i]);
 
         std::vector<std::vector<cv::Point_<T> > > Ms_set;
@@ -412,8 +420,14 @@ bool OCamCalibModel::solveAnalyticalSol(
         Ms_set.push_back(Ms);
         Ps_set.push_back(Ps);
         std::vector<double> poly;
-        bool flag = findIntrinsic(Ms_set, Ps_set, pose_set, xc, yc, taylor_order, num_pt, poly);
-        if (!flag) continue;
+        
+        bool flag = findIntrinsic(Ms_set, Ps_set, pose_set,taylor_order, num_pt, poly);
+        if (!flag){
+            std::cout << "Not able to find intrinsic parameters!"
+                      << std::endl;
+            continue;
+        }
+
         if (poly.size() != 0 && poly[0] > 0){
             for (size_t j=0; j<poly.size(); j++){
                 std::cout << poly[j] << " ";
@@ -427,9 +441,9 @@ bool OCamCalibModel::solveAnalyticalSol(
             pose.template block<1,4>(3,0) = last_line;
             break;
         }
+        else 
+            return false;
     }
-
-    
 
     return true;
 }
@@ -500,7 +514,7 @@ bool OCamCalibModel::findExtrinsic(
 
     T sqrt_det = std::sqrt(beta*beta + 4 * alpha * alpha);
     // in each following situation, at most two solutions are possible
-    if (std::abs(alpha) < 1e-9){
+    if (std::abs(alpha) < 1e-6){
         r31   = 0;
         r32_s = beta;   // r32 can be positive or negative
    
@@ -591,7 +605,6 @@ bool OCamCalibModel::findIntrinsic(
               const std::vector<std::vector<cv::Point_<T> > > Ms, 
               const std::vector<std::vector<cv::Point3_<T> > > Ps,
               std::vector<Eigen::Matrix<T, 3, 4> > &Rt_set,
-              const T xc, const T yc, 
               const int taylor_order,
               const size_t num_pt,
               std::vector<double> &poly) const{
@@ -675,9 +688,20 @@ bool OCamCalibModel::findIntrinsic(
               (&right_col[0], rows, 1);
 
     Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> x;
-    x = A.colPivHouseholderQr().solve(b);
     
-    if (x(0) < 0) return false;
+    
+    if (b.norm() < 1e-3){
+        Eigen::JacobiSVD<Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> > svd(
+                                A, Eigen::ComputeThinU | Eigen::ComputeThinV);
+        x = svd.matrixV().col(cols-1);
+    }
+    else
+        x = A.colPivHouseholderQr().solve(b);  // that is a problem when b=0
+
+    // std::cout << A << std::endl;
+    // std::cout << b << std::endl;
+    std::cout << "solution x:" << x << std::endl;
+    if (x(0) <= 0) return false;
     
     for (size_t i=0; i<Rt_set.size(); i++){
         Rt_set[i](2, 3) = x(taylor_order+i);
@@ -696,7 +720,6 @@ template bool OCamCalibModel::findIntrinsic<float>(
               std::vector<std::vector<cv::Point_<float> > > Ms, 
               std::vector<std::vector<cv::Point3_<float> > > Ps,
               std::vector<Eigen::Matrix<float, 3, 4> > &Rt_set,
-              const float xc, const float yc, 
               const int taylor_order,
               const size_t num_pt,
               std::vector<double> &poly) const;
@@ -704,7 +727,6 @@ template bool OCamCalibModel::findIntrinsic<double>(
               std::vector<std::vector<cv::Point_<double> > > Ms, 
               std::vector<std::vector<cv::Point3_<double> > > Ps,
               std::vector<Eigen::Matrix<double, 3, 4> > &Rt_set,
-              const double xc, const double yc, 
               const int taylor_order,
               const size_t num_pt,
               std::vector<double> &poly) const;
