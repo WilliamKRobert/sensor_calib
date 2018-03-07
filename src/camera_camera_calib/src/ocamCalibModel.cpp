@@ -1,8 +1,8 @@
 #include <math.h>
 
-//#include <gsl/gsl_poly.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <cassert>
 
 #include <opengv/absolute_pose/methods.hpp>
 #include <opengv/absolute_pose/CentralAbsoluteAdapter.hpp>
@@ -39,7 +39,7 @@ inline double pow(double rho, size_t n){
  * get_ocam_model
  *
  * *******************************************************************/
-int OCamCalibModel::get_ocam_model(char *filename)
+bool OCamCalibModel::get_ocam_model(char *filename)
 {
     FILE *f;
     char buf[CMV_MAX_BUF];
@@ -48,7 +48,7 @@ int OCamCalibModel::get_ocam_model(char *filename)
     if(!(f=fopen(filename,"r")))
     {
      printf("File %s cannot be opened\n", filename);          
-     return -1;
+     return false;
     }
 
     //Read polynomial coefficients
@@ -88,8 +88,10 @@ int OCamCalibModel::get_ocam_model(char *filename)
     fscanf(f,"\n");
     fscanf(f,"%d %d", &m_height, &m_width);
 
+    m_is_initialized = true;
+
     fclose(f);
-    return 0;
+    return true;
 }
 
 
@@ -102,6 +104,8 @@ int OCamCalibModel::get_ocam_model(char *filename)
  * *******************************************************************/
 void OCamCalibModel::cam2world(double point3D[3], double point2D[2])
 {
+    assert(m_is_initialized);
+
     excoordinate2D(point2D);
 
     double invdet  = 1/(m_c-m_d*m_e); // 1/det(A), where A = [c,d;e,1] as in the Matlab file
@@ -144,6 +148,8 @@ template <typename T>
 bool OCamCalibModel::cam2world_unitfocal(cv::Point_<T> &Ms, 
                                         cv::Point3_<T> &Ps, 
                                         bool &isback)const{
+    assert(m_is_initialized);
+    
     // change coordinate system to OCamCalib Model
     excoordinate2D(Ms);
 
@@ -316,10 +322,7 @@ bool OCamCalibModel::pnpPose( std::vector<cv::Point_<T>> Ms,
 
     std::vector<double> distCoeffs(4, 0.0);
 
-    
-    std::cout << Ps_front.size() << " " << Ps_back.size() << std::endl;
-    std::cout << Ps[0].x << " " << Ps[1].y << std::endl;
-  
+      
     if (Ps_front.size() < 4 && Ps_back.size() < 4) {
         // At least 4 points are needed for calling PnP
         return false;
@@ -374,7 +377,7 @@ template <typename T>
 bool OCamCalibModel::solveAnalyticalSol( 
                         const std::vector<cv::Point_<T> > Ms_abs, 
                         const std::vector<cv::Point3_<T> > Ps_abs,
-                        const T xc, const T yc,
+                        const cv::Point_<T> center,
                         Eigen::Matrix<T, 4, 4> &pose) const{
     std::vector<cv::Point_<T> > Ms = Ms_abs;
     std::vector<cv::Point3_<T> > Ps = Ps_abs;
@@ -396,21 +399,21 @@ bool OCamCalibModel::solveAnalyticalSol(
     double N2 = 10.0*std::sqrt(2);
     
     for (size_t i=0; i < Ms.size(); ++i){
-        Ms[i].x = (Ms_abs[i].x - xc);///n1; //532.425687; //512.560101; //
-        Ms[i].y = (Ms_abs[i].y - yc);///n2; //517.382409; //523.645938; //
+        Ms [i].x = (Ms_abs[i].x - center.x);///n1; //532.425687; //512.560101; //
+        Ms[i].y = (Ms_abs[i].y - center.y);///n2; //517.382409; //523.645938; //
 
         Ps[i].x = Ps[i].x;///N1; 
         Ps[i].y = Ps[i].y;///N2; 
     }
 
-    std::vector<Eigen::Matrix<T, 3, 4> > Rt_set;   // Rt = [r1 r2 t]
+    std::vector<Eigen::Matrix<T, 4, 4> > Rt_set;   // Rt = [r1 r2 t]
 
     bool flag = findExtrinsic(Ms, Ps, Rt_set); 
     
     size_t num_pt = Ms.size();
     std::cout << Rt_set.size() << std::endl;
     for (size_t i=0; i<Rt_set.size(); i++){
-        std::vector<Eigen::Matrix<T, 3, 4> > pose_set;
+        std::vector<Eigen::Matrix<T, 4, 4> > pose_set;
     
         pose_set.push_back(Rt_set[i]);
 
@@ -423,22 +426,18 @@ bool OCamCalibModel::solveAnalyticalSol(
         
         bool flag = findIntrinsic(Ms_set, Ps_set, pose_set,taylor_order, num_pt, poly);
         if (!flag){
-            std::cout << "Not able to find intrinsic parameters!"
-                      << std::endl;
+            // std::cout << "Not able to find intrinsic parameters!"
+            //           << std::endl;
             continue;
         }
 
         if (poly.size() != 0 && poly[0] > 0){
-            for (size_t j=0; j<poly.size(); j++){
-                std::cout << poly[j] << " ";
-            }
-            std::cout << std::endl;
+            // for (size_t j=0; j<poly.size(); j++){
+            //     std::cout << poly[j] << " ";
+            // }
+            // std::cout << std::endl;
 
-            pose.template block<3,4>(0,0) = pose_set[i];
-
-            Eigen::Matrix<T, 1, 4> last_line;
-            last_line << 0, 0, 0, 1;
-            pose.template block<1,4>(3,0) = last_line;
+            pose.template block<4,4>(0,0) = pose_set[i];
             break;
         }
         else 
@@ -450,14 +449,80 @@ bool OCamCalibModel::solveAnalyticalSol(
 template bool OCamCalibModel::solveAnalyticalSol<float>(
                                   std::vector<cv::Point_<float> > Ms, 
                                   std::vector<cv::Point3_<float> > Ps,
-                                  const float xc, const float yc,
+                                  const cv::Point_<float> center,
                                   Eigen::Matrix<float, 4, 4> &pose) const;
 
 template bool OCamCalibModel::solveAnalyticalSol<double>(
                                   std::vector<cv::Point_<double> > Ms, 
                                   std::vector<cv::Point3_<double> > Ps,
-                                  const double xc, const double yc,
+                                  const cv::Point_<double> center,
                                   Eigen::Matrix<double, 4, 4> &pose) const;
+
+
+
+// note: the origin of image point Ms is at the center of the image
+template <typename T>
+bool OCamCalibModel::findAnalyticalExtrinsics( 
+                        const std::vector<cv::Point_<T> > Ms, 
+                        const std::vector<cv::Point3_<T> > Ps,
+                        Eigen::Matrix<T, 4, 4> &pose) const{
+    int taylor_order = 5;
+
+    std::vector<Eigen::Matrix<T, 4, 4> > Rt_set;   // Rt = [r1 r2 t]
+
+    bool flag = findExtrinsic(Ms, Ps, Rt_set);
+    if (!flag) return false; 
+
+    size_t num_pt = Ms.size();
+    
+    if (Rt_set.size() == 0) return false;
+
+    for (size_t i=0; i<Rt_set.size(); i++){
+        std::vector<Eigen::Matrix<T, 4, 4> > pose_set;
+        pose_set.push_back(Rt_set[i]);
+
+        std::vector<std::vector<cv::Point_<T> > > Ms_set;
+        std::vector<std::vector<cv::Point3_<T> > > Ps_set;
+
+        Ms_set.push_back(Ms);
+        Ps_set.push_back(Ps);
+        std::vector<double> poly;
+        
+        bool flag = findIntrinsic(Ms_set, Ps_set, pose_set,taylor_order, num_pt, poly);
+
+        if (!flag){
+            continue;
+        }
+
+        if (poly.size() != 0 && poly[0] > 0){
+
+            // for(size_t kk=0; kk<poly.size(); kk++)
+            //     std::cout << poly[kk] << std::endl;
+
+            pose = pose_set[0];
+            // std::cout << "pose here: " <<pose << std::endl;
+            return true;
+        }
+        else{
+            // std::cout <<"num of poly; "<< poly.size() <<std::endl; 
+            // for(size_t kk=0; kk<poly.size(); kk++)
+            //     std::cout << poly[kk] << std::endl;
+            continue;
+        }
+    }
+
+    return false;
+}
+template bool OCamCalibModel::findAnalyticalExtrinsics<float>(
+                                  std::vector<cv::Point_<float> > Ms, 
+                                  std::vector<cv::Point3_<float> > Ps,
+                                  Eigen::Matrix<float, 4, 4> &pose) const;
+template bool OCamCalibModel::findAnalyticalExtrinsics<double>(
+                                  std::vector<cv::Point_<double> > Ms, 
+                                  std::vector<cv::Point3_<double> > Ps,
+                                  Eigen::Matrix<double, 4, 4> &pose) const;
+
+
 
 
 /* *******************************************************************
@@ -469,7 +534,7 @@ template <typename T>
 bool OCamCalibModel::findExtrinsic(
               std::vector<cv::Point_<T> > Ms, 
               std::vector<cv::Point3_<T> > Ps,
-              std::vector<Eigen::Matrix<T, 3, 4> > &Rt_set) const{
+              std::vector<Eigen::Matrix<T, 4, 4> > &Rt_set) const{
     Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> A;
     std::vector<T> entries;
     int rows = Ms.size(), cols = 6;
@@ -492,9 +557,6 @@ bool OCamCalibModel::findExtrinsic(
 
     double cond = svd.singularValues()(0) 
     / svd.singularValues()(svd.singularValues().size()-1);
-    std::cout << "Condition number of matrix A: ";
-    std::cout << cond << std::endl;
-    
     // /* solve Ax = 0
     //  *    use SVD decomposition
     //  *    the null space of A is the eigenvector 
@@ -514,10 +576,12 @@ bool OCamCalibModel::findExtrinsic(
 
     T sqrt_det = std::sqrt(beta*beta + 4 * alpha * alpha);
     // in each following situation, at most two solutions are possible
-    if (std::abs(alpha) < 1e-6){
+    if (std::abs(alpha) < 1e-8){
         r31   = 0;
-        r32_s = beta;   // r32 can be positive or negative
-   
+        r32_s = -beta;   // r32 can be positive or negative
+
+        if(r32_s < 0) return false;
+
         // determine the sign of the scale factor
         scale_abs =  std::sqrt(1.0 / gamma); 
         Eigen::Vector2f nRR1, nRR2;
@@ -526,14 +590,15 @@ bool OCamCalibModel::findExtrinsic(
         int sign = nRR1.norm() < nRR2.norm() ? 1 : -1;
 
         for (size_t j=0; j<2; j++){
-            Eigen::Matrix<T, 3, 4> Rt;
+            Eigen::Matrix<T, 4, 4> Rt;
             r32 = std::pow(-1, j) * std::sqrt(r32_s);
             
             Rt << x(0), x(1), 0, x(4),
                   x(2), x(3), 0, x(5),
-                  r31 ,  r32, 0,    0;
+                  r31 ,  r32, 0,    0,
+                  0   ,    0, 0,    1.0;
             Rt = Rt * scale_abs * sign;
-            
+            Rt.template block<1,4>(3,0) = Eigen::Matrix<T, 1, 4>(0, 0, 0, 1);
             Rt.template block<3,1>(0, 2) =  
                       Eigen::Matrix<T, 3, 1>(Rt(0,0), Rt(1,0), Rt(2,0)).cross(
                       Eigen::Matrix<T, 3, 1>(Rt(0,1), Rt(1,1), Rt(2,1)));
@@ -557,11 +622,13 @@ bool OCamCalibModel::findExtrinsic(
                 nRR2 << -scale_abs*x(4) - Ms[0].x, -scale_abs*x(5) - Ms[0].y; 
                 int sign = nRR1.norm() < nRR2.norm() ? 1 : -1;
 
-                Eigen::Matrix<T, 3, 4> Rt;
+                Eigen::Matrix<T, 4, 4> Rt;
                 Rt << x(0), x(1), 0, x(4),
                       x(2), x(3), 0, x(5),
-                      r31 ,  r32, 0,    0;
+                      r31 ,  r32, 0,    0,
+                      0   ,    0, 0,    1;
                 Rt = Rt * scale_abs * sign;
+                Rt.template block<1,4>(3,0) = Eigen::Matrix<T, 1, 4>(0, 0, 0, 1);
                 Rt.template block<3,1>(0, 2) =  
                       Eigen::Matrix<T, 3, 1>(Rt(0,0), Rt(1,0), Rt(2,0)).cross(
                       Eigen::Matrix<T, 3, 1>(Rt(0,1), Rt(1,1), Rt(2,1)));
@@ -575,11 +642,11 @@ bool OCamCalibModel::findExtrinsic(
 template bool OCamCalibModel::findExtrinsic<float>(
               std::vector<cv::Point_<float> > Ms, 
               std::vector<cv::Point3_<float> > Ps,
-              std::vector<Eigen::Matrix<float, 3, 4> > &Rt_set) const;
+              std::vector<Eigen::Matrix<float, 4, 4> > &Rt_set) const;
 template bool OCamCalibModel::findExtrinsic<double>(
               std::vector<cv::Point_<double> > Ms, 
               std::vector<cv::Point3_<double> > Ps,
-              std::vector<Eigen::Matrix<double, 3, 4> > &Rt_set) const;
+              std::vector<Eigen::Matrix<double, 4, 4> > &Rt_set) const;
 
 
 
@@ -604,7 +671,7 @@ template <typename T>
 bool OCamCalibModel::findIntrinsic(
               const std::vector<std::vector<cv::Point_<T> > > Ms, 
               const std::vector<std::vector<cv::Point3_<T> > > Ps,
-              std::vector<Eigen::Matrix<T, 3, 4> > &Rt_set,
+              std::vector<Eigen::Matrix<T, 4, 4> > &Rt_set,
               const int taylor_order,
               const size_t num_pt,
               std::vector<double> &poly) const{
@@ -612,6 +679,8 @@ bool OCamCalibModel::findIntrinsic(
     std::vector<T> entries;
     std::vector<T> right_col;
     size_t num_img=Rt_set.size();
+
+
     for (size_t i=0; i<Ms.size(); i++){
         T R11=Rt_set[i](0,0);
         T R21=Rt_set[i](1,0);
@@ -678,6 +747,9 @@ bool OCamCalibModel::findIntrinsic(
     }
    
     size_t rows = 2*num_pt, cols = num_img + taylor_order;
+
+    assert(rows > 0 && cols > 0);
+
     Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> A;
     Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> b;
     A = Eigen::Map< Eigen::Matrix<T, 
@@ -691,6 +763,7 @@ bool OCamCalibModel::findIntrinsic(
     
     
     if (b.norm() < 1e-3){
+        std::cout << "tricky" << std::endl;
         Eigen::JacobiSVD<Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> > svd(
                                 A, Eigen::ComputeThinU | Eigen::ComputeThinV);
         x = svd.matrixV().col(cols-1);
@@ -700,7 +773,7 @@ bool OCamCalibModel::findIntrinsic(
 
     // std::cout << A << std::endl;
     // std::cout << b << std::endl;
-    std::cout << "solution x:" << x << std::endl;
+    // std::cout << "solution x:" << x << std::endl;
     if (x(0) <= 0) return false;
     
     for (size_t i=0; i<Rt_set.size(); i++){
@@ -711,36 +784,37 @@ bool OCamCalibModel::findIntrinsic(
     poly.push_back(0);
     for (size_t i=1; i<taylor_order; i++)
         poly.push_back(x(i));
-    // OCamCalibModel cam_res(1050, 1050, 525, 525, poly, poly, 1.0, 0.0, 0.0);
-    // std::cout << cam_res.findRho(-1, 1.0/sqrt(2)) << std::endl;
 
     return true;    
 }
 template bool OCamCalibModel::findIntrinsic<float>(
               std::vector<std::vector<cv::Point_<float> > > Ms, 
               std::vector<std::vector<cv::Point3_<float> > > Ps,
-              std::vector<Eigen::Matrix<float, 3, 4> > &Rt_set,
+              std::vector<Eigen::Matrix<float, 4, 4> > &Rt_set,
               const int taylor_order,
               const size_t num_pt,
               std::vector<double> &poly) const;
 template bool OCamCalibModel::findIntrinsic<double>(
               std::vector<std::vector<cv::Point_<double> > > Ms, 
               std::vector<std::vector<cv::Point3_<double> > > Ps,
-              std::vector<Eigen::Matrix<double, 3, 4> > &Rt_set,
+              std::vector<Eigen::Matrix<double, 4, 4> > &Rt_set,
               const int taylor_order,
               const size_t num_pt,
               std::vector<double> &poly) const;
 
 
-double OCamCalibModel::findRho(const double Z, const double invnorm){
-    double lower = 0.0;
-    double upper = 0.5 * sqrt(m_width * m_width + m_height * m_height);
-    double tol = 1e-6;
-    unsigned int max_iter = 1000;
-    return brents_fun(funRho, m_pol, Z, invnorm,
-            lower, upper, tol, max_iter);
-}
+// double OCamCalibModel::findRho(const std::vector<double> theta,
+//                               std::vector<double> &rho_vec){
+//     double lower = 0.0;
+//     double upper = 0.5 * sqrt(m_width * m_width + m_height * m_height);
+//     double tol = 1e-6;
+//     unsigned int max_iter = 1000;
 
+//     for (size_t i=0; i<theta.size(); i++){
+//         double rho = brentsFunc(projectionFunc, m_pol, tan(theta[i]), lower, upper, tol, max_iter);
+//         rho_vec.push_back(rho);
+//     }
+// }
 
 /* *******************************************************************
  *
@@ -813,29 +887,68 @@ void OCamCalibModel::transformMat2Vec(const Eigen::Matrix4d& T_camera_model,
 }
 
 
-// void findInvPoly(const std::vector<double> ss, 
-//                 double radius, std::vector<double> pol){
-//     double error = 1e5;
-//     int order = 1;
-//     do{
-//         error = findInvPoly(ss, radius, pol, order);
-//         order += 1;
-//     }while(error > 0.01)
+void OCamCalibModel::findInvPoly(const unsigned int order,
+                  std::vector<double> &pol){
+    std::vector<double> theta;
+    size_t num = 300;
+    double low = -0.4;
+    double high = 1.2;//M_PI * 0.49;
+    double range = high - low;
+    for (size_t i=0; i<num; i++){
+        theta.push_back(low + i/double(num) * range);
+    }
 
-//     return;
+    std::vector<double> rho;
+    for (size_t i=0; i<num; i++){
+        double r = findRho(tan(theta[i]));
+        rho.push_back(r);
+    }
+    polyfit(theta,rho, order, pol);
+    return;
+}
+
+// void create_perspecive_undistortion_LUT( CvMat *mapx, CvMat *mapy, struct ocam_model *ocam_model, float sf)
+// {
+//      int i, j;
+//      int width = mapx->cols; //New width
+//      int height = mapx->rows;//New height     
+//      float *data_mapx = mapx->data.fl;
+//      float *data_mapy = mapy->data.fl;
+//      float Nxc = height/2.0;
+//      float Nyc = width/2.0;
+//      float Nz  = -width/sf;
+//      double M[3];
+//      double m[2];
+     
+//      for (i=0; i<height; i++)
+//          for (j=0; j<width; j++)
+//          {   
+//              M[0] = (i - Nxc);
+//              M[1] = (j - Nyc);
+//              M[2] = Nz;
+//              world2cam(m, M, ocam_model);
+//              *( data_mapx + i*width+j ) = (float) m[1];
+//              *( data_mapy + i*width+j ) = (float) m[0];
+//          }
 // }
 
-// double findInvPoly(const std::vector<double> ss, 
-//                   const double radius, 
-//                   const int order,
-//                   std::vector<double> pol){
-//     double error = 1e5;
-//     int order = 1;
-//     do{
-//         error = findInvPoly(ss, radius, pol, order);
-//         order += 1;
-//     }while(error > 0.01)
 
-//     return;
+// void create_panoramic_undistortion_LUT ( CvMat *mapx, CvMat *mapy, float Rmin, float Rmax, float xc, float yc )
+// {
+//      int i, j;
+//      float theta;
+//      int width = mapx->width;
+//      int height = mapx->height;     
+//      float *data_mapx = mapx->data.fl;
+//      float *data_mapy = mapy->data.fl;
+//      float rho;
+     
+//      for (i=0; i<height; i++)
+//          for (j=0; j<width; j++)
+//          {
+//              theta = -((float)j)/width*2*M_PI; // Note, if you would like to flip the image, just inverte the sign of theta
+//              rho   = Rmax - (Rmax-Rmin)/height*i;
+//              *( data_mapx + i*width+j ) = yc + rho*sin(theta); //in OpenCV "x" is the
+//              *( data_mapy + i*width+j ) = xc + rho*cos(theta);             
+//          }
 // }
-

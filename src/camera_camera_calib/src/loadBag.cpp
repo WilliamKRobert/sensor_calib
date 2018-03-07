@@ -86,6 +86,50 @@ void loadBag(const string &filename, const string topic0,
 
 }
 
+// load only one image topic
+void loadBag(const string &filename, const string topic, 
+            vector<Mat>& im, size_t sample_num)
+{
+    rosbag::Bag bag;
+    try{
+        bag.open(filename, rosbag::bagmode::Read);
+    }
+    catch(rosbag::BagException& e){
+        ROS_ERROR("Cannot open bag files: %s!", e.what());
+        return;
+    }    
+
+    vector<string> topics;
+    topics.push_back(topic);
+
+    rosbag::View view(bag, rosbag::TopicQuery(topics));
+
+    size_t index = 0;
+    BOOST_FOREACH(rosbag::MessageInstance const m, view)
+    {
+        sensor_msgs::Image::ConstPtr img = m.instantiate<sensor_msgs::Image>();
+        if (img){
+            Mat cv_img;
+            convertImage(img, cv_img);
+            
+            if (cv_img.empty()){
+               cout << "Could not open or find the image" << endl;
+               return;
+            }
+            
+
+            if (m.getTopic() == topic) {
+                if (index % sample_num == 0)
+                    im.push_back(cv_img);
+                index++;
+            }
+            else{
+
+            }
+        }
+    }
+}
+
 void MyClass::init(const std::string topic0, const std::string topic1)
 {
     _bag.open("test.bag", rosbag::bagmode::Write);

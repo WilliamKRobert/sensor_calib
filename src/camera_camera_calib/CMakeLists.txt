@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.0.0)
 project(camera_camera_calib)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
@@ -36,7 +36,7 @@ catkin_package(
   CATKIN_DEPENDS roscpp rospy std_msgs
   # DEPENDS system_lib
 )
-
+ 
 ###########
 ## Build ##
 ###########
@@ -65,10 +65,24 @@ set(LINK_LIBRARIES
 
 file(GLOB_RECURSE SOURCE_FILES "src/*.cpp")
 
-add_executable(calibrateExample test/calibrateExample.cpp 
-                                   ${SOURCE_FILES}
-                                   )
-target_link_libraries(calibrateExample ${LINK_LIBRARIES})
+
+
+add_executable(stereoCameraExample test/stereoCameraExample.cpp ${SOURCE_FILES})
+target_link_libraries(stereoCameraExample ${LINK_LIBRARIES})
+
+add_executable(stereoCameraSimulation test/stereoCameraSimulation.cpp ${SOURCE_FILES})
+target_link_libraries(stereoCameraSimulation ${LINK_LIBRARIES})
+
+
+add_executable(singleCameraSimulation test/singleCameraSimulation.cpp ${SOURCE_FILES})
+target_link_libraries(singleCameraSimulation ${LINK_LIBRARIES})
+
+
+add_executable(singleCameraExample test/singleCameraExample.cpp 
+                                   ${SOURCE_FILES})
+target_link_libraries(singleCameraExample ${LINK_LIBRARIES})
+#[[
+
 
 
 add_executable(omniReprojectionTest test/omniReprojectionTest.cpp 
@@ -80,14 +94,8 @@ add_executable(ocamReprojectionTest test/ocamReprojectionTest.cpp
                                    ${SOURCE_FILES}
                                    )
 target_link_libraries(ocamReprojectionTest ${LINK_LIBRARIES})
-
-
-add_executable(syntheticDataSimulation test/syntheticDataSimulation.cpp 
-                                   ${SOURCE_FILES}
-                                   )
-target_link_libraries(syntheticDataSimulation ${LINK_LIBRARIES})
-
-
+]]
+#[[
 add_executable(synchronizerTest test/synchronizerTest.cpp 
                                    src/loadBag.cpp 
                                    )
@@ -96,8 +104,12 @@ target_link_libraries(synchronizerTest ${OpenCV_LIBRARIES})
 
 add_executable(linearSolverTest test/linearSolverTest.cpp 
                                    ${SOURCE_FILES}
-                                   src/utility.cpp
                                    )
 target_link_libraries(linearSolverTest ${LINK_LIBRARIES})
 
 
+add_executable(stereoCameraSyn test/syntheticDataSimulation_backup.cpp 
+                                   ${SOURCE_FILES}
+                                   )
+target_link_libraries(stereoCameraSyn ${LINK_LIBRARIES})
+]]

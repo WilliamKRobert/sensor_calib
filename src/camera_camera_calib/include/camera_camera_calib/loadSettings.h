@@ -112,6 +112,9 @@ public:
         else
             return true;
     }
+
+    double getImageWidth() const{return imageWidth;}
+    double getImageHeight() const{return imageHeight;}
 public:
     Size boardSize;            // The size of the board -> Number of items by width and height
     Pattern calibrationPattern;// One of the Chessboard, circles, or asymmetric circle pattern

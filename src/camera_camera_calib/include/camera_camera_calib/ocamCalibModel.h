@@ -4,48 +4,30 @@
 #include <opencv2/opencv.hpp>
 #include <Eigen/Dense>
 
+#include "camera_camera_calib/utility.h"
+
 #define CMV_MAX_BUF 1024
 #define MAX_POL_LENGTH 64
 
 class OCamCalibModel
 {
 public:
-    OCamCalibModel(){}
+    // OCamCalibModel( int width, int height,
+    //           double xc, double yc, 
+    //           std::vector<double> pol,
+    //           std::vector<double> pol_inv,
+    //           double c, double d, double e);
 
-    OCamCalibModel( int width, int height,
-              double xc, double yc, 
-              std::vector<double> pol,
-              std::vector<double> pol_inv,
-              double c, double d, double e){ 
-        m_width = width;
-        m_height = height;
-
-        m_xc = xc;
-        m_yc = yc;
-
-        for (size_t i=0; i<pol.size(); i++)
-            m_pol.push_back(pol[i]);
-
-        for (size_t i=0; i<pol_inv.size(); i++)
-            m_pol_inv.push_back(pol_inv[i]);
-
-        m_c = c;
-        m_d = d;
-        m_e = e;
-    }
+    // OCamCalibModel( int width, int height,
+    //           std::vector<double> pol,
+    //           double xc, double yc, 
+    //           double c, double d, double e);
 
     void setParameter(int width, int height,
               double xc, double yc, 
               std::vector<double> pol,
               std::vector<double> pol_inv,
               double c, double d, double e);
-
-
-    bool cam2world(const cv::Point2f &Ms,
-                          cv::Point3f &Ps)const;
-
-    bool world2cam(const cv::Point3f &Ps,
-                          cv::Point2f &Ms)const;
 
     bool omni3d2pixel(const cv::Point3f &Ps,
                           cv::Point2f &Ms);
@@ -55,12 +37,16 @@ public:
                                 Eigen::Matrix4d &  out_T_t_c);
     
     // obtained directly from OCamCalib
-    int get_ocam_model(char *filename);
+    bool get_ocam_model(char *filename);
+
+
+    bool cam2world(const cv::Point2f &Ms,
+                          cv::Point3f &Ps)const;
     void cam2world(double point3D[3], double point2D[2]);
 
     template <typename T>
-    bool cam2world_unitfocal(cv::Point_<T> &Ms, cv::Point3_<T> &Ps, bool &isback)const;
-
+    bool cam2world_unitfocal(cv::Point_<T> &Ms, 
+      cv::Point3_<T> &Ps, bool &isback)const;
 
     template <typename T>
     bool findCamPose(std::vector<cv::Point_<T> > Ms,
@@ -76,27 +62,41 @@ public:
     template <typename T>
     bool solveAnalyticalSol( std::vector<cv::Point_<T> > Ms, 
                       std::vector<cv::Point3_<T> > Ps,
-                      const T xc, const T yc,
+                      const cv::Point_<T> center,
                       Eigen::Matrix<T, 4, 4> &pose) const;
 
-    template <typename T>
-    bool findExtrinsic(std::vector<cv::Point_<T> > Ms, 
-                      std::vector<cv::Point3_<T> > Ps,
-                      std::vector<Eigen::Matrix<T, 3, 4> > &Rt_set) const;
+
 
     template <typename T>
     bool findIntrinsic(
               const std::vector<std::vector<cv::Point_<T> > > Ms, 
               const std::vector<std::vector<cv::Point3_<T> > > Ps,
-              std::vector<Eigen::Matrix<T, 3, 4> > &Rt_set,
+              std::vector<Eigen::Matrix<T, 4, 4> > &Rt_set,
               const int taylor_order,
               const size_t num_pt,
               std::vector<double> &poly) const;
-    //------------------------------------------------------------------------------
+    
     template <typename T>
-    void world2cam(T point2D[2], T point3D[3])const;
+    bool findAnalyticalExtrinsics( 
+                        const std::vector<cv::Point_<T> > Ms, 
+                        const std::vector<cv::Point3_<T> > Ps,
+                        Eigen::Matrix<T, 4, 4> &pose) const;
+
+private:
+    template <typename T>
+    bool findExtrinsic(std::vector<cv::Point_<T> > Ms, 
+                      std::vector<cv::Point3_<T> > Ps,
+                      std::vector<Eigen::Matrix<T, 4, 4> > &Rt_set) const;
+public:
+    //------------------------------------------------------------------------------
+    // void world2cam(T point2D[2], T point3D[3])const;
+    bool world2cam(const cv::Point3f &Ps,
+                          cv::Point2f &Ms)const;
+
+    template <typename T>
+    void world2cam_naive(T point2D[2], T point3D[3])const;
    
-    template <typename T> 
+    template <typename T>
     void triangulate(const Eigen::Matrix<T, 3, 1> & point1, 
                      const Eigen::Matrix<T, 3, 1> & ray1,
                      const Eigen::Matrix<T, 3, 1> & point2, 
@@ -115,12 +115,14 @@ public:
     void transformMat2Vec(const Eigen::Matrix4d& T_camera_model, 
                           cv::Mat& rvec, cv::Mat& tvec) const;
 
+    double getImageWidth(){ assert(m_is_initialized); return m_width; }
+    double getImageHeight() { assert(m_is_initialized); return m_height; }
 
-    double findRho(const double Z, const double invnorm);
+    template <typename T>
+    T findRho(T tantheta) const;
 
-    double getImageWidth(){ return m_width; }
-    double getImageHeight() { return m_height; }
-
+    void findInvPoly(const unsigned int order,
+                  std::vector<double> &pol);
 private:
     // The coordinate system in OCam is different from that in 
     // OpenCV
@@ -161,6 +163,7 @@ private:
                                   cv::Mat &tvec,
                                   bool &isback) const;
 
+    bool m_is_initialized;
     double m_xc, m_yc; //camera paramter
 
     std::vector<double> m_pol; // polynomial coefficients of function F, from low degree to high degree
@@ -187,8 +190,62 @@ public:
         coeff_inv = m_pol_inv;
     }
 
+    OCamCalibModel(){m_is_initialized = false;}
 
-};
+    OCamCalibModel( int width, int height,
+        std::vector<double> pol,
+        std::vector<double> pol_inv,
+        double xc, double yc, 
+        double c, double d, double e)
+    { 
+        m_width = width;
+        m_height = height;
+
+        m_xc = xc;
+        m_yc = yc;
+
+        for (size_t i=0; i<pol.size(); i++)
+            m_pol.push_back(pol[i]);
+
+        for (size_t i=0; i<pol_inv.size(); i++)
+            m_pol_inv.push_back(pol_inv[i]);
+
+        m_len_pol = m_pol.size();
+        m_len_pol_inv = m_pol_inv.size();
+
+        m_c = c;
+        m_d = d;
+        m_e = e;
+
+        m_is_initialized = true;
+    }
+
+
+
+    OCamCalibModel( int width, int height,
+        std::vector<double> pol_inv,
+        double xc, double yc, 
+        double c, double d, double e)
+    { 
+        m_width = width;
+        m_height = height;
+
+        m_xc = xc;
+        m_yc = yc;
+
+        for (size_t i=0; i<pol_inv.size(); i++){
+            m_pol_inv.push_back(pol_inv[i]);
+        }
+
+        m_len_pol_inv = m_pol_inv.size();
+
+        m_c = c;
+        m_d = d;
+        m_e = e;
+
+        m_is_initialized = true;
+    }
+
 
 /* *******************************************************************
  *
@@ -196,8 +253,10 @@ public:
  *
  * *******************************************************************/
 template <typename T>
-void OCamCalibModel::world2cam(T point2D[2], T point3D[3])const
+void world2cam(T point2D[2], T point3D[3])const
 {
+    assert(m_is_initialized);
+    assert(m_pol_inv.size() != 0);
     excoordinate3D(point3D);
 
     T norm        = sqrt(point3D[0]*point3D[0] + point3D[1]*point3D[1]);
@@ -234,39 +293,55 @@ void OCamCalibModel::world2cam(T point2D[2], T point3D[3])const
     excoordinate2D(point2D);
 }
 
+};
 
-// template <typename T>
-// void OCamCalibModel::world2cam_naive(T point2D[2], T point3D[3])const
-// {
+template<typename T>
+void OCamCalibModel::world2cam_naive(T point2D[2], T point3D[3])const
+{
+    assert(m_is_initialized);
 
-//     T norm        = sqrt(point3D[0]*point3D[0] + point3D[1]*point3D[1]);
-//     T theta       = atan2(point3D[2], norm);
-//     T t, t_i;
-//     T rho, x, y;
-//     T invnorm;
+    T norm        = sqrt(point3D[0]*point3D[0] + point3D[1]*point3D[1]);
+    T tantheta;
+    T rho, x, y;
+    T invnorm;
 
-//     if (norm != T(0)) 
-//     {
-//       invnorm = T(1) / norm;
-//       t  = theta;
-//       rho = T(m_pol_inv[0]);
-//       t_i = T(1);
+    if (norm != T(0)) 
+    {
+      invnorm = T(1) / norm;
+      tantheta = point3D[2] * invnorm;
+      rho = findRho(tantheta);
+    
+      x = point3D[0]*invnorm*rho;
+      y = point3D[1]*invnorm*rho;
 
-//       rho = findrho(point3D[3], invnorm);
+      point2D[0] = x*m_c + y*m_d + m_xc;
+      point2D[1] = x*m_e + y   + m_yc;
+    }
+    else
+    {
+      point2D[0] = T(m_xc);
+      point2D[1] = T(m_yc);
+    }
 
-//       x = point3D[0]*invnorm*rho;
-//       y = point3D[1]*invnorm*rho;
+    //excoordinate2D(point2D);
+}
 
-//       point2D[0] = x*m_c + y*m_d + m_xc;
-//       point2D[1] = x*m_e + y   + m_yc;
-//     }
-//     else
-//     {
-//       point2D[0] = T(m_xc);
-//       point2D[1] = T(m_yc);
-//     }
+template <typename T>
+T OCamCalibModel::findRho(T tantheta) const{
+    T lower = T(0.0);
+    T upper = T(0.5 * m_width);
+    T tol = T(1e-9);
+    unsigned int max_iter = 1000;
+    if (tantheta < T(-0.8)) {
+        std::cout << tantheta << " " << "Error" << std::endl;
+        return T(550);
+    }
+    T rho = brentsFunc(projectionFunc, m_pol, tantheta, lower, upper, tol, max_iter);
+    //std::cout << tantheta << " " << rho << std::endl;
+    // TODO: check if rho is valid or not
+    return rho;
+}
 
-// }
 
 /* *******************************************************************
  *

@@ -35,6 +35,9 @@ void loadBag(const std::string &filename,
             size_t max_im_num
             );
 
+void loadBag(const std::string &filename, const std::string topic, 
+            std::vector<cv::Mat>& im, size_t sample_num);
+
 typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::Image, 
                                                 sensor_msgs::Image> NoCloudSyncPolicy;
 typedef message_filters::Subscriber<sensor_msgs::Image> image_sub_type;                                                
